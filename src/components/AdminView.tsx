@@ -220,6 +220,8 @@ export default function AdminView({
   const [badge, setBadge] = useState<"CASE STUDY" | "EXPERIMENTAL" | "MASTERPRINT">("CASE STUDY");
   const [year, setYear] = useState(() => new Date().getFullYear().toString());
   const [accentColor, setAccentColor] = useState("#306634");
+  const [linkBgColor, setLinkBgColor] = useState("");
+  const [linkTextColor, setLinkTextColor] = useState("");
   const [imageType, setImageType] = useState("lunar");
   const [uploadedImageBase64, setUploadedImageBase64] = useState<string | null>(null);
   const [projectLink, setProjectLink] = useState("");
@@ -441,6 +443,8 @@ export default function AdminView({
     setBadge(proj.badge as any || "CASE STUDY");
     setYear(proj.year);
     setAccentColor(proj.accentColor || "#306634");
+    setLinkBgColor(proj.linkBgColor || "");
+    setLinkTextColor(proj.linkTextColor || "");
     setImageType(proj.imageType || "lunar");
     setProjectLink(proj.link || "");
     setProjectLinkLabel(proj.linkLabel || "");
@@ -459,6 +463,8 @@ export default function AdminView({
     setBadge("CASE STUDY");
     setYear(new Date().getFullYear().toString());
     setAccentColor("#306634");
+    setLinkBgColor("");
+    setLinkTextColor("");
     setImageType("lunar");
     setProjectLink("");
     setProjectLinkLabel("");
@@ -495,6 +501,8 @@ export default function AdminView({
       description: description,
       extendedDescription: extendedDescription || undefined,
       accentColor: accentColor,
+      linkBgColor: linkBgColor || undefined,
+      linkTextColor: linkTextColor || undefined,
       imageType: uploadedImageBase64 || imageType, // Use custom base64 or abstract placeholder
       isCustom: true,
       link: projectLink || undefined,
@@ -518,6 +526,9 @@ export default function AdminView({
       setDescription("");
       setExtendedDescription("");
       setTechTags("");
+      setAccentColor("#306634");
+      setLinkBgColor("");
+      setLinkTextColor("");
       setUploadedImageBase64(null);
       setProjectLink("");
       setProjectLinkLabel("");
@@ -881,6 +892,81 @@ export default function AdminView({
                           onChange={(e) => setProjectLinkLabel(e.target.value)}
                           className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634]"
                         />
+                      </div>
+
+                      {/* Project Custom Styling Overrides */}
+                      <div className="border border-dashed border-verdant-cream/20 bg-verdant-dark/40 p-4 flex flex-col gap-4">
+                        <span className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest block select-none">
+                          🎨 PROJECT BRANDING & COLOR SCHEMES
+                        </span>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {/* Accent Color Picker */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="font-mono text-[8px] font-black text-verdant-cream uppercase tracking-widest whitespace-nowrap">
+                              TAGS/LINE ACCENT HEX
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="color"
+                                value={accentColor || "#306634"}
+                                onChange={(e) => setAccentColor(e.target.value)}
+                                className="w-9 h-9 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
+                              />
+                              <input
+                                type="text"
+                                value={accentColor}
+                                onChange={(e) => setAccentColor(e.target.value)}
+                                className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-2 border-2 border-verdant-cream focus:outline-none"
+                                placeholder="#306634"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Link Button Background Color Picker */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="font-mono text-[8px] font-black text-verdant-cream uppercase tracking-widest whitespace-nowrap">
+                              LINK BACKDROP COLOR
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="color"
+                                value={linkBgColor || "#DCA221"}
+                                onChange={(e) => setLinkBgColor(e.target.value)}
+                                className="w-9 h-9 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
+                              />
+                              <input
+                                type="text"
+                                value={linkBgColor}
+                                onChange={(e) => setLinkBgColor(e.target.value)}
+                                className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-2 border-2 border-verdant-cream focus:outline-none"
+                                placeholder="#DCA221"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Link Button Text Color Picker */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="font-mono text-[8px] font-black text-verdant-cream uppercase tracking-widest whitespace-nowrap">
+                              LINK TEXT COLOR
+                            </label>
+                            <div className="flex gap-2">
+                              <input
+                                type="color"
+                                value={linkTextColor || "#FFFFFF"}
+                                onChange={(e) => setLinkTextColor(e.target.value)}
+                                className="w-9 h-9 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
+                              />
+                              <input
+                                type="text"
+                                value={linkTextColor}
+                                onChange={(e) => setLinkTextColor(e.target.value)}
+                                className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-2 border-2 border-verdant-cream focus:outline-none"
+                                placeholder="#FFFFFF"
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Video Link */}
