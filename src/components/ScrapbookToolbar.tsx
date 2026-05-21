@@ -211,6 +211,19 @@ export default function ScrapbookToolbar({
   // Active element selection helper for tweaking on the fly
   const [selectedElementId, setSelectedElementId] = useState<string>("");
 
+  // Listen for direct on-screen clicks to select elements and open the tweaks tab
+  useEffect(() => {
+    const handleScreenSelect = (e: Event) => {
+      const customEv = e as CustomEvent<{ id: string }>;
+      if (customEv.detail && customEv.detail.id) {
+        setSelectedElementId(customEv.detail.id);
+        setActiveMenuTab("TWEAK");
+      }
+    };
+    window.addEventListener("scrapbook-sticker-select", handleScreenSelect);
+    return () => window.removeEventListener("scrapbook-sticker-select", handleScreenSelect);
+  }, []);
+
   // Preset stickers list
   const presetStickers = [
     { key: "daisy", label: "🌼 Botanical Daisy" },
