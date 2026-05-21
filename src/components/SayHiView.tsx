@@ -258,7 +258,7 @@ export default function SayHiView({ profileSettings }: SayHiViewProps) {
               </div>
 
               <p className="font-sans text-[11px] text-verdant-gray leading-relaxed font-semibold capitalize mt-4">
-                Currently looking into crypto-agile API gateway simulations and low-poly graphics.
+                ...
               </p>
             </div>
           </div>
