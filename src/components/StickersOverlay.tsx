@@ -112,6 +112,9 @@ export default function StickersOverlay({
 
     if (!isAdmin) return;
     
+    // Dispatch custom event to select this sticker in high-fidelity on the sidebar toolbar
+    window.dispatchEvent(new CustomEvent("scrapbook-sticker-select", { detail: { id: stickerId } }));
+
     e.preventDefault();
     const currentTarget = e.currentTarget;
     currentTarget.setPointerCapture(e.pointerId);
@@ -282,7 +285,10 @@ export default function StickersOverlay({
           >
             {/* Visual Header Controls when Administrator drags/hovers element */}
             {isAdmin && (
-              <div className="absolute -top-11 bg-verdant-charcoal border-2 border-verdant-cream px-2 py-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 z-50 text-[9px] font-mono font-black text-white leading-none uppercase select-none cursor-default">
+              <div 
+                onPointerDown={(e) => e.stopPropagation()}
+                className="absolute -top-11 bg-verdant-charcoal border-2 border-verdant-cream px-2 py-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 z-50 text-[9px] font-mono font-black text-white leading-none uppercase select-none cursor-default"
+              >
                 <Move className="w-3 h-3 text-verdant-yellow shrink-0" />
                 <span>Move</span>
                 <span className="w-1.5 h-1.5 bg-verdant-cream/30 rounded-full" />
@@ -503,6 +509,7 @@ export default function StickersOverlay({
               {isAdmin && (
                 <button
                   type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => handleDeleteSticker(st.id, e)}
                   title="Remove from Workspace"
                   className="absolute -right-3.5 -bottom-3.5 bg-red-600 hover:bg-red-700 hover:scale-110 active:scale-95 text-white w-6 h-6 rounded-full flex items-center justify-center border-2 border-verdant-cream shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-50 cursor-pointer"
