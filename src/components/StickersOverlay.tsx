@@ -1,13 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Sticker, ActiveTab } from "../types";
+import { Sticker, ActiveTab, ProfileSettings } from "../types";
 import { StickerRenderer } from "./ScrapbookToolbar";
-import { Trash2, Move, Type, Square, HelpCircle, Layers, Play, Pause, Disc } from "lucide-react";
+import { Trash2, Move, Type, Square, HelpCircle, Layers, Play, Pause, Disc, RotateCw, Palette } from "lucide-react";
 
 interface StickersOverlayProps {
   stickers: Sticker[];
   activeTab: ActiveTab;
   isAdmin: boolean;
   onUpdateStickers: (stickers: Sticker[]) => void;
+  profileSettings?: ProfileSettings;
 }
 
 // Quick Audio waveform generator simulation inside custom widgets
@@ -74,7 +75,8 @@ export default function StickersOverlay({
   stickers = [],
   activeTab,
   isAdmin,
-  onUpdateStickers
+  onUpdateStickers,
+  profileSettings
 }: StickersOverlayProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
@@ -96,9 +98,15 @@ export default function StickersOverlay({
   }, []);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>, stickerId: string) => {
-    // If the administrator clicked inside an input/textarea, do NOT trigger drag
-    const targetTag = (e.target as HTMLElement).tagName.toLowerCase();
-    if (targetTag === "input" || targetTag === "textarea" || targetTag === "button") {
+    // Check if clicked inside a button, input, textarea, or data-no-drag element
+    const targetEl = e.target as HTMLElement;
+    if (
+      targetEl.closest("button") || 
+      targetEl.closest("input") || 
+      targetEl.closest("textarea") || 
+      targetEl.closest("select") || 
+      targetEl.closest("[data-no-drag]")
+    ) {
       return;
     }
 
@@ -160,6 +168,67 @@ export default function StickersOverlay({
     const updated = stickers.map(s => 
       s.id === id ? { ...s, zIndex: 10 } : s
     );
+    onUpdateStickers(updated);
+  };
+
+  const handleIncreaseScale = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = stickers.map(s => {
+      if (s.id === id) {
+        if (s.type === "text") {
+          return { ...s, textSizePx: (s.textSizePx || 16) + 2 };
+        } else {
+          return { ...s, scale: Math.min(3.0, Math.round(((s.scale || 1.0) + 0.1) * 10) / 10) };
+        }
+      }
+      return s;
+    });
+    onUpdateStickers(updated);
+  };
+
+  const handleDecreaseScale = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = stickers.map(s => {
+      if (s.id === id) {
+        if (s.type === "text") {
+          return { ...s, textSizePx: Math.max(8, (s.textSizePx || 16) - 2) };
+        } else {
+          return { ...s, scale: Math.max(0.3, Math.round(((s.scale || 1.0) - 0.1) * 10) / 10) };
+        }
+      }
+      return s;
+    });
+    onUpdateStickers(updated);
+  };
+
+  const handleRotate = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = stickers.map(s => 
+      s.id === id ? { ...s, rotation: ((s.rotation || 0) + 15) % 360 } : s
+    );
+    onUpdateStickers(updated);
+  };
+
+  const handleColorCycle = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const colors = [
+      profileSettings?.themeColorPrimary || "#306634",
+      profileSettings?.themeColorSecondary || "#DCA221",
+      profileSettings?.customCanvasBg || "#FAF8F5",
+      profileSettings?.customCardBg || "#F2EEE3",
+      profileSettings?.themeColorTextHeader || "#142215",
+      "#FF5A5F",
+      "#1E293B"
+    ];
+    const updated = stickers.map(s => {
+      if (s.id === id) {
+        const currentColor = s.textColor || "";
+        const currentIndex = colors.indexOf(currentColor);
+        const nextIndex = (currentIndex + 1) % colors.length;
+        return { ...s, textColor: colors[nextIndex] };
+      }
+      return s;
+    });
     onUpdateStickers(updated);
   };
 
@@ -233,6 +302,45 @@ export default function StickersOverlay({
                 >
                   Front
                 </button>
+                <span className="w-1.5 h-1.5 bg-verdant-cream/30 rounded-full" />
+                <button
+                  type="button"
+                  title="Scale Down"
+                  onClick={(e) => handleDecreaseScale(st.id, e)}
+                  className="hover:text-verdant-yellow text-[#DCA221] font-extrabold p-0.5 px-1 bg-[#142215]/30 rounded hover:bg-[#142215]/60 cursor-pointer text-xs"
+                >
+                  －
+                </button>
+                <button
+                  type="button"
+                  title="Scale Up"
+                  onClick={(e) => handleIncreaseScale(st.id, e)}
+                  className="hover:text-verdant-yellow text-[#DCA221] font-extrabold p-0.5 px-1 bg-[#142215]/30 rounded hover:bg-[#142215]/60 cursor-pointer text-xs"
+                >
+                  ＋
+                </button>
+                <button
+                  type="button"
+                  title="Rotate (15°)"
+                  onClick={(e) => handleRotate(st.id, e)}
+                  className="hover:text-verdant-yellow text-[#DCA221] p-0.5 px-1 bg-[#142215]/30 rounded hover:bg-[#142215]/60 cursor-pointer text-xs flex items-center gap-0.5"
+                >
+                  <RotateCw className="w-2.5 h-2.5 inline" />
+                </button>
+                {(st.type === "shape" || st.type === "text") && (
+                  <button
+                    type="button"
+                    title="Cycle Color"
+                    onClick={(e) => handleColorCycle(st.id, e)}
+                    className="hover:text-verdant-yellow text-[#DCA221] p-0.5 px-1 bg-[#142215]/30 rounded hover:bg-[#142215]/60 cursor-pointer text-xs flex items-center gap-1"
+                  >
+                    <span 
+                      className="w-2 h-2 rounded-full border border-white/40" 
+                      style={{ backgroundColor: st.textColor || "#DCA221" }} 
+                    />
+                    Col
+                  </button>
+                )}
               </div>
             )}
 
