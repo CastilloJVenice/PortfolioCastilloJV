@@ -15,9 +15,12 @@ export interface Project {
   description: string;
   extendedDescription?: string; // Optional deep description when workspace expands
   accentColor: string;
+  linkBgColor?: string; // Optional button background color override (Hex)
+  linkTextColor?: string; // Optional button text color override (Hex)
   imageType: "lunar" | "void" | "logic" | string; // support base64 images as well
   isCustom?: boolean;
   link?: string;    // Optional external link (e.g. Streamlit app)
+  linkLabel?: string; // Optional custom label for the external link button
   additionalImages?: string[]; // Multiple additional base64 project photos
   videoUrl?: string; // Optional project video link (e.g., YouTube embed or direct link)
 }
