@@ -58,7 +58,7 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
             </h1>
           </div>
           <p className="font-mono text-xs md:text-sm text-verdant-gray mt-4 max-w-2xl font-bold uppercase tracking-wider">
-            Here are some projetcs I worked on and currently working on.
+            A comprehensive index of interactive prototypes, designs, secure systems, and algorithmic projects constructed in modern frameworks.
           </p>
         </div>
 
@@ -188,19 +188,21 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 overflow-y-auto bg-verdant-dark/95 backdrop-blur-md flex justify-center items-center p-4 md:p-10 select-none"
+            onClick={() => setActivePlayground(null)}
+            className="fixed inset-0 z-50 bg-verdant-dark/95 backdrop-blur-md flex justify-center items-center p-4 md:p-10"
           >
             <motion.div
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="relative w-full max-w-2xl bg-verdant-charcoal border-[3.5px] border-verdant-cream p-6 md:p-8 flex flex-col gap-6 shadow-double-offset overflow-hidden text-verdant-cream"
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-2xl max-h-[90vh] md:max-h-[85vh] bg-verdant-charcoal border-[3.5px] border-verdant-cream p-5 md:p-6 flex flex-col gap-4 shadow-double-offset overflow-hidden text-verdant-cream"
             >
               {/* Heavy border header strip */}
-              <div className="flex justify-between items-center border-b border-verdant-cream/20 pb-3">
+              <div className="flex justify-between items-center border-b border-verdant-cream/20 pb-3 flex-shrink-0 select-none">
                 <div className="flex items-center gap-2 font-mono text-[#306634]">
                   <FolderGit2 className="w-5 h-5 text-[#306634]" />
-                  <span className="text-xs uppercase font-extrabold tracking-widest">ARTIFACT SYSTEM DETAILED ARCHIVE</span>
+                  <span className="text-[10px] md:text-xs uppercase font-extrabold tracking-widest">ARTIFACT SYSTEM DETAILED ARCHIVE</span>
                 </div>
                 {/* Close Button */}
                 <button
@@ -213,14 +215,14 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                 </button>
               </div>
 
-              {/* Dynamic Project details representation */}
-              <div className="flex flex-col gap-4 text-left">
+              {/* Dynamic Project details representation with internal scroll viewport */}
+              <div className="flex-1 overflow-y-auto pr-1.5 text-left custom-scrollbar">
                 {(() => {
                   const currentProj = projects.find(p => p.id === activePlayground);
                   if (!currentProj) return <p className="font-mono text-xs text-red-500">PROJECT NOT FOUND IN LOCAL LEDGER.</p>;
                   return (
                     <div className="flex flex-col gap-5">
-                      <div className="relative aspect-video bg-verdant-dark border border-verdant-cream/20 flex items-center justify-center overflow-hidden">
+                      <div className="relative aspect-video bg-verdant-dark border border-verdant-cream/20 flex items-center justify-center overflow-hidden flex-shrink-0">
                         {currentProj.videoUrl ? (
                           <div className="w-full h-full bg-black">
                             {currentProj.videoUrl.includes("youtube.com") || currentProj.videoUrl.includes("youtu.be") || currentProj.videoUrl.includes("vimeo.com") ? (
@@ -253,7 +255,7 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                             referrerPolicy="no-referrer"
                           />
                         ) : (
-                          <div className="text-center font-mono text-[9px] uppercase tracking-widest text-[#306634] p-6 relative w-full h-full flex flex-col items-center justify-center">
+                          <div className="text-center font-mono text-[9px] uppercase tracking-widest text-[#306634] p-6 relative w-full h-full flex flex-col items-center justify-center min-h-[160px]">
                             <Sparkles className="w-12 h-12 text-verdant-yellow mx-auto mb-3 animate-pulse" />
                             <span className="font-bold block tracking-wider text-verdant-cream uppercase mb-1.5">{currentProj.title}</span>
                             <span className="text-zinc-500 text-[8px] tracking-widest">{currentProj.category} SPECIFICATION PROFILE</span>
@@ -286,10 +288,23 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                           {currentProj.description}
                         </p>
 
+                        {/* Extended detailed description shown exclusively when deep/expanded parameters are defined */}
+                        {currentProj.extendedDescription && (
+                          <div className="pt-4 border-t border-dashed border-verdant-cream/20">
+                            <h4 className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest mb-2 flex items-center gap-1.5 select-none">
+                              <Sparkles className="w-3.5 h-3.5 text-verdant-yellow shrink-0" />
+                              <span>EXTENDED SPECIFICATIONS & NOTES</span>
+                            </h4>
+                            <p className="font-sans text-xs md:text-sm text-verdant-cream/90 leading-relaxed whitespace-pre-line font-medium bg-verdant-dark/40 border border-verdant-cream/5 p-4 italic">
+                              {currentProj.extendedDescription}
+                            </p>
+                          </div>
+                        )}
+
                         {/* Interactive Gallery of Secondary Photos */}
                         {currentProj.additionalImages && currentProj.additionalImages.length > 0 && (
                           <div className="flex flex-col gap-2 pt-2">
-                            <span className="text-[9px] font-mono text-verdant-gray uppercase font-semibold tracking-widest">
+                            <span className="text-[9px] font-mono text-grid text-verdant-gray uppercase font-semibold tracking-widest">
                               PROJECT MEDIA GALLERY
                             </span>
                             <div className="grid grid-cols-3 gap-2">
@@ -324,7 +339,7 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                               href={currentProj.link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-full bg-verdant-yellow text-white border-2 border-verdant-cream font-mono text-xs font-black py-4 uppercase tracking-widest transition-all hover:bg-[#FAF8F5] hover:text-[#142215] flex items-center justify-center gap-2 shadow-yellow-offset select-none cursor-pointer"
+                              className="w-full bg-verdant-yellow text-white border-2 border-verdant-cream font-mono text-xs font-black py-4 uppercase tracking-widest transition-all hover:bg-[#FAF8F5] hover:text-[#142215] flex items-center justify-center gap-2 shadow-yellow-offset select-none cursor-pointer animate-pulse"
                               id="active-sandbox-live-launch-btn"
                             >
                               <span>TEST PROTOTYPE ON STREAMLIT</span>
@@ -339,11 +354,12 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
               </div>
 
               {/* Close Bottom action */}
-              <div className="border-t border-verdant-cream/20 pt-3 flex justify-between items-center font-mono text-[10px]">
-                <span className="text-zinc-600 text-[8px] uppercase tracking-widest select-none">
+              <div className="border-t border-verdant-cream/20 pt-3 flex justify-between items-center font-mono text-[10px] flex-shrink-0 select-none">
+                <span className="text-zinc-600 text-[8px] uppercase tracking-widest">
                   SECURE LEDGER ACCESS
                 </span>
                 <button
+                  type="button"
                   onClick={() => {
                     setActivePlayground(null);
                   }}
