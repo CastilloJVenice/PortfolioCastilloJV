@@ -58,7 +58,7 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
             </h1>
           </div>
           <p className="font-mono text-xs md:text-sm text-verdant-gray mt-4 max-w-2xl font-bold uppercase tracking-wider">
-            A comprehensive index of interactive prototypes, designs, secure systems, and algorithmic projects constructed in modern frameworks.
+            My previous and pending projects. 
           </p>
         </div>
 
