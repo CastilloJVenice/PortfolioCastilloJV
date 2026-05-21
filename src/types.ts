@@ -13,6 +13,7 @@ export interface Project {
   badge: "CASE STUDY" | "EXPERIMENTAL" | "MASTERPRINT" | string;
   year: string;
   description: string;
+  extendedDescription?: string; // Optional deep description when workspace expands
   accentColor: string;
   imageType: "lunar" | "void" | "logic" | string; // support base64 images as well
   isCustom?: boolean;
