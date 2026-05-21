@@ -231,6 +231,8 @@ export default function AdminView({
   // Drag and Drop states
   const [dragActive, setDragActive] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -436,7 +438,7 @@ export default function AdminView({
     setAccentColor(proj.accentColor || "#306634");
     setImageType(proj.imageType || "lunar");
     setProjectLink(proj.link || "");
-    setUploadedImageBase64(proj.imageType.startsWith("data:image/") ? proj.imageType : null);
+    setUploadedImageBase64(proj.imageType && proj.imageType.startsWith("data:image/") ? proj.imageType : null);
     setVideoUrl(proj.videoUrl || "");
     setAdditionalImages(proj.additionalImages || []);
   };
@@ -457,12 +459,23 @@ export default function AdminView({
     setAdditionalImages([]);
   };
 
-  const handleAddProjectSubmit = (e: FormEvent) => {
+  const handleAddProjectSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title || !description || !techTags) {
       alert("Please fill in all required fields.");
       return;
     }
+
+    // Check total payload size approx to prevent Firestore document limit crash
+    const estimatedSizeKb = ((uploadedImageBase64?.length || 0) + additionalImages.reduce((acc, img) => acc + img.length, 0)) * 3 / 4 / 1024;
+    if (estimatedSizeKb > 850) {
+      alert(`The combined image size is roughly ${estimatedSizeKb.toFixed(0)}KB. Firestore database has a hard 1MB (1000KB) limit per project. Please check/compress your screenshot or upload a smaller cover photo/fewer gallery photos first!`);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setUploadError(null);
+    setUploadSuccess(null);
 
     const targetProject: Project = {
       id: editingProjectId || "dynamic-" + Date.now(),
@@ -480,25 +493,47 @@ export default function AdminView({
       additionalImages: additionalImages.length > 0 ? additionalImages : undefined
     };
 
-    if (editingProjectId) {
-      onUpdateProject(targetProject);
-      setUploadSuccess(`SUCCESS: "${title}" updated successfully.`);
-      setEditingProjectId(null);
-    } else {
-      onAddProject(targetProject);
-      setUploadSuccess(`SUCCESS: "${title}" saved to gallery.`);
-    }
-    
-    setTimeout(() => setUploadSuccess(null), 4000);
+    try {
+      if (editingProjectId) {
+        await onUpdateProject(targetProject);
+        setUploadSuccess(`SUCCESS: "${title}" updated successfully.`);
+        setEditingProjectId(null);
+      } else {
+        await onAddProject(targetProject);
+        setUploadSuccess(`SUCCESS: "${title}" saved to gallery.`);
+      }
 
-    // Reset Form Fields
-    setTitle("");
-    setDescription("");
-    setTechTags("");
-    setUploadedImageBase64(null);
-    setProjectLink("");
-    setVideoUrl("");
-    setAdditionalImages([]);
+      // Reset Form Fields ONLY on successful write!
+      setTitle("");
+      setDescription("");
+      setTechTags("");
+      setUploadedImageBase64(null);
+      setProjectLink("");
+      setVideoUrl("");
+      setAdditionalImages([]);
+      setUploadError(null);
+    } catch (err: any) {
+      console.error("Firestore write failure:", err);
+      let errMsg = "Failed to save project. The screenshot files are too large (exceeding Firestore's 1MB document storage limit) or database authentication has expired.";
+      if (err instanceof Error) {
+        try {
+          const parsed = JSON.parse(err.message);
+          if (parsed && parsed.error) {
+            errMsg = `Database Save Error: ${parsed.error}`;
+          }
+        } catch (_) {
+          errMsg = `Error: ${err.message}`;
+        }
+      }
+      setUploadError(errMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    setTimeout(() => {
+      setUploadSuccess(null);
+      setUploadError(null);
+    }, 6000);
   };
 
   return (
@@ -678,6 +713,14 @@ export default function AdminView({
                         </div>
                       )}
 
+                      {/* Storage quota or large image upload error message */}
+                      {uploadError && (
+                        <div className="flex items-start gap-2 bg-red-950 p-3 border-2 border-red-600 text-red-200 font-mono text-[10px] uppercase font-bold leading-relaxed">
+                          <AlertCircle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
+                          <span>{uploadError}</span>
+                        </div>
+                      )}
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Title Field */}
                         <div className="flex flex-col gap-1.5">
@@ -834,6 +877,9 @@ export default function AdminView({
                               {additionalImages.map((imgBase64, idx) => (
                                 <div key={idx} className="relative aspect-video border border-verdant-cream bg-black">
                                   <img src={imgBase64} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                  <span className="absolute bottom-0 left-0 bg-[#306634] text-white text-[7px] px-1 font-mono font-black">
+                                    {((imgBase64.length * 3) / 4 / 1024).toFixed(0)}KB
+                                  </span>
                                   <button
                                     type="button"
                                     onClick={() => setAdditionalImages((prev) => prev.filter((_, i) => i !== idx))}
@@ -937,10 +983,11 @@ export default function AdminView({
                       <div className="flex flex-col gap-3">
                         <button
                           type="submit"
-                          className="w-full cursor-pointer bg-verdant-mint hover:bg-[#528B56] text-white border-2 border-verdant-cream font-mono text-xs font-black py-4 uppercase tracking-widest transition-colors select-none shadow-mint-offset"
+                          disabled={isSubmitting}
+                          className="w-full cursor-pointer bg-verdant-mint hover:bg-[#528B56] text-white border-2 border-verdant-cream font-mono text-xs font-black py-4 uppercase tracking-widest transition-colors select-none shadow-mint-offset disabled:opacity-50 disabled:cursor-not-allowed"
                           id="submit-dynamic-proj-btn"
                         >
-                          {editingProjectId ? "SAVE CHANGES" : "PUBLISH TO GALLERY"}
+                          {isSubmitting ? "SAVING TO FIREBASE..." : editingProjectId ? "SAVE CHANGES & UPDATE" : "PUBLISH TO GALLERY"}
                         </button>
                         
                         {editingProjectId && (
