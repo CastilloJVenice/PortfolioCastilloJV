@@ -251,7 +251,7 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                           <img
                             src={currentProj.imageType}
                             alt={currentProj.title}
-                            className="w-full h-full object-cover opacity-90"
+                            className="w-full h-full object-contain opacity-100"
                             referrerPolicy="no-referrer"
                           />
                         ) : (
