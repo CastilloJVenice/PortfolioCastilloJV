@@ -2,7 +2,8 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDocFromServer } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDEzaEs8UssCBh3DFVz8UwIkCCWLoFKG94",
+  // Swapped out the raw string for the Vite environment variable 👇
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "portfoliocastillo.firebaseapp.com",
   projectId: "portfoliocastillo",
   storageBucket: "portfoliocastillo.firebasestorage.app",
