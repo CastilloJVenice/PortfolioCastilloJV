@@ -226,12 +226,14 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                             {currentProj.videoUrl.includes("youtube.com") || currentProj.videoUrl.includes("youtu.be") || currentProj.videoUrl.includes("vimeo.com") ? (
                               <iframe
                                 src={
-                                  currentProj.videoUrl.includes("youtube.com/embed/")
+                                  currentProj.videoUrl.includes("youtube.com/shorts/")
+                                    ? "https://www.youtube.com/embed/" + currentProj.videoUrl.split("youtube.com/shorts/")[1]?.split("?")[0]
+                                    : currentProj.videoUrl.includes("youtube.com/embed/")
                                     ? currentProj.videoUrl
                                     : currentProj.videoUrl.includes("watch?v=")
                                     ? currentProj.videoUrl.replace("watch?v=", "embed/")
                                     : currentProj.videoUrl.includes("youtu.be/")
-                                    ? "https://www.youtube.com/embed/" + currentProj.videoUrl.split("youtu.be/")[1]
+                                    ? "https://www.youtube.com/embed/" + currentProj.videoUrl.split("youtu.be/")[1]?.split("?")[0]
                                     : currentProj.videoUrl
                                 }
                                 title="Project Demonstration Video"
@@ -272,7 +274,7 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                           </span>
                         </div>
 
-                        <h3 className="font-syne font-black text-2xl text-white uppercase tracking-wide leading-tight">
+                        <h3 className="font-syne font-black text-2xl text-verdant-cream uppercase tracking-wide leading-tight">
                           {currentProj.title}
                         </h3>
 
