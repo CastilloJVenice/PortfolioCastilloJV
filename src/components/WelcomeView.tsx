@@ -424,7 +424,10 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
                       )}
                     </div>
 
-                    <span className="mt-auto ml-auto font-mono text-[9px] text-[#306634] relative z-20 font-bold uppercase tracking-wider backdrop-blur-sm px-1.5 py-0.5">
+                    <span 
+                      style={{ color: proj.accentColor || "#306634" }}
+                      className="mt-auto ml-auto font-mono text-[9.5px] relative z-20 font-black uppercase tracking-widest bg-verdant-dark/90 rounded border border-verdant-cream/15 px-2.5 py-1 select-none shadow-sm"
+                    >
                       {proj.tag}
                     </span>
                   </div>
