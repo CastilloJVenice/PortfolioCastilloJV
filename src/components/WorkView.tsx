@@ -342,7 +342,7 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                               className="w-full bg-verdant-yellow text-white border-2 border-verdant-cream font-mono text-xs font-black py-4 uppercase tracking-widest transition-all hover:bg-[#FAF8F5] hover:text-[#142215] flex items-center justify-center gap-2 shadow-yellow-offset select-none cursor-pointer animate-pulse"
                               id="active-sandbox-live-launch-btn"
                             >
-                              <span>TEST PROTOTYPE ON STREAMLIT</span>
+                              <span>{currentProj.linkLabel || "TEST PROTOTYPE ON STREAMLIT"}</span>
                               <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                             </a>
                           </div>
