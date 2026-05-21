@@ -142,8 +142,11 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                     <h3 className={`font-syne font-black text-xl text-verdant-cream tracking-wide leading-none ${casingClass}`}>
                       {proj.title}
                     </h3>
-                    <p className="font-mono text-[9px] text-[#306634] font-black tracking-widest mt-1.5">
-                      {proj.tag.toUpperCase()}
+                    <p 
+                      style={{ color: proj.accentColor || "#306634" }}
+                      className="font-mono text-[9.5px] font-black tracking-widest mt-1.5 uppercase"
+                    >
+                      {proj.tag}
                     </p>
                     <p className="font-sans text-xs text-verdant-gray mt-3 leading-relaxed font-semibold">
                       {proj.description}
@@ -268,7 +271,10 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
 
                       <div className="space-y-4">
                         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-verdant-cream/10 pb-2">
-                          <span className="font-mono text-[9px] bg-[#306634]/20 border border-[#306634] text-verdant-cream px-2.5 py-0.5 font-bold uppercase tracking-widest">
+                          <span 
+                            style={{ borderColor: currentProj.accentColor || "#306634", backgroundColor: `${currentProj.accentColor || "#306634"}33` }}
+                            className="font-mono text-[9px] border text-verdant-cream px-2.5 py-0.5 font-bold uppercase tracking-widest"
+                          >
                             {currentProj.badge}
                           </span>
                           <span className="font-mono text-[9.5px] text-verdant-gray font-bold uppercase">
@@ -280,7 +286,10 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                           {currentProj.title}
                         </h3>
 
-                        <span className="font-mono text-[10px] text-[#306634] font-black tracking-widest uppercase block border-l-2 border-verdant-yellow pl-2 py-0.5">
+                        <span 
+                          style={{ color: currentProj.accentColor || "#306634", borderLeftColor: profileSettings?.themeColorSecondary || "#DCA221" }}
+                          className="font-mono text-[10px] font-black tracking-widest uppercase block border-l-2 pl-2 py-0.5"
+                        >
                           {currentProj.tag.toUpperCase()}
                         </span>
 
@@ -291,7 +300,10 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                         {/* Extended detailed description shown exclusively when deep/expanded parameters are defined */}
                         {currentProj.extendedDescription && (
                           <div className="pt-4 border-t border-dashed border-verdant-cream/20">
-                            <h4 className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest mb-2 flex items-center gap-1.5 select-none">
+                            <h4 
+                              style={{ color: currentProj.accentColor || "#306634" }}
+                              className="font-mono text-[9px] font-black uppercase tracking-widest mb-2 flex items-center gap-1.5 select-none"
+                            >
                               <Sparkles className="w-3.5 h-3.5 text-verdant-yellow shrink-0" />
                               <span>EXTENDED SPECIFICATIONS & NOTES</span>
                             </h4>
@@ -335,16 +347,23 @@ export default function WorkView({ onChangeTab, selectedProjectId, onClearSelect
                             <span className="text-[9px] font-mono text-verdant-gray uppercase font-bold tracking-widest block">
                               LIVE SYSTEM PORTAL
                             </span>
-                            <a
-                              href={currentProj.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full bg-verdant-yellow text-white border-2 border-verdant-cream font-mono text-xs font-black py-4 uppercase tracking-widest transition-all hover:bg-[#FAF8F5] hover:text-[#142215] flex items-center justify-center gap-2 shadow-yellow-offset select-none cursor-pointer animate-pulse"
-                              id="active-sandbox-live-launch-btn"
-                            >
-                              <span>{currentProj.linkLabel || "TEST PROTOTYPE ON STREAMLIT"}</span>
-                              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                            </a>
+                            {(() => {
+                              const btnBg = currentProj.linkBgColor || profileSettings?.themeColorSecondary || "#DCA221";
+                              const btnText = currentProj.linkTextColor || "#FFFFFF";
+                              return (
+                                <a
+                                  href={currentProj.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ backgroundColor: btnBg, color: btnText, borderColor: "#142215", boxShadow: "4px 4px 0px #142215" }}
+                                  className="w-full border-2 font-mono text-xs font-black py-4 uppercase tracking-widest transition-all hover:bg-opacity-90 flex items-center justify-center gap-2 select-none cursor-pointer animate-pulse"
+                                  id="active-sandbox-live-launch-btn"
+                                >
+                                  <span>{currentProj.linkLabel || "TEST PROTOTYPE ON STREAMLIT"}</span>
+                                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                                </a>
+                              );
+                            })()}
                           </div>
                         )}
                       </div>
