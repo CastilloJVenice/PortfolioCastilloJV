@@ -105,7 +105,7 @@ export default function AdminView({
   const [isVerifying, setIsVerifying] = useState(false);
 
   // Active Admin Sub-tab
-  const [adminTab, setAdminTab] = useState<"PROJECTS" | "PROFILE" | "INBOX">("PROJECTS");
+  const [adminTab, setAdminTab] = useState<"PROJECTS" | "PROFILE" | "INBOX" | "STYLE">("PROJECTS");
 
   // Visitor chats database tracker state
   const [messages, setMessages] = useState<any[]>([]);
@@ -214,6 +214,7 @@ export default function AdminView({
   // Upload Form states
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [extendedDescription, setExtendedDescription] = useState("");
   const [category, setCategory] = useState("Game Development");
   const [techTags, setTechTags] = useState("");
   const [badge, setBadge] = useState<"CASE STUDY" | "EXPERIMENTAL" | "MASTERPRINT">("CASE STUDY");
@@ -323,6 +324,7 @@ export default function AdminView({
     setProfileSuccess(null);
 
     const updated: ProfileSettings = {
+      ...profileSettings,
       fullName: pFullName,
       lastNameHighlight: pLastNameHighlight,
       headline: pHeadline,
@@ -356,6 +358,7 @@ export default function AdminView({
 
   const handleStyleChange = (key: keyof ProfileSettings, value: any) => {
     const updated: ProfileSettings = {
+      ...profileSettings,
       fullName: pFullName,
       lastNameHighlight: pLastNameHighlight,
       headline: pHeadline,
@@ -431,6 +434,7 @@ export default function AdminView({
     setEditingProjectId(proj.id);
     setTitle(proj.title);
     setDescription(proj.description || "");
+    setExtendedDescription(proj.extendedDescription || "");
     setCategory(proj.category);
     setTechTags(proj.tag);
     setBadge(proj.badge as any || "CASE STUDY");
@@ -447,6 +451,7 @@ export default function AdminView({
     setEditingProjectId(null);
     setTitle("");
     setDescription("");
+    setExtendedDescription("");
     setCategory("Game Development");
     setTechTags("");
     setBadge("CASE STUDY");
@@ -485,6 +490,7 @@ export default function AdminView({
       badge: badge,
       year: year,
       description: description,
+      extendedDescription: extendedDescription || undefined,
       accentColor: accentColor,
       imageType: uploadedImageBase64 || imageType, // Use custom base64 or abstract placeholder
       isCustom: true,
@@ -506,6 +512,7 @@ export default function AdminView({
       // Reset Form Fields ONLY on successful write!
       setTitle("");
       setDescription("");
+      setExtendedDescription("");
       setTechTags("");
       setUploadedImageBase64(null);
       setProjectLink("");
@@ -691,6 +698,18 @@ export default function AdminView({
                   <MessageSquare className="w-3.5 h-3.5 text-verdant-yellow" />
                   <span>VISITOR CHATS & INBOX</span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setAdminTab("STYLE")}
+                  className={`px-4 sm:px-5 py-3 font-mono text-xs font-black tracking-wider uppercase border-t-2 border-x-2 transition-all cursor-pointer flex items-center gap-2 ${
+                    adminTab === "STYLE"
+                      ? "bg-verdant-charcoal border-verdant-cream text-verdant-cream font-bold"
+                      : "bg-transparent border-transparent text-verdant-gray hover:text-verdant-cream"
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-verdant-yellow" />
+                  <span>STYLE & PALETTES</span>
+                </button>
               </div>
 
               {adminTab === "PROJECTS" && (
@@ -809,10 +828,24 @@ export default function AdminView({
                         </label>
                         <textarea
                           required
-                          rows={3}
-                          placeholder="Detail the procedural framework parameters and math formulas utilized..."
+                          rows={2}
+                          placeholder="Detail the procedural framework parameters and math formulas utilized (Grid preview card / caption style)..."
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
+                          className="w-full bg-verdant-dark text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs p-4 focus:outline-none focus:ring-1 focus:ring-[#306634] resize-none"
+                        />
+                      </div>
+
+                      {/* Extended Description Overlay Paragraph */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          PROJECT DETAILED DESCRIPTION (OPTIONAL - EXPANDS INSIDE THE OPENED WORKSPACE)
+                        </label>
+                        <textarea
+                          rows={4}
+                          placeholder="Detail deep notes, technical implementation specifications, mathematical models, or user guides that only show when this project workspace is opened..."
+                          value={extendedDescription}
+                          onChange={(e) => setExtendedDescription(e.target.value)}
                           className="w-full bg-verdant-dark text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs p-4 focus:outline-none focus:ring-1 focus:ring-[#306634] resize-none"
                         />
                       </div>
@@ -1964,6 +1997,7 @@ export default function AdminView({
                       type="button"
                       onClick={() => {
                         const updated: ProfileSettings = {
+                          ...profileSettings,
                           fullName: pFullName,
                           lastNameHighlight: pLastNameHighlight,
                           headline: pHeadline,
