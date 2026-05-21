@@ -46,12 +46,12 @@ export default function Header({ activeTab, onChangeTab, profileSettings }: Head
           <nav className="flex items-center gap-1 md:gap-3">
             {primaryTabs.map((tab) => {
               const isActive = activeTab === tab.id;
-              const tabLabel = profileSettings?.textCasingStyle === "normal-case" ? tab.label.toLowerCase() : tab.label;
+              const tabLabel = tab.label;
               return (
                 <button
                   key={tab.id}
                   onClick={() => onChangeTab(tab.id)}
-                  className={`relative px-3 py-1.5 cursor-pointer transition-all duration-200 select-none ${isActive ? "text-verdant-yellow" : "text-verdant-gray hover:text-verdant-cream"} ${casingClass}`}
+                  className={`relative px-3 py-1.5 cursor-pointer transition-all duration-200 select-none uppercase ${isActive ? "text-verdant-yellow" : "text-verdant-gray hover:text-verdant-cream"}`}
                   id={`header-tab-${tab.id.toLowerCase()}`}
                 >
                   <span className="relative z-10 tracking-widest">{tabLabel}</span>
