@@ -125,7 +125,9 @@ export default function App() {
   const handleAddProject = async (newProj: Project) => {
     try {
       // Local state is optimistic, but we also save directly to Firebase
-      await setDoc(doc(db, "projects", newProj.id), newProj);
+      // Sanitizing undefined properties ensures 100% compatibility with Firestore
+      const cleaned = JSON.parse(JSON.stringify(newProj));
+      await setDoc(doc(db, "projects", newProj.id), cleaned);
       setProjects((prev) => {
         const updated = [newProj, ...prev].filter((p, i, self) => self.findIndex((x) => x.id === p.id) === i);
         localStorage.setItem("portfolio_projects_ledger", JSON.stringify(updated));
@@ -138,7 +140,8 @@ export default function App() {
 
   const handleUpdateProject = async (updatedProj: Project) => {
     try {
-      await setDoc(doc(db, "projects", updatedProj.id), updatedProj);
+      const cleaned = JSON.parse(JSON.stringify(updatedProj));
+      await setDoc(doc(db, "projects", updatedProj.id), cleaned);
       setProjects((prev) => {
         const updated = prev.map((p) => p.id === updatedProj.id ? updatedProj : p);
         localStorage.setItem("portfolio_projects_ledger", JSON.stringify(updated));
@@ -164,7 +167,8 @@ export default function App() {
 
   const handleUpdateProfile = async (updatedSettings: ProfileSettings) => {
     try {
-      await setDoc(doc(db, "profile", "settings"), updatedSettings);
+      const cleaned = JSON.parse(JSON.stringify(updatedSettings));
+      await setDoc(doc(db, "profile", "settings"), cleaned);
       setProfileSettings(updatedSettings);
       localStorage.setItem("portfolio_profile_settings", JSON.stringify(updatedSettings));
     } catch (err) {
@@ -251,11 +255,14 @@ export default function App() {
             stickers={profileSettings.stickers || []}
             activeTab={activeTab}
             isAdmin={isAdmin}
+            profileSettings={profileSettings}
             onUpdateStickers={(updatedStickers) => {
-              setProfileSettings(prev => ({
-                ...prev,
+              const updated = {
+                ...profileSettings,
                 stickers: updatedStickers
-              }));
+              };
+              setProfileSettings(updated);
+              handleUpdateProfile(updated).catch(err => console.error("Error auto-saving stickers:", err));
             }}
           />
         )}
