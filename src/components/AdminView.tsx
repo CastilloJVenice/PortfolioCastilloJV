@@ -223,6 +223,7 @@ export default function AdminView({
   const [imageType, setImageType] = useState("lunar");
   const [uploadedImageBase64, setUploadedImageBase64] = useState<string | null>(null);
   const [projectLink, setProjectLink] = useState("");
+  const [projectLinkLabel, setProjectLinkLabel] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
 
@@ -442,6 +443,7 @@ export default function AdminView({
     setAccentColor(proj.accentColor || "#306634");
     setImageType(proj.imageType || "lunar");
     setProjectLink(proj.link || "");
+    setProjectLinkLabel(proj.linkLabel || "");
     setUploadedImageBase64(proj.imageType && proj.imageType.startsWith("data:image/") ? proj.imageType : null);
     setVideoUrl(proj.videoUrl || "");
     setAdditionalImages(proj.additionalImages || []);
@@ -459,6 +461,7 @@ export default function AdminView({
     setAccentColor("#306634");
     setImageType("lunar");
     setProjectLink("");
+    setProjectLinkLabel("");
     setUploadedImageBase64(null);
     setVideoUrl("");
     setAdditionalImages([]);
@@ -495,6 +498,7 @@ export default function AdminView({
       imageType: uploadedImageBase64 || imageType, // Use custom base64 or abstract placeholder
       isCustom: true,
       link: projectLink || undefined,
+      linkLabel: projectLinkLabel || undefined,
       videoUrl: videoUrl || undefined,
       additionalImages: additionalImages.length > 0 ? additionalImages : undefined
     };
@@ -516,6 +520,7 @@ export default function AdminView({
       setTechTags("");
       setUploadedImageBase64(null);
       setProjectLink("");
+      setProjectLinkLabel("");
       setVideoUrl("");
       setAdditionalImages([]);
       setUploadError(null);
@@ -860,6 +865,20 @@ export default function AdminView({
                           placeholder="e.g., https://crypto-agilitypqcthesis.streamlit.app/"
                           value={projectLink}
                           onChange={(e) => setProjectLink(e.target.value)}
+                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                        />
+                      </div>
+
+                      {/* Optional Interactive Portal Link Label */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          CUSTOM LINK BUTTON LABEL (OPTIONAL, DEFAULTS TO "LAUNCH LIVE PORTAL")
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g., TEST PROTOTYPE ON STREAMLIT or VIEW ON GITHUB"
+                          value={projectLinkLabel}
+                          onChange={(e) => setProjectLinkLabel(e.target.value)}
                           className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634]"
                         />
                       </div>
