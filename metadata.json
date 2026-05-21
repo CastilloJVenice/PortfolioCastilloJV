@@ -1,0 +1,6 @@
+{
+  "name": "Juliaristy's Portfolio",
+  "description": "A customized computer science portfolio highlighting cryptography, 3D modelling, and UI/UX engineering, built with high-contrast brutalist layout, interactive canvas drawing, sound synthesizers, and real persistence setups.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
