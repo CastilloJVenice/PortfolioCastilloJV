@@ -28,7 +28,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
     profileSettings?.dedicationTitle !== undefined ? profileSettings.dedicationTitle : "INCREMENTAL PROGRESS"
   );
   const [localDedicationText, setLocalDedicationText] = useState(() => 
-    profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "Building secure networks, modeling 3D space, and shaping digital user paths with clean pixel harmony."
+    profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "..."
   );
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
   }, [profileSettings?.dedicationTitle]);
 
   useEffect(() => {
-    setLocalDedicationText(profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "Building secure networks, modeling 3D space, and shaping digital user paths with clean pixel harmony.");
+    setLocalDedicationText(profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "...");
   }, [profileSettings?.dedicationText]);
 
   // Setup dynamic list helpers
@@ -206,9 +206,6 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
               ABOUT ME
             </h1>
           </div>
-          <p className="font-mono text-xs font-black text-[#306634] mt-4 tracking-widest uppercase text-left">
-            {(profileSettings?.fullName || "JULIARISTY").toUpperCase()} {(profileSettings?.lastNameHighlight || "VENICE CASTILLO").toUpperCase()} ◼ MATHEMATICAL LOGIC & INTERFACE HARMONY
-          </p>
         </div>
 
         {/* Content Layout Grid */}
@@ -216,13 +213,11 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
           
           {/* Left Column Card: BIO & SKILLS */}
           <div className="lg:col-span-7 flex flex-col gap-8 w-full">
-            <div className="relative">
-              <div className="absolute inset-0 bg-[#DCA221]/10 translate-x-1.5 translate-y-1.5 border border-verdant-cream/20" />
-              <div className="relative border-brutal bg-verdant-charcoal p-6 md:p-10 flex flex-col gap-6" id="manifesto-card">
-                <h2 className="font-syne font-black text-2xl text-verdant-cream tracking-widest uppercase border-b border-verdant-cream/20 pb-3 flex items-center justify-between col-span-12">
-                  <span>BIOGRAPHY</span>
-                  <Cpu className="w-5 h-5 text-[#306634] animate-pulse" />
-                </h2>
+            <div className="border-[3px] border-verdant-cream bg-verdant-charcoal p-6 md:p-10 text-left relative shadow-charcoal-offset w-full flex flex-col gap-6" id="manifesto-card">
+              <h2 className="font-syne font-black text-2xl text-verdant-cream tracking-widest uppercase border-b border-verdant-cream/20 pb-3 flex items-center justify-between col-span-12">
+                <span>BIOGRAPHY</span>
+                <Cpu className="w-5 h-5 text-verdant-mint animate-pulse" />
+              </h2>
 
                 {isAdmin && onUpdateSettings ? (
                   <div className="flex flex-col gap-2 w-full">
@@ -263,7 +258,6 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                   </div>
                 )}
               </div>
-            </div>
 
             {/* SKILLS BOX LISTING */}
             <div className="border-[3px] border-verdant-cream bg-verdant-charcoal p-6 text-left relative shadow-charcoal-offset w-full">
