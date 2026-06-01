@@ -110,6 +110,7 @@ export default function AdminView({
   // Visitor chats database tracker state
   const [messages, setMessages] = useState<any[]>([]);
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
+  const [pageViews, setPageViews] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -122,7 +123,19 @@ export default function AdminView({
       loaded.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
       setMessages(loaded);
     });
-    return () => unsub();
+
+    const unsubViews = onSnapshot(doc(db, "analytics", "views"), (docSnap) => {
+      if (docSnap.exists()) {
+        setPageViews(docSnap.data().count || 0);
+      } else {
+        setPageViews(0);
+      }
+    });
+
+    return () => {
+      unsub();
+      unsubViews();
+    };
   }, [isAuthenticated]);
 
   const handleDeleteMessage = async (msgId: string) => {
@@ -174,6 +187,8 @@ export default function AdminView({
   const [pLinkedinUrl, setPLinkedinUrl] = useState(profileSettings.linkedinUrl);
   const [pWebsiteUrl, setPWebsiteUrl] = useState(profileSettings.websiteUrl);
   const [pProfileImageBase64, setPProfileImageBase64] = useState<string | undefined>(profileSettings.profileImageBase64);
+  const [pEmailNotificationKey, setPEmailNotificationKey] = useState(profileSettings.emailNotificationKey || "");
+  const [pEmailNotificationEnabled, setPEmailNotificationEnabled] = useState(profileSettings.emailNotificationEnabled || false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
 
   // Interactive Live Style states
@@ -200,6 +215,8 @@ export default function AdminView({
     setPLinkedinUrl(profileSettings.linkedinUrl);
     setPWebsiteUrl(profileSettings.websiteUrl);
     setPProfileImageBase64(profileSettings.profileImageBase64);
+    setPEmailNotificationKey(profileSettings.emailNotificationKey || "");
+    setPEmailNotificationEnabled(profileSettings.emailNotificationEnabled || false);
 
     setPFontFamilyHeader(profileSettings.fontFamilyHeader || "Syne");
     setPFontFamilyBody(profileSettings.fontFamilyBody || "Plus Jakarta Sans");
@@ -322,7 +339,7 @@ export default function AdminView({
     }
   };
 
-  const handleUpdateProfileSubmit = (e: FormEvent) => {
+   const handleUpdateProfileSubmit = (e: FormEvent) => {
     e.preventDefault();
     setProfileSuccess(null);
 
@@ -338,6 +355,8 @@ export default function AdminView({
       linkedinUrl: pLinkedinUrl,
       websiteUrl: pWebsiteUrl,
       profileImageBase64: pProfileImageBase64,
+      emailNotificationKey: pEmailNotificationKey,
+      emailNotificationEnabled: pEmailNotificationEnabled,
       
       // Interactive Live style variables
       fontFamilyHeader: pFontFamilyHeader,
@@ -372,6 +391,8 @@ export default function AdminView({
       linkedinUrl: pLinkedinUrl,
       websiteUrl: pWebsiteUrl,
       profileImageBase64: pProfileImageBase64,
+      emailNotificationKey: pEmailNotificationKey,
+      emailNotificationEnabled: pEmailNotificationEnabled,
       fontFamilyHeader: pFontFamilyHeader,
       fontFamilyBody: pFontFamilyBody,
       bgAccentStyle: pBgAccentStyle,
@@ -1494,6 +1515,63 @@ export default function AdminView({
                       </div>
                     </div>
 
+                    {/* Section 5: Gmail Instant Alerts */}
+                    <div className="flex flex-col gap-4">
+                      <h3 className="font-mono text-[10px] uppercase font-extrabold text-verdant-yellow tracking-widest flex items-center gap-2 border-b border-verdant-cream/10 pb-1.5">
+                        <Mail className="w-3.5 h-3.5" />
+                        <span>5. Gmail Hub & Real-time Alerts</span>
+                      </h3>
+
+                      <div className="border border-verdant-cream/10 bg-verdant-dark/40 p-4 font-mono text-xs flex flex-col gap-4">
+                        <p className="font-sans text-[11px] text-verdant-gray leading-relaxed font-semibold">
+                          Receive instant, real-time message notifications straight to your Gmail address (<span className="text-[#306634] font-semibold">{pContactEmail || "juliaristycastillo0@gmail.com"}</span>) without having to constantly log in to this dashboard!
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-verdant-cream/5 pt-3">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">EMAIL FORWARDING MODULE</span>
+                            <span className="text-[10px] text-zinc-400">Toggle instant Gmail notification alert</span>
+                          </div>
+                          
+                          <button
+                            type="button"
+                            onClick={() => setPEmailNotificationEnabled(!pEmailNotificationEnabled)}
+                            className={`cursor-pointer px-4 py-2 text-[10px] font-black border-2 transition-all ${
+                              pEmailNotificationEnabled
+                                ? "bg-emerald-800 border-emerald-400 text-emerald-200"
+                                : "bg-neutral-800 border-neutral-600 text-neutral-400"
+                            }`}
+                          >
+                            {pEmailNotificationEnabled ? "● ACTIVE" : "○ INACTIVE"}
+                          </button>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5 border-t border-verdant-cream/5 pt-3">
+                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest flex items-center gap-1.5">
+                            <span>WEB3FORMS ACCESS KEY (FREE)</span>
+                            <a 
+                              href="https://web3forms.com" 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-verdant-yellow underline hover:text-white transition-colors"
+                            >
+                              GET FREE KEY ↗
+                            </a>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g., aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+                            value={pEmailNotificationKey}
+                            onChange={(e) => setPEmailNotificationKey(e.target.value.trim())}
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                          />
+                          <p className="text-[10px] text-zinc-500 font-sans leading-relaxed">
+                            Web3Forms is a secure, spam-guarded form dispatcher. Register your Gmail on their homepage to instantly receive your free token, copy-paste it here, click Save, and you're set!
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Submit settings button */}
                     <button
                       type="submit"
@@ -1530,7 +1608,7 @@ export default function AdminView({
                   ) : (
                     <div className="flex flex-col gap-4">
                       {/* Metric Dashboard row */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border border-verdant-cream/20 bg-verdant-dark p-4 font-mono">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 border border-verdant-cream/20 bg-verdant-dark p-4 font-mono">
                         <div className="flex flex-col gap-1">
                           <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">TOTAL RECEIVED MESSAGE(S)</span>
                           <span className="text-2xl font-black text-white">{messages.length}</span>
@@ -1539,6 +1617,12 @@ export default function AdminView({
                           <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">UNREPLIED / PENDING</span>
                           <span className="text-2xl font-black text-verdant-yellow">
                             {messages.filter(m => !m.replied).length}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">TOTAL UNIQUE VIEWS</span>
+                          <span className="text-2xl font-black text-white">
+                            {pageViews !== null ? pageViews : "..."}
                           </span>
                         </div>
                         <div className="flex flex-col gap-1">
@@ -2113,6 +2197,8 @@ export default function AdminView({
                           linkedinUrl: pLinkedinUrl,
                           websiteUrl: pWebsiteUrl,
                           profileImageBase64: pProfileImageBase64,
+                          emailNotificationKey: pEmailNotificationKey,
+                          emailNotificationEnabled: pEmailNotificationEnabled,
                           fontFamilyHeader: pFontFamilyHeader,
                           fontFamilyBody: pFontFamilyBody,
                           bgAccentStyle: pBgAccentStyle,
