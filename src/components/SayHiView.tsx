@@ -40,6 +40,33 @@ export default function SayHiView({ profileSettings }: SayHiViewProps) {
         replied: false,
         replyContent: ""
       });
+
+      // Secondary action: Forward real-time email notification if enabled in Admin settings
+      if (profileSettings?.emailNotificationEnabled && profileSettings?.emailNotificationKey) {
+        try {
+          await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              access_key: profileSettings.emailNotificationKey,
+              subject: `📬 NEW PORTFOLIO MESSAGE FROM ${formData.name.toUpperCase()}`,
+              from_name: "Portfolio Notification Service",
+              name: formData.name,
+              email: formData.email,
+              message: `Hi Julie! You received a new portfolio message:\n\n` +
+                       `• Name: ${formData.name}\n` +
+                       `• Email: ${formData.email}\n\n` +
+                       `Message Details:\n"${formData.message}"`
+            })
+          });
+        } catch (emailErr) {
+          console.error("External notification dispatch failed:", emailErr);
+        }
+      }
+
       setIsSubmitting(false);
       setIsSent(true);
       setFormData({ name: "", email: "", message: "" });
@@ -258,7 +285,7 @@ export default function SayHiView({ profileSettings }: SayHiViewProps) {
               </div>
 
               <p className="font-sans text-[11px] text-verdant-gray leading-relaxed font-semibold capitalize mt-4">
-                ...
+                Currently looking into crypto-agile API gateway simulations and low-poly graphics.
               </p>
             </div>
           </div>
