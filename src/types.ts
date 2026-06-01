@@ -84,6 +84,8 @@ export interface ProfileSettings {
   hideWorkspacePreview?: boolean;
   hideSelectedProjects?: boolean;
   hideCertifications?: boolean;
+  emailNotificationKey?: string; // Web3Forms client-side Key for instant Gmail notifications
+  emailNotificationEnabled?: boolean; // Enable or disable instant email forwarding
 }
 
 export interface SkillItem {
