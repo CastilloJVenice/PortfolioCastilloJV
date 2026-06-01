@@ -103,5 +103,7 @@ export const DEFAULT_PROFILE_SETTINGS: ProfileSettings = {
     "OPTIMIZING REAL-TIME PHYSICS LOOPS",
     "VERIFYING SECURITY SCHEMAS",
     "DESIGNING COGNITIVE HUMAN INTERFACES"
-  ]
+  ],
+  emailNotificationKey: "",
+  emailNotificationEnabled: false
 };
