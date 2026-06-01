@@ -1595,6 +1595,33 @@ export default function AdminView({
                     </p>
                   </div>
 
+                  {/* Metric Dashboard row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 border border-verdant-cream/20 bg-verdant-dark p-4 font-mono">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">TOTAL RECEIVED MESSAGE(S)</span>
+                      <span className="text-2xl font-black text-white">{messages.length}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">UNREPLIED / PENDING</span>
+                      <span className="text-2xl font-black text-verdant-yellow">
+                        {messages.filter(m => !m.replied).length}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">TOTAL UNIQUE VIEWS</span>
+                      <span className="text-2xl font-black text-white">
+                        {pageViews !== null ? pageViews : "..."}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider font-bold">MUTUAL SECURITY</span>
+                      <span className="text-[10px] text-emerald-400 font-bold uppercase py-1 select-none flex items-center gap-1.5 leading-none mt-1">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>CLOUDSYNC STEADY</span>
+                      </span>
+                    </div>
+                  </div>
+
                   {messages.length === 0 ? (
                     <div className="border-2 border-dashed border-verdant-cream/20 bg-verdant-dark/40 py-16 px-6 text-center flex flex-col items-center gap-3">
                       <Mail className="w-10 h-10 text-verdant-gray/60" />
@@ -1607,33 +1634,6 @@ export default function AdminView({
                     </div>
                   ) : (
                     <div className="flex flex-col gap-4">
-                      {/* Metric Dashboard row */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 border border-verdant-cream/20 bg-verdant-dark p-4 font-mono">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">TOTAL RECEIVED MESSAGE(S)</span>
-                          <span className="text-2xl font-black text-white">{messages.length}</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">UNREPLIED / PENDING</span>
-                          <span className="text-2xl font-black text-verdant-yellow">
-                            {messages.filter(m => !m.replied).length}
-                          </span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">TOTAL UNIQUE VIEWS</span>
-                          <span className="text-2xl font-black text-white">
-                            {pageViews !== null ? pageViews : "..."}
-                          </span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider font-bold">MUTUAL SECURITY</span>
-                          <span className="text-[10px] text-emerald-400 font-bold uppercase py-1 select-none flex items-center gap-1.5 leading-none mt-1">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                            <span>CLOUDSYNC STEADY</span>
-                          </span>
-                        </div>
-                      </div>
-
                       {/* Message cards feed */}
                       <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                         {messages.map((msg) => (
