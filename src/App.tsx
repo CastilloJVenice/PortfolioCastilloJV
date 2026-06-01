@@ -18,7 +18,7 @@ import { DEFAULT_PROJECTS } from "./data/initialProjects";
 import { DEFAULT_PROFILE_SETTINGS } from "./data/initialProfile";
 import { ActiveTab, Project, ProfileSettings } from "./types";
 import { db, OperationType, handleFirestoreError } from "./lib/firebase";
-import { collection, doc, setDoc, deleteDoc, onSnapshot, getDocs } from "firebase/firestore";
+import { collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, getDoc, updateDoc, increment } from "firebase/firestore";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("HOME");
@@ -98,6 +98,29 @@ export default function App() {
     }, (error) => {
       handleFirestoreError(error, OperationType.GET, "profile/settings");
     });
+
+    // C. Increment page view analytics (debounced to once per session)
+    const trackPageView = async () => {
+      if (!sessionStorage.getItem("portfolio_page_viewed")) {
+        try {
+          const viewsRef = doc(db, "analytics", "views");
+          const viewsSnap = await getDoc(viewsRef);
+          if (viewsSnap.exists()) {
+            await updateDoc(viewsRef, {
+              count: increment(1)
+            });
+          } else {
+            await setDoc(viewsRef, {
+              count: 1
+            });
+          }
+          sessionStorage.setItem("portfolio_page_viewed", "true");
+        } catch (err) {
+          console.error("Error tracking page view:", err);
+        }
+      }
+    };
+    trackPageView();
 
     return () => {
       unsubProjects();
@@ -374,8 +397,8 @@ export default function App() {
           onUpdateSettings={(updated) => {
             setProfileSettings(updated);
           }}
-          onSaveDatabase={async () => {
-            await handleUpdateProfile(profileSettings);
+          onSaveDatabase={async (latest) => {
+            await handleUpdateProfile(latest || profileSettings);
           }}
           onCloseAdmin={() => {
             setIsAdmin(false);
