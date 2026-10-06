@@ -10,10 +10,12 @@ import { ActiveTab, ProfileSettings } from "../types";
 interface FooterProps {
   onChangeTab?: (tab: ActiveTab) => void;
   profileSettings?: ProfileSettings;
+  isAdmin?: boolean;
 }
 
-export default function Footer({ onChangeTab, profileSettings }: FooterProps) {
+export default function Footer({ onChangeTab, profileSettings, isAdmin }: FooterProps) {
   const [showAdminTrigger, setShowAdminTrigger] = useState(false);
+  const hasAdmin = isAdmin || (typeof window !== "undefined" && localStorage.getItem("portfolio_admin_auth") === "true");
 
   const socialIcons = [
     { icon: <Instagram className="w-3.5 h-3.5" />, link: profileSettings?.instagramUrl || "https://instagram.com/" },
@@ -22,58 +24,66 @@ export default function Footer({ onChangeTab, profileSettings }: FooterProps) {
   ];
 
   return (
-    <footer className="border-t-2 border-dashed border-verdant-cream/20 bg-verdant-dark py-6 px-6 md:px-12 relative z-10 selection:bg-verdant-yellow text-[10px]" id="global-footer">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-verdant-gray">
+    <footer className="border-t border-neutral-200/80 bg-white py-6 px-6 md:px-12 relative z-10 text-[11px]" id="global-footer">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-neutral-500">
         
-        {/* Left Side: Creative Lead Legal Copyright and attribution lines */}
-        <div className="text-center md:text-left flex flex-col md:flex-row items-center gap-1 md:gap-3">
+        {/* Left Side: Legal Copyright and attribution lines */}
+        <div className="text-center md:text-left flex flex-col md:flex-row items-center gap-1.5 md:gap-3">
           <span 
             onClick={() => setShowAdminTrigger(prev => !prev)}
-            className="text-verdant-cream uppercase font-black cursor-pointer select-none pb-0.5 hover:text-verdant-yellow transition-colors"
-            title="Press to authenticate"
+            className="text-neutral-900 uppercase font-bold tracking-wider cursor-pointer select-none hover:text-[#D5001C] transition-colors"
+            title="Press to authenticate or access dashboard"
           >
-            © {new Date().getFullYear()} JULIARISTY.
+            © {new Date().getFullYear()} JULIARISTY CASTILLO
           </span>
-          {showAdminTrigger && (
+          {(hasAdmin || showAdminTrigger) && (
             <button
               onClick={() => onChangeTab?.("ADMIN")}
-              className="text-verdant-yellow hover:text-white font-mono font-black uppercase text-[8px] sm:text-[9px] tracking-widest ml-1 sm:ml-2 bg-[#DCA221]/15 px-2 py-1 border border-verdant-yellow/40 hover:bg-verdant-yellow cursor-pointer select-none transition-all active:scale-95 leading-none shrink-0"
+              className="text-white hover:bg-[#D5001C] font-mono font-bold uppercase text-[9px] tracking-widest ml-1 sm:ml-2 bg-neutral-900 px-2.5 py-1 border border-neutral-800 cursor-pointer select-none transition-all active:scale-95 leading-none shrink-0 flex items-center gap-1.5 shadow-sm"
               id="hidden-portal-access-btn"
             >
-              [ ACCESS LAB PORTAL ]
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D5001C] inline-block animate-pulse" />
+              <span>[ ADMIN DASHBOARD ]</span>
             </button>
           )}
-          <span className="hidden md:inline-block text-zinc-700">|</span>
-          <span className="uppercase tracking-wider">
-            ALL RIGHTS RESERVED. HAND-PAINTED IN CODE.
+          <span className="hidden md:inline-block text-neutral-300">|</span>
+          <span className="uppercase tracking-widest text-[9.5px] text-neutral-400">
+            ENGINEERED & DEPLOYED WITH PRECISION
           </span>
         </div>
 
         {/* Right Side: Quick secondary feed links */}
         <div className="flex items-center flex-wrap gap-4 justify-center" id="footer-links-group">
           {/* Social symbols */}
-          <div className="flex items-center gap-1.5 border-r border-zinc-800 pr-4 mr-2">
+          <div className="flex items-center gap-2 border-r border-neutral-200 pr-4 mr-1">
             {socialIcons.map((social, idx) => (
               <a
                 key={idx}
                 href={social.link}
                 target="_blank"
                 rel="noreferrer"
-                className="w-5 h-5 rounded-none hover:text-white flex items-center justify-center transition-colors"
+                className="w-6 h-6 hover:text-neutral-900 text-neutral-400 flex items-center justify-center transition-colors"
               >
                 {social.icon}
               </a>
             ))}
           </div>
 
-          <button className="hover:text-white uppercase cursor-pointer select-none">Archives</button>
-          <button className="hover:text-white uppercase cursor-pointer select-none">Feed</button>
-          <button className="hover:text-white uppercase cursor-pointer select-none flex items-center gap-1">
-            <Rss className="w-3 h-3 text-verdant-yellow" />
+          <button className="text-neutral-500 hover:text-neutral-900 uppercase tracking-wider text-[10px] cursor-pointer select-none transition-colors">
+            ARCHIVE
+          </button>
+          <button className="text-neutral-500 hover:text-neutral-900 uppercase tracking-wider text-[10px] cursor-pointer select-none transition-colors">
+            FEED
+          </button>
+          <button className="text-neutral-500 hover:text-neutral-900 uppercase tracking-wider text-[10px] cursor-pointer select-none flex items-center gap-1 transition-colors">
+            <Rss className="w-3 h-3 text-[#D5001C]" />
             <span>RSS</span>
           </button>
-          <a href={`mailto:${profileSettings?.contactEmail || "juliaristycastillo0@gmail.com"}`} className="hover:text-white uppercase cursor-pointer select-none">
-            Email
+          <a 
+            href={`mailto:${profileSettings?.contactEmail || "juliaristycastillo0@gmail.com"}`} 
+            className="text-neutral-500 hover:text-neutral-900 uppercase tracking-wider text-[10px] cursor-pointer select-none transition-colors"
+          >
+            EMAIL
           </a>
         </div>
 
