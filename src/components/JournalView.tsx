@@ -171,7 +171,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
     const fileContent = `${nameLine} // PORTFOLIO DOSSIER\n` +
       "==========================================================\n\n" +
       "BIOGRAPHY\n" +
-      (profileSettings?.biography || "Hello! I'm a Computer Science student at the University of the Cordilleras. My interests sit at UI/UX Design, where design meets behavior; Cryptography, where math meets security; and Theoretical Computer Science, where logic meets the limits of what's computable.") + "\n\n" +
+      (profileSettings?.biography || "Hello! I'm a Computer Science graduate from the University of the Cordilleras. I focus on UI/UX Design, Cryptography, and Software Development. I create intuitive user interfaces, explore system security, and build practical applications that solve real problems.") + "\n\n" +
       "PROFESSIONAL SKILLS\n" +
       skillsList.map(s => `- ${s.name} [${s.category}]`).join("\n") + "\n\n" +
       "CERTIFICATIONS & TIMELINE\n" +
