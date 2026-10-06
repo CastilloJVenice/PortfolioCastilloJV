@@ -87,8 +87,28 @@ export default function App() {
     const unsubProfile = onSnapshot(doc(db, "profile", "settings"), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data() as ProfileSettings;
-        setProfileSettings(data);
-        localStorage.setItem("portfolio_profile_settings", JSON.stringify(data));
+        // Migrate any legacy palette defaults to Porsche Tech standards (no green or grids)
+        const hasLegacyGrid = data.bgAccentStyle === "grid-mesh" || data.bgAccentStyle === "checker-grid" || data.bgAccentStyle === "dot-matrix" || data.bgAccentStyle === "tech-blueprint" || data.bgAccentStyle === "carbon-mesh";
+        const hasLegacyColor = data.themeColorPrimary === "#306634" || data.themeColorSecondary === "#DCA221" || data.customCanvasBg === "#FAF8F5" || hasLegacyGrid;
+        const sanitized: ProfileSettings = {
+          ...data,
+          themeColorPrimary: (!data.themeColorPrimary || data.themeColorPrimary === "#306634" || data.themeColorPrimary.includes("3066")) ? "#0A0A0A" : data.themeColorPrimary,
+          themeColorSecondary: (!data.themeColorSecondary || data.themeColorSecondary === "#DCA221") ? "#D5001C" : data.themeColorSecondary,
+          customCanvasBg: (!data.customCanvasBg || data.customCanvasBg === "#FAF8F5") ? "#F8F9FA" : data.customCanvasBg,
+          customCardBg: (!data.customCardBg || data.customCardBg === "#F2EEE3") ? "#FFFFFF" : data.customCardBg,
+          bgAccentStyle: hasLegacyGrid || !data.bgAccentStyle ? "solid-plain" : data.bgAccentStyle,
+          fontFamilyHeader: (!data.fontFamilyHeader || data.fontFamilyHeader === "Syne") ? "Plus Jakarta Sans" : data.fontFamilyHeader,
+          fontFamilyBody: (!data.fontFamilyBody) ? "Plus Jakarta Sans" : data.fontFamilyBody,
+        };
+        setProfileSettings(sanitized);
+        localStorage.setItem("portfolio_profile_settings", JSON.stringify(sanitized));
+
+        // If legacy colors existed in Firestore, update remote database so it stays updated
+        if (hasLegacyColor) {
+          setDoc(doc(db, "profile", "settings"), sanitized, { merge: true }).catch((e) => {
+            console.error("Auto-migrated legacy theme colors in Firestore:", e);
+          });
+        }
       } else {
         // Automatically seed/bootstrap default profile settings if vacant
         setDoc(doc(db, "profile", "settings"), DEFAULT_PROFILE_SETTINGS).catch((err) => {
@@ -224,33 +244,29 @@ export default function App() {
   };
 
   const appStyles = {
-    "--color-verdant-dark": profileSettings.customCanvasBg || "#FAF8F5",
-    "--color-verdant-charcoal": profileSettings.customCardBg || "#F2EEE3",
-    "--color-verdant-mint": profileSettings.themeColorPrimary || "#306634",
-    "--color-verdant-yellow": profileSettings.themeColorSecondary || "#DCA221",
-    "--color-verdant-cream": profileSettings.themeColorTextHeader || "#142215",
-    "--color-verdant-gray": profileSettings.themeColorTextBody || "#4B564A",
+    "--color-verdant-dark": profileSettings.customCanvasBg || "#F8F9FA",
+    "--color-verdant-charcoal": profileSettings.customCardBg || "#FFFFFF",
+    "--color-verdant-mint": profileSettings.themeColorPrimary || "#0A0A0A",
+    "--color-verdant-yellow": profileSettings.themeColorSecondary || "#D5001C",
+    "--color-verdant-cream": profileSettings.themeColorTextHeader || "#0A0A0A",
+    "--color-verdant-gray": profileSettings.themeColorTextBody || "#52525B",
     "--text-casing-transform": profileSettings.textCasingStyle || "uppercase",
-    "--font-syne": profileSettings.fontFamilyHeader === "Playfair Display" 
-                   ? "'Playfair Display', serif" 
-                   : profileSettings.fontFamilyHeader === "Space Grotesk"
-                   ? "'Space Grotesk', sans-serif"
+    "--font-syne": profileSettings.fontFamilyHeader === "Space Grotesk" 
+                   ? "'Space Grotesk', sans-serif" 
                    : profileSettings.fontFamilyHeader === "JetBrains Mono"
                    ? "'JetBrains Mono', monospace"
-                   : profileSettings.fontFamilyHeader === "Plus Jakarta Sans"
-                   ? "'Plus Jakarta Sans', sans-serif"
-                   : "'Syne', sans-serif",
+                   : profileSettings.fontFamilyHeader === "Playfair Display"
+                   ? "'Playfair Display', serif"
+                   : "'Plus Jakarta Sans', sans-serif",
     "--font-sans": profileSettings.fontFamilyBody === "JetBrains Mono"
                    ? "'JetBrains Mono', monospace"
-                   : profileSettings.fontFamilyBody === "Plus Jakarta Sans"
-                   ? "'Plus Jakarta Sans', sans-serif"
                    : "'Plus Jakarta Sans', sans-serif",
   } as any;
 
   return (
     <div 
       style={appStyles}
-      className={`min-h-screen bg-verdant-dark text-verdant-cream flex flex-col font-sans verdant-grain border-t-8 border-verdant-mint relative overflow-x-hidden`}
+      className={`min-h-screen bg-verdant-dark text-verdant-cream flex flex-col font-sans border-t-2 border-verdant-yellow relative overflow-x-hidden selection:bg-red-50 selection:text-red-900`}
     >
       
       {/* Global Peaceful Nature Video Wallpaper */}
@@ -267,7 +283,12 @@ export default function App() {
       )}
 
       {/* Universal Sticky Header (Images 1-4) */}
-      <Header activeTab={activeTab} onChangeTab={handleChangeTab} profileSettings={profileSettings} />
+      <Header 
+        activeTab={activeTab} 
+        onChangeTab={handleChangeTab} 
+        profileSettings={profileSettings} 
+        isAdmin={isAdmin}
+      />
 
       {/* Main View Transition Container */}
       <main className="flex-grow flex flex-col relative z-10" id="main-view-container">
@@ -387,13 +408,55 @@ export default function App() {
       </main>
 
       {/* Responsive Global Footer (Images 1-4) with hidden link inside */}
-      <Footer onChangeTab={handleChangeTab} profileSettings={profileSettings} />
+      <Footer onChangeTab={handleChangeTab} profileSettings={profileSettings} isAdmin={isAdmin} />
+
+      {/* Persistent Admin Quick-Return & Control Bar when logged in */}
+      {isAdmin && (
+        <div 
+          className="fixed bottom-5 left-6 z-50 flex items-center gap-3 bg-neutral-950/95 text-white border border-neutral-700/80 px-4 py-2.5 shadow-2xl backdrop-blur-md font-mono select-none"
+          id="admin-persistent-dock"
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#D5001C] animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-300">ADMIN MODE ACTIVE</span>
+          </div>
+
+          <div className="h-3 w-px bg-neutral-700" />
+
+          {activeTab !== "ADMIN" ? (
+            <button
+              onClick={() => handleChangeTab("ADMIN")}
+              className="bg-[#D5001C] hover:bg-[#b00017] text-white px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+              title="Return to the full Admin Management Dashboard"
+            >
+              <span>RETURN TO DASHBOARD</span>
+              <span>➔</span>
+            </button>
+          ) : (
+            <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
+              VIEWING DASHBOARD
+            </span>
+          )}
+
+          <button
+            onClick={() => {
+              setIsAdmin(false);
+              localStorage.removeItem("portfolio_admin_auth");
+            }}
+            className="text-neutral-400 hover:text-white text-[9.5px] uppercase font-bold tracking-wider px-1.5 py-0.5 border border-transparent hover:border-neutral-600 transition-colors cursor-pointer"
+            title="Log out of admin session"
+          >
+            LOGOUT
+          </button>
+        </div>
+      )}
 
       {/* Floating Scrapbook Designer Toolbar if administrator is authorized */}
       {isAdmin && (
         <ScrapbookToolbar
           profileSettings={profileSettings}
           activeTab={activeTab}
+          onChangeTab={handleChangeTab}
           onUpdateSettings={(updated) => {
             setProfileSettings(updated);
           }}
