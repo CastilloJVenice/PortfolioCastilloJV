@@ -207,9 +207,9 @@ export default function AdminView({
     setPLastNameHighlight(profileSettings.lastNameHighlight);
     setPHeadline(profileSettings.headline);
     setPBiography(profileSettings.biography);
-    setPPara1(profileSettings.aboutParagraphs[0] || "");
-    setPPara2(profileSettings.aboutParagraphs[1] || "");
-    setPPara3(profileSettings.aboutParagraphs[2] || "");
+    setPPara1(profileSettings.aboutParagraphs?.[0] || "");
+    setPPara2(profileSettings.aboutParagraphs?.[1] || "");
+    setPPara3(profileSettings.aboutParagraphs?.[2] || "");
     setPContactEmail(profileSettings.contactEmail);
     setPInstagramUrl(profileSettings.instagramUrl);
     setPLinkedinUrl(profileSettings.linkedinUrl);
@@ -880,7 +880,7 @@ export default function AdminView({
                         </label>
                         <textarea
                           rows={4}
-                          placeholder="Detail deep notes, technical implementation specifications, mathematical models, or user guides that only show when this project workspace is opened..."
+                          placeholder="Detail project notes, technologies used, implementation details, or user guides that display when this project modal is opened..."
                           value={extendedDescription}
                           onChange={(e) => setExtendedDescription(e.target.value)}
                           className="w-full bg-verdant-dark text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs p-4 focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
@@ -1296,7 +1296,7 @@ export default function AdminView({
                         <input
                           type="text"
                           required
-                          placeholder="e.g., COMPUTER SCIENCE STUDENT & DIGITAL DESIGNER"
+                          placeholder="e.g., COMPUTER SCIENCE GRADUATE & DIGITAL DESIGNER"
                           value={pHeadline}
                           onChange={(e) => setPHeadline(e.target.value)}
                           className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
