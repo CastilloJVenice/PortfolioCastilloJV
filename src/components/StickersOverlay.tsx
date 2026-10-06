@@ -29,39 +29,39 @@ function MusicTapeWidget({ isAdmin }: { isAdmin: boolean }) {
   }, [isPlaying]);
 
   return (
-    <div className="bg-verdant-charcoal border-[3px] border-verdant-cream p-3 shadow-md w-64 text-left select-none pointer-events-auto rounded-none">
-      <div className="flex items-center justify-between mb-2 border-b border-verdant-cream/20 pb-1.5">
-        <span className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-wider flex items-center gap-1">
-          <Disc className={`w-3.5 h-3.5 ${isPlaying ? "animate-spin" : ""}`} />
-          <span>AESTHETIC TAPE LOOPS</span>
+    <div className="bg-white border border-neutral-300 p-3 shadow-md w-64 text-left select-none pointer-events-auto rounded-none">
+      <div className="flex items-center justify-between mb-2 border-b border-neutral-200 pb-1.5">
+        <span className="font-mono text-[9px] text-neutral-800 font-bold uppercase tracking-wider flex items-center gap-1.5">
+          <Disc className={`w-3.5 h-3.5 text-[#D5001C] ${isPlaying ? "animate-spin" : ""}`} />
+          <span>ACOUSTIC TELEMETRY</span>
         </span>
-        <span className="font-mono text-[8.5px] bg-[#306634]/20 text-verdant-cream px-1 uppercase tracking-tight">
-          SIDE A
+        <span className="font-mono text-[8px] bg-neutral-100 text-neutral-700 px-1 border border-neutral-200 uppercase tracking-tight font-bold">
+          CH-01
         </span>
       </div>
 
-      <div className="flex items-center gap-3 bg-verdant-dark p-2 border border-verdant-cream/10">
+      <div className="flex items-center gap-3 bg-neutral-50 p-2 border border-neutral-200">
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             setIsPlaying(!isPlaying);
           }}
-          className="w-10 h-10 shrink-0 bg-verdant-yellow text-white border-2 border-verdant-cream flex items-center justify-center cursor-pointer hover:bg-white hover:text-[#306634] transition-colors"
+          className="w-9 h-9 shrink-0 bg-neutral-950 text-white hover:bg-[#D5001C] flex items-center justify-center cursor-pointer transition-colors"
         >
-          {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+          {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
         </button>
 
         <div className="flex-grow flex flex-col justify-center">
-          <span className="font-syne font-bold text-[10px] text-verdant-cream uppercase leading-tight select-none">
-            {isPlaying ? "🌿 Midnight Forest Birds" : "Playback Standby"}
+          <span className="font-sans font-bold text-[10px] text-neutral-900 uppercase leading-tight select-none">
+            {isPlaying ? "Flat-6 High-RPM Acoustic" : "Standby Channel"}
           </span>
           <div className="flex items-end gap-0.5 h-4 mt-1.5 overflow-hidden">
             {audioWaves.map((h, i) => (
               <span
                 key={i}
                 style={{ height: `${h}px` }}
-                className="w-1 bg-[#306634] transition-all duration-150 transform origin-bottom"
+                className="w-1 bg-[#D5001C] transition-all duration-150 transform origin-bottom"
               />
             ))}
           </div>
@@ -215,13 +215,13 @@ export default function StickersOverlay({
   const handleColorCycle = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const colors = [
-      profileSettings?.themeColorPrimary || "#306634",
-      profileSettings?.themeColorSecondary || "#DCA221",
-      profileSettings?.customCanvasBg || "#FAF8F5",
-      profileSettings?.customCardBg || "#F2EEE3",
-      profileSettings?.themeColorTextHeader || "#142215",
-      "#FF5A5F",
-      "#1E293B"
+      profileSettings?.themeColorPrimary || "#0A0A0A",
+      profileSettings?.themeColorSecondary || "#D5001C",
+      profileSettings?.customCanvasBg || "#F8F9FA",
+      profileSettings?.customCardBg || "#FFFFFF",
+      profileSettings?.themeColorTextHeader || "#0A0A0A",
+      "#D5001C",
+      "#18181B"
     ];
     const updated = stickers.map(s => {
       if (s.id === id) {
@@ -399,10 +399,10 @@ export default function StickersOverlay({
                       style={{ 
                         width: `${(st.width || 80) * (st.scale || 1)}px`, 
                         height: `${(st.width || 80) * (st.scale || 1)}px`,
-                        backgroundColor: st.textColor || "#DCA221",
-                        borderColor: "#306634"
+                        backgroundColor: st.textColor || "#D5001C",
+                        borderColor: "#0A0A0A"
                       }}
-                      className="rounded-full border-[3px] shadow-sm shrink-0"
+                      className="rounded-full border-[2px] shadow-sm shrink-0"
                     />
                   )}
                   {st.shapeType === "rectangle" && (
@@ -410,20 +410,20 @@ export default function StickersOverlay({
                       style={{ 
                         width: `${(st.width || 120) * (st.scale || 1)}px`, 
                         height: `${(st.height || 60) * (st.scale || 1)}px`,
-                        backgroundColor: st.textColor || "#306634",
-                        borderColor: "#FAF8F5"
+                        backgroundColor: st.textColor || "#0A0A0A",
+                        borderColor: "#E4E4E7"
                       }}
-                      className="border-[3px] shadow-sm shrink-0 rounded-none"
+                      className="border-[2px] shadow-sm shrink-0 rounded-none"
                     />
                   )}
                   {st.shapeType === "line" && (
                     <div 
                       style={{ 
                         width: `${(st.width || 150) * (st.scale || 1)}px`, 
-                        height: "4px",
-                        backgroundColor: st.textColor || "#306634"
+                        height: "3px",
+                        backgroundColor: st.textColor || "#D5001C"
                       }}
-                      className="shadow-xs shrink-0 rounded-full"
+                      className="shadow-xs shrink-0 rounded-none"
                     />
                   )}
                   {st.shapeType === "star-badge" && (
@@ -436,9 +436,9 @@ export default function StickersOverlay({
                     >
                       <path 
                         d="M50 5 L63 36 L95 38 L70 60 L78 92 L50 74 L22 92 L30 60 L5 38 L37 36 Z" 
-                        fill={st.textColor || "#DCA221"} 
-                        stroke="#306634" 
-                        strokeWidth="4" 
+                        fill={st.textColor || "#0A0A0A"} 
+                        stroke="#D5001C" 
+                        strokeWidth="3" 
                         strokeLinejoin="round" 
                       />
                     </svg>
@@ -450,11 +450,11 @@ export default function StickersOverlay({
               {st.type === "widget" && (
                 <div className="pointer-events-auto">
                   {st.widgetType === "clock" && (
-                    <div className="bg-verdant-dark border-2 border-verdant-cream p-3 text-center min-w-[130px] shadow-md select-none rounded-none">
-                      <span className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-wider block">
-                        SYSTEM TIME
+                    <div className="bg-white border border-neutral-300 p-3 text-center min-w-[130px] shadow-md select-none rounded-none">
+                      <span className="font-mono text-[9px] text-[#D5001C] font-bold uppercase tracking-wider block">
+                        SYSTEM CHRONO
                       </span>
-                      <span className="font-mono text-base font-bold text-verdant-cream block mt-1 tracking-widest">
+                      <span className="font-mono text-base font-bold text-neutral-950 block mt-1 tracking-widest">
                         {timeStr}
                       </span>
                     </div>
@@ -465,25 +465,25 @@ export default function StickersOverlay({
                   )}
 
                   {st.widgetType === "tech-counter" && (
-                    <div className="bg-verdant-charcoal border-2 border-[#306634] p-3 text-center shadow-md min-w-[140px] rounded-none">
-                      <span className="font-mono text-[8px] bg-[#306634]/20 px-1 border border-dashed border-[#306634] text-white tracking-widest uppercase block mb-1">
-                        INTEGRITY CORAL-INDEX
+                    <div className="bg-white border border-neutral-300 p-3 text-center shadow-md min-w-[140px] rounded-none">
+                      <span className="font-mono text-[8px] bg-neutral-100 px-1 border border-neutral-200 text-[#D5001C] font-bold tracking-widest uppercase block mb-1">
+                        SYSTEM INTEGRITY
                       </span>
-                      <span className="font-syne font-black text-xl text-verdant-cream block leading-tight">
-                        99.82 <span className="text-[10px] text-verdant-yellow">%</span>
+                      <span className="font-sans font-black text-xl text-neutral-950 block leading-tight">
+                        99.82 <span className="text-[10px] text-[#D5001C]">%</span>
                       </span>
-                      <span className="font-mono text-[8px] text-zinc-500 font-extrabold uppercase tracking-tight mt-0.5 block">
-                        STABLE SYSTEM STATE 01
+                      <span className="font-mono text-[8px] text-zinc-500 font-bold uppercase tracking-tight mt-0.5 block">
+                        STATE: OPTIMAL 01
                       </span>
                     </div>
                   )}
 
                   {st.widgetType === "quote" && (
-                    <div className="bg-[#FAF8F5] border-[3px] border-verdant-cream p-3 shadow-charcoal-offset max-w-[200px] text-center rounded-none select-none">
-                      <p className="font-serif italic text-xs text-verdant-charcoal leading-relaxed font-semibold">
+                    <div className="bg-white border border-neutral-300 p-3.5 shadow-sm max-w-[210px] text-center rounded-none select-none">
+                      <p className="font-sans text-xs text-neutral-800 leading-relaxed font-semibold">
                         "The details are not the details. They make the design."
                       </p>
-                      <span className="font-mono text-[8px] text-[#306634] uppercase tracking-wider mt-1.5 block font-bold">
+                      <span className="font-mono text-[8px] text-[#D5001C] uppercase tracking-wider mt-1.5 block font-bold">
                         ─ CHARLES EAMES
                       </span>
                     </div>
@@ -496,10 +496,10 @@ export default function StickersOverlay({
                         // Prevent page refresh but keep aesthetic linking
                         if (isAdmin) e.preventDefault();
                       }}
-                      className="bg-[#DCA221] text-white border-2 border-slate-900 p-2.5 px-3.5 flex items-center gap-2 shadow-xs transition-transform active:scale-95 text-xs font-mono font-bold uppercase rounded-none cursor-pointer"
+                      className="bg-neutral-950 hover:bg-[#D5001C] text-white border border-neutral-800 p-2.5 px-3.5 flex items-center gap-2 shadow-xs transition-colors text-xs font-mono font-bold uppercase rounded-none cursor-pointer"
                     >
-                      <span className="w-2 h-2 bg-white rounded-full animate-ping" />
-                      <span>TALK TO JULIARISTY</span>
+                      <span className="w-1.5 h-1.5 bg-[#D5001C] rounded-full animate-ping" />
+                      <span>SAY HELLO</span>
                     </a>
                   )}
                 </div>
