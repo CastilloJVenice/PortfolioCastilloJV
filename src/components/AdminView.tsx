@@ -5,7 +5,7 @@
 
 import { useState, DragEvent, ChangeEvent, FormEvent, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, FileUp, Sparkles, FolderPlus, LogOut, Check, AlertCircle, RefreshCw, Trash2, Edit3, User, Image, Link2, MessageSquare, Clock, Send, Mail, CheckCircle } from "lucide-react";
+import { Lock, FileUp, Sparkles, FolderPlus, LogOut, Check, AlertCircle, RefreshCw, Trash2, Edit3, User, Image, Link2, MessageSquare, Clock, Send, Mail, CheckCircle, Layers, Tag } from "lucide-react";
 import { Project, ProfileSettings } from "../types";
 import { db } from "../lib/firebase";
 import { doc, getDoc, setDoc, collection, onSnapshot, deleteDoc } from "firebase/firestore";
@@ -233,6 +233,49 @@ export default function AdminView({
   const [description, setDescription] = useState("");
   const [extendedDescription, setExtendedDescription] = useState("");
   const [category, setCategory] = useState("Game Development");
+  const [isCustomCategoryInput, setIsCustomCategoryInput] = useState(false);
+  const [newAdminCategoryName, setNewAdminCategoryName] = useState("");
+  const [categorySuccess, setCategorySuccess] = useState<string | null>(null);
+
+  const defaultAdminCategories = ["Game Development", "Cryptography", "3D Modelling", "UIUX Design", "Graphics Design", "Others"];
+  const availableCategories = Array.from(
+    new Set([
+      ...(profileSettings.projectCategories && profileSettings.projectCategories.length > 0
+        ? profileSettings.projectCategories
+        : defaultAdminCategories),
+      ...projects.map((p) => p.category).filter(Boolean)
+    ])
+  );
+
+  const handleAddNewCategory = (catName: string) => {
+    const trimmed = catName.trim();
+    if (!trimmed) return;
+    const currentList = profileSettings.projectCategories && profileSettings.projectCategories.length > 0
+      ? profileSettings.projectCategories
+      : defaultAdminCategories;
+    if (!currentList.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
+      const updatedList = [...currentList, trimmed];
+      onUpdateProfile({
+        ...profileSettings,
+        projectCategories: updatedList
+      });
+      setCategorySuccess(`Added "${trimmed}" category.`);
+      setTimeout(() => setCategorySuccess(null), 3000);
+    }
+  };
+
+  const handleRemoveCategory = (catName: string) => {
+    const currentList = profileSettings.projectCategories && profileSettings.projectCategories.length > 0
+      ? profileSettings.projectCategories
+      : defaultAdminCategories;
+    const updatedList = currentList.filter(c => c.toLowerCase() !== catName.toLowerCase());
+    onUpdateProfile({
+      ...profileSettings,
+      projectCategories: updatedList
+    });
+    setCategorySuccess(`Removed "${catName}".`);
+    setTimeout(() => setCategorySuccess(null), 3000);
+  };
   const [techTags, setTechTags] = useState("");
   const [badge, setBadge] = useState<"CASE STUDY" | "EXPERIMENTAL" | "MASTERPRINT">("CASE STUDY");
   const [year, setYear] = useState(() => new Date().getFullYear().toString());
@@ -460,6 +503,7 @@ export default function AdminView({
     setDescription(proj.description || "");
     setExtendedDescription(proj.extendedDescription || "");
     setCategory(proj.category);
+    setIsCustomCategoryInput(!availableCategories.includes(proj.category));
     setTechTags(proj.tag);
     setBadge(proj.badge as any || "CASE STUDY");
     setYear(proj.year);
@@ -480,6 +524,7 @@ export default function AdminView({
     setDescription("");
     setExtendedDescription("");
     setCategory("Game Development");
+    setIsCustomCategoryInput(false);
     setTechTags("");
     setBadge("CASE STUDY");
     setYear(new Date().getFullYear().toString());
@@ -515,7 +560,7 @@ export default function AdminView({
     const targetProject: Project = {
       id: editingProjectId || "dynamic-" + Date.now(),
       title: title.toUpperCase(),
-      category: category,  // Store exactly the dynamic filter value
+      category: category.trim() || "Others",  // Store exactly the dynamic filter value
       tag: techTags,
       badge: badge,
       year: year,
@@ -531,6 +576,19 @@ export default function AdminView({
       videoUrl: videoUrl || undefined,
       additionalImages: additionalImages.length > 0 ? additionalImages : undefined
     };
+
+    // Auto-save category into profile categories list if it's new
+    if (category.trim()) {
+      const currentCats = profileSettings.projectCategories && profileSettings.projectCategories.length > 0
+        ? profileSettings.projectCategories
+        : defaultAdminCategories;
+      if (!currentCats.map(c => c.toLowerCase()).includes(category.trim().toLowerCase())) {
+        onUpdateProfile({
+          ...profileSettings,
+          projectCategories: [...currentCats, category.trim()]
+        });
+      }
+    }
 
     try {
       if (editingProjectId) {
@@ -812,19 +870,50 @@ export default function AdminView({
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {/* Category/Tab Selector */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            CATEGORY FILTER TAB *
-                          </label>
-                          <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none"
-                          >
-                            <option value="Game Development">Game Development</option>
-                            <option value="Cryptography">Cryptography</option>
-                            <option value="UIUX Design">UIUX Design</option>
-                            <option value="3D Modelling">3D Modelling</option>
-                          </select>
+                          <div className="flex justify-between items-center">
+                            <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
+                              CATEGORY FILTER TAB *
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsCustomCategoryInput(!isCustomCategoryInput);
+                                if (!isCustomCategoryInput) setCategory("");
+                              }}
+                              className="text-[9px] font-mono text-[#D5001C] underline font-bold cursor-pointer hover:text-white"
+                            >
+                              {isCustomCategoryInput ? "← Select from list" : "+ Enter custom category"}
+                            </button>
+                          </div>
+
+                          {isCustomCategoryInput ? (
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g., Graphics Design, Others, 3D Art..."
+                              value={category}
+                              onChange={(e) => setCategory(e.target.value)}
+                              className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
+                            />
+                          ) : (
+                            <select
+                              value={category}
+                              onChange={(e) => {
+                                if (e.target.value === "__CUSTOM__") {
+                                  setIsCustomCategoryInput(true);
+                                  setCategory("");
+                                } else {
+                                  setCategory(e.target.value);
+                                }
+                              }}
+                              className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none"
+                            >
+                              {availableCategories.map((cat) => (
+                                <option key={cat} value={cat}>{cat}</option>
+                              ))}
+                              <option value="__CUSTOM__">+ Enter custom category...</option>
+                            </select>
+                          )}
                         </div>
 
                         {/* Badge type */}
@@ -1163,8 +1252,80 @@ export default function AdminView({
                   </div>
                 </div>
 
-                {/* Right columns listing existing projects */}
+                {/* Right columns listing existing projects & category manager */}
                 <div className="lg:col-span-5 flex flex-col gap-6">
+                  {/* Category Filter Manager */}
+                  <div className="border-[3px] border-verdant-cream bg-verdant-charcoal p-5 font-mono">
+                    <div className="flex justify-between items-center border-b border-verdant-cream/15 pb-2.5 mb-3">
+                      <h3 className="text-verdant-cream uppercase font-black text-xs tracking-widest flex items-center gap-2">
+                        <Layers className="w-3.5 h-3.5 text-verdant-yellow" />
+                        <span>PROJECT CATEGORIES</span>
+                      </h3>
+                      <span className="text-[10px] text-verdant-gray">{availableCategories.length} TABS</span>
+                    </div>
+
+                    <p className="text-[10px] text-zinc-400 font-sans mb-3 leading-relaxed">
+                      Categories appear as filter tabs in your Projects portfolio view. Add or manage them below:
+                    </p>
+
+                    {categorySuccess && (
+                      <div className="mb-3 p-2 bg-neutral-900 border border-neutral-700 text-white text-[9.5px] uppercase font-bold flex items-center gap-1.5">
+                        <Check className="w-3 h-3 text-[#D5001C]" />
+                        <span>{categorySuccess}</span>
+                      </div>
+                    )}
+
+                    {/* Active Categories Chips */}
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {availableCategories.map((cat) => {
+                        const count = projects.filter(p => p.category?.trim().toLowerCase() === cat.trim().toLowerCase()).length;
+                        return (
+                          <div
+                            key={cat}
+                            className="bg-verdant-dark border border-verdant-cream/30 text-verdant-cream text-[9px] px-2.5 py-1 flex items-center gap-1.5"
+                          >
+                            <span className="font-bold">{cat}</span>
+                            <span className="text-zinc-500 text-[8px]">({count})</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCategory(cat)}
+                              className="text-zinc-400 hover:text-red-500 cursor-pointer ml-1 p-0.5"
+                              title={`Remove "${cat}" category`}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Add new Category Form */}
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (newAdminCategoryName.trim()) {
+                          handleAddNewCategory(newAdminCategoryName);
+                          setNewAdminCategoryName("");
+                        }
+                      }}
+                      className="flex gap-2"
+                    >
+                      <input
+                        type="text"
+                        placeholder="e.g., Graphics Design, Others..."
+                        value={newAdminCategoryName}
+                        onChange={(e) => setNewAdminCategoryName(e.target.value)}
+                        className="flex-grow bg-verdant-dark text-verdant-cream font-mono text-xs px-3 py-2 border border-verdant-cream/40 focus:outline-none focus:border-white uppercase"
+                      />
+                      <button
+                        type="submit"
+                        className="bg-neutral-950 hover:bg-[#D5001C] text-white border border-neutral-700 font-mono text-[10px] font-bold px-3 py-2 uppercase tracking-wider cursor-pointer transition-colors shadow-sm"
+                      >
+                        + ADD
+                      </button>
+                    </form>
+                  </div>
+
                   <div className="border-[3px] border-verdant-cream bg-verdant-charcoal p-5 font-mono">
                     <h3 className="text-verdant-cream uppercase font-black text-xs tracking-widest border-b border-verdant-cream/15 pb-2.5 mb-4 flex justify-between items-center">
                       <span>PROJECT INDEX ({projects.length})</span>
