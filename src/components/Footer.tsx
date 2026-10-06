@@ -48,7 +48,7 @@ export default function Footer({ onChangeTab, profileSettings, isAdmin }: Footer
           )}
           <span className="hidden md:inline-block text-neutral-300">|</span>
           <span className="uppercase tracking-widest text-[9.5px] text-neutral-400">
-            ENGINEERED & DEPLOYED WITH PRECISION
+            
           </span>
         </div>
 
