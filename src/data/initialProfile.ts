@@ -104,6 +104,14 @@ export const DEFAULT_PROFILE_SETTINGS: ProfileSettings = {
     "VERIFYING SECURITY SCHEMAS",
     "DESIGNING COGNITIVE HUMAN INTERFACES"
   ],
+  projectCategories: [
+    "Game Development",
+    "Cryptography",
+    "3D Modelling",
+    "UIUX Design",
+    "Graphics Design",
+    "Others"
+  ],
   emailNotificationKey: "",
   emailNotificationEnabled: false
 };
