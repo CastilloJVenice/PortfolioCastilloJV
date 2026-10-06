@@ -359,6 +359,11 @@ export default function App() {
                 onClearSelectedProject={handleClearSelectedProject}
                 projects={projects}
                 profileSettings={profileSettings}
+                isAdmin={isAdmin}
+                onUpdateSettings={(updated) => {
+                  setProfileSettings(updated);
+                  handleUpdateProfile(updated).catch(err => console.error("Auto-saving profile:", err));
+                }}
               />
             </motion.div>
           )}
