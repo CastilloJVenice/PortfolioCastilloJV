@@ -8,12 +8,12 @@ import { ProfileSettings } from "../types";
 export const DEFAULT_PROFILE_SETTINGS: ProfileSettings = {
   fullName: "JULIARISTY",
   lastNameHighlight: "VENICE CASTILLO",
-  headline: "COMPUTER SCIENCE STUDENT & DIGITAL DESIGNER",
-  biography: "Hello! I'm a Computer Science student at the University of the Cordilleras. My interests sit at UI/UX Design, where design meets behavior; Cryptography, where math meets security; and Theoretical Computer Science, where logic meets the limits of what's computable. I like understanding things deeply and not just how to build them, but why they work.",
+  headline: "COMPUTER SCIENCE GRADUATE & DIGITAL DESIGNER",
+  biography: "Hello! I'm a Computer Science graduate from the University of the Cordilleras. I focus on UI/UX Design, Cryptography, and Software Development. I create intuitive user interfaces, explore system security, and build practical applications that solve real problems.",
   aboutParagraphs: [
-    "Hello! I'm a Computer Science student at the University of the Cordilleras.",
-    "My interests sit at UI/UX Design, where design meets behavior; Cryptography, where math meets security; and Theoretical Computer Science, where logic meets the limits of what's computable.",
-    "I enjoy understanding things deeply and not just how to build them, but why they work. This drive is reflected in every cryptographic system, low-poly 3D render, or visual design draft I compose."
+    "Hello! I'm a Computer Science graduate from the University of the Cordilleras.",
+    "My work centers on UI/UX Design, Cryptography, and Software Development. I focus on building clear interfaces, secure software, and reliable applications.",
+    "I care about creating technology that is thoughtful, accessible, and grounded in practical problem solving — from interactive prototypes to secure code and 3D modeling."
   ],
   contactEmail: "juliaristycastillo0@gmail.com",
   instagramUrl: "https://instagram.com/",
@@ -95,8 +95,8 @@ export const DEFAULT_PROFILE_SETTINGS: ProfileSettings = {
       badge: "IoT"
     }
   ],
-  dedicationTitle: "INCREMENTAL PROGRESS",
-  dedicationText: "Building secure networks, modeling 3D space, and shaping digital user paths with clean pixel harmony.",
+  dedicationTitle: "WORK PHILOSOPHY",
+  dedicationText: "Building clean user interfaces, exploring software security, and developing reliable digital solutions.",
   tickerPhrases: [
     "DECODING CRYPTOGRAPHIC SYSTEMS",
     "MODELING SPATIAL 3D WIREFRAMES",
