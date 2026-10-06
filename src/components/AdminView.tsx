@@ -196,7 +196,7 @@ export default function AdminView({
   const [pFontFamilyBody, setPFontFamilyBody] = useState(profileSettings.fontFamilyBody || "Plus Jakarta Sans");
   const [pBgAccentStyle, setPBgAccentStyle] = useState(profileSettings.bgAccentStyle || "grid-mesh");
   const [pTextCasingStyle, setPTextCasingStyle] = useState(profileSettings.textCasingStyle || "uppercase");
-  const [pThemeColorPrimary, setPThemeColorPrimary] = useState(profileSettings.themeColorPrimary || "#306634");
+  const [pThemeColorPrimary, setPThemeColorPrimary] = useState(profileSettings.themeColorPrimary || "#0A0A0A");
   const [pThemeColorSecondary, setPThemeColorSecondary] = useState(profileSettings.themeColorSecondary || "#DCA221");
   const [pCustomCanvasBg, setPCustomCanvasBg] = useState(profileSettings.customCanvasBg || "#FAF8F5");
   const [pCustomCardBg, setPCustomCardBg] = useState(profileSettings.customCardBg || "#F2EEE3");
@@ -222,7 +222,7 @@ export default function AdminView({
     setPFontFamilyBody(profileSettings.fontFamilyBody || "Plus Jakarta Sans");
     setPBgAccentStyle(profileSettings.bgAccentStyle || "grid-mesh");
     setPTextCasingStyle(profileSettings.textCasingStyle || "uppercase");
-    setPThemeColorPrimary(profileSettings.themeColorPrimary || "#306634");
+    setPThemeColorPrimary(profileSettings.themeColorPrimary || "#0A0A0A");
     setPThemeColorSecondary(profileSettings.themeColorSecondary || "#DCA221");
     setPCustomCanvasBg(profileSettings.customCanvasBg || "#FAF8F5");
     setPCustomCardBg(profileSettings.customCardBg || "#F2EEE3");
@@ -236,7 +236,7 @@ export default function AdminView({
   const [techTags, setTechTags] = useState("");
   const [badge, setBadge] = useState<"CASE STUDY" | "EXPERIMENTAL" | "MASTERPRINT">("CASE STUDY");
   const [year, setYear] = useState(() => new Date().getFullYear().toString());
-  const [accentColor, setAccentColor] = useState("#306634");
+  const [accentColor, setAccentColor] = useState("#0A0A0A");
   const [linkBgColor, setLinkBgColor] = useState("");
   const [linkTextColor, setLinkTextColor] = useState("");
   const [imageType, setImageType] = useState("lunar");
@@ -463,7 +463,7 @@ export default function AdminView({
     setTechTags(proj.tag);
     setBadge(proj.badge as any || "CASE STUDY");
     setYear(proj.year);
-    setAccentColor(proj.accentColor || "#306634");
+    setAccentColor(proj.accentColor || "#0A0A0A");
     setLinkBgColor(proj.linkBgColor || "");
     setLinkTextColor(proj.linkTextColor || "");
     setImageType(proj.imageType || "lunar");
@@ -483,7 +483,7 @@ export default function AdminView({
     setTechTags("");
     setBadge("CASE STUDY");
     setYear(new Date().getFullYear().toString());
-    setAccentColor("#306634");
+    setAccentColor("#0A0A0A");
     setLinkBgColor("");
     setLinkTextColor("");
     setImageType("lunar");
@@ -547,7 +547,7 @@ export default function AdminView({
       setDescription("");
       setExtendedDescription("");
       setTechTags("");
-      setAccentColor("#306634");
+      setAccentColor("#0A0A0A");
       setLinkBgColor("");
       setLinkTextColor("");
       setUploadedImageBase64(null);
@@ -581,7 +581,7 @@ export default function AdminView({
   };
 
   return (
-    <div className="relative min-h-screen bg-verdant-dark overflow-hidden grid-mesh text-verdant-cream pb-20">
+    <div className="relative min-h-screen bg-verdant-dark overflow-hidden text-verdant-cream pb-20">
       <div className="absolute top-[10%] right-[5%] w-[300px] h-[300px] bg-verdant-yellow/5 rounded-full filter blur-[100px] pointer-events-none" />
       
       <div className="max-w-4xl mx-auto px-6 pt-12 md:pt-16 relative z-10 text-center">
@@ -603,7 +603,7 @@ export default function AdminView({
                 <h1 className="font-syne font-black text-verdant-cream text-3xl md:text-5xl uppercase tracking-widest">
                   ADMIN PORTAL
                 </h1>
-                <p className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest mt-2">
+                <p className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest mt-2">
                   SECURE ACCESS CONTROL
                 </p>
                 <p className="font-sans text-xs text-verdant-gray mt-4 max-w-sm font-semibold">
@@ -614,7 +614,7 @@ export default function AdminView({
               <div className="relative border-brutal border-verdant-cream bg-verdant-charcoal p-6 md:p-8 text-left">
                 <form onSubmit={handleLogin} className="flex flex-col gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                    <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                       ADMINISTRATOR USERNAME
                     </label>
                     <input
@@ -623,12 +623,12 @@ export default function AdminView({
                       placeholder="Enter username"
                       value={adminUser}
                       onChange={(e) => setAdminUser(e.target.value)}
-                      className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634] select-all mb-2"
+                      className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C] select-all mb-2"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                    <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                       ADMIN PASSWORD / KEY
                     </label>
                     <input
@@ -637,7 +637,7 @@ export default function AdminView({
                       placeholder="••••••••••••••"
                       value={accessKey}
                       onChange={(e) => setAccessKey(e.target.value)}
-                      className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634] select-all"
+                      className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C] select-all"
                     />
                   </div>
 
@@ -757,13 +757,13 @@ export default function AdminView({
                   <div className="relative border-[3px] border-verdant-cream bg-verdant-charcoal p-6 md:p-8 shadow-charcoal-offset">
                     <h2 className="font-syne font-black text-xl text-verdant-cream tracking-widest uppercase border-b border-verdant-cream/20 pb-3 mb-6 flex items-center justify-between">
                       <span>{editingProjectId ? "EDIT PROJECT PROFILE" : "REGISTER NEW PROJECT"}</span>
-                      <FolderPlus className="w-5 h-5 text-[#306634]" />
+                      <FolderPlus className="w-5 h-5 text-neutral-700" />
                     </h2>
 
                     <form onSubmit={handleAddProjectSubmit} className="flex flex-col gap-4 text-left">
                       {/* Image feedback success */}
                       {uploadSuccess && (
-                        <div className="flex items-center gap-2 bg-[#306634]/30 p-3 border-2 border-[#306634] text-white font-mono text-[10px] uppercase font-black leading-relaxed">
+                        <div className="flex items-center gap-2 bg-neutral-900/60 p-3 border-2 border-neutral-800 text-white font-mono text-[10px] uppercase font-black leading-relaxed">
                           <Check className="w-4 h-4 shrink-0 text-white" />
                           <span>{uploadSuccess}</span>
                         </div>
@@ -780,7 +780,7 @@ export default function AdminView({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Title Field */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             PROJECT TITLE *
                           </label>
                           <input
@@ -789,13 +789,13 @@ export default function AdminView({
                             placeholder="e.g., HELIOS SPATIAL REND"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                         </div>
 
                         {/* Tech Tags */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             TECHNOLOGY TAGS *
                           </label>
                           <input
@@ -804,7 +804,7 @@ export default function AdminView({
                             placeholder="e.g., C++ / WASM / WebGL / Canvas"
                             value={techTags}
                             onChange={(e) => setTechTags(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                         </div>
                       </div>
@@ -812,7 +812,7 @@ export default function AdminView({
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {/* Category/Tab Selector */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             CATEGORY FILTER TAB *
                           </label>
                           <select
@@ -829,7 +829,7 @@ export default function AdminView({
 
                         {/* Badge type */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             VISUAL BADGE LABEL *
                           </label>
                           <select
@@ -845,7 +845,7 @@ export default function AdminView({
 
                         {/* Year */}
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             RELEASE YEAR *
                           </label>
                           <input
@@ -853,14 +853,14 @@ export default function AdminView({
                             required
                             value={year}
                             onChange={(e) => setYear(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                         </div>
                       </div>
 
                       {/* Description Objective Paragraph */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           PROJECT OBJECTIVES & DESCRIPTION *
                         </label>
                         <textarea
@@ -869,13 +869,13 @@ export default function AdminView({
                           placeholder="Detail the procedural framework parameters and math formulas utilized (Grid preview card / caption style)..."
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs p-4 focus:outline-none focus:ring-1 focus:ring-[#306634] resize-none"
+                          className="w-full bg-verdant-dark text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs p-4 focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
                         />
                       </div>
 
                       {/* Extended Description Overlay Paragraph */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           PROJECT DETAILED DESCRIPTION (OPTIONAL - EXPANDS INSIDE THE OPENED WORKSPACE)
                         </label>
                         <textarea
@@ -883,13 +883,13 @@ export default function AdminView({
                           placeholder="Detail deep notes, technical implementation specifications, mathematical models, or user guides that only show when this project workspace is opened..."
                           value={extendedDescription}
                           onChange={(e) => setExtendedDescription(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs p-4 focus:outline-none focus:ring-1 focus:ring-[#306634] resize-none"
+                          className="w-full bg-verdant-dark text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs p-4 focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
                         />
                       </div>
 
                       {/* Optional Interactive Portal Link */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           PROJECT SIMULATOR / EXTERNAL LIVE LINK (OPTIONAL)
                         </label>
                         <input
@@ -897,13 +897,13 @@ export default function AdminView({
                           placeholder="e.g., https://crypto-agilitypqcthesis.streamlit.app/"
                           value={projectLink}
                           onChange={(e) => setProjectLink(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                         />
                       </div>
 
                       {/* Optional Interactive Portal Link Label */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           CUSTOM LINK BUTTON LABEL (OPTIONAL, DEFAULTS TO "LAUNCH LIVE PORTAL")
                         </label>
                         <input
@@ -911,13 +911,13 @@ export default function AdminView({
                           placeholder="e.g., TEST PROTOTYPE ON STREAMLIT or VIEW ON GITHUB"
                           value={projectLinkLabel}
                           onChange={(e) => setProjectLinkLabel(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                         />
                       </div>
 
                       {/* Project Custom Styling Overrides */}
                       <div className="border border-dashed border-verdant-cream/20 bg-verdant-dark/40 p-4 flex flex-col gap-4">
-                        <span className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest block select-none">
+                        <span className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest block select-none">
                           🎨 PROJECT BRANDING & COLOR SCHEMES
                         </span>
                         
@@ -930,7 +930,7 @@ export default function AdminView({
                             <div className="flex gap-2">
                               <input
                                 type="color"
-                                value={accentColor || "#306634"}
+                                value={accentColor || "#0A0A0A"}
                                 onChange={(e) => setAccentColor(e.target.value)}
                                 className="w-9 h-9 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
                               />
@@ -939,7 +939,7 @@ export default function AdminView({
                                 value={accentColor}
                                 onChange={(e) => setAccentColor(e.target.value)}
                                 className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-2 border-2 border-verdant-cream focus:outline-none"
-                                placeholder="#306634"
+                                placeholder="#0A0A0A"
                               />
                             </div>
                           </div>
@@ -992,7 +992,7 @@ export default function AdminView({
 
                       {/* Video Link */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           VIDEO LINK / EMBED URL (OPTIONAL)
                         </label>
                         <input
@@ -1000,13 +1000,13 @@ export default function AdminView({
                           placeholder="e.g., https://www.youtube.com/embed/yourvideo or external video link"
                           value={videoUrl}
                           onChange={(e) => setVideoUrl(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                         />
                       </div>
 
                       {/* Additional Photos Upload */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           ADDITIONAL PHOTOS GALLERY (OPTIONAL)
                         </label>
                         <div className="border border-dashed border-verdant-cream/30 p-4 bg-verdant-dark flex flex-col gap-3">
@@ -1036,7 +1036,7 @@ export default function AdminView({
                               {additionalImages.map((imgBase64, idx) => (
                                 <div key={idx} className="relative aspect-video border border-verdant-cream bg-black">
                                   <img src={imgBase64} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                  <span className="absolute bottom-0 left-0 bg-[#306634] text-white text-[7px] px-1 font-mono font-black">
+                                  <span className="absolute bottom-0 left-0 bg-neutral-950 text-white text-[7px] px-1 font-mono font-black">
                                     {((imgBase64.length * 3) / 4 / 1024).toFixed(0)}KB
                                   </span>
                                   <button
@@ -1055,7 +1055,7 @@ export default function AdminView({
 
                       {/* Custom Drag and Drop File Upload for Images */}
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           IMAGE COVER ATTACHMENT
                         </label>
                         
@@ -1068,7 +1068,7 @@ export default function AdminView({
                             dragActive
                               ? "border-verdant-yellow bg-verdant-yellow/5"
                               : uploadedImageBase64
-                              ? "border-[#306634] bg-[#306634]/5"
+                              ? "border-neutral-800 bg-neutral-100"
                               : "border-verdant-cream/30 bg-verdant-dark"
                           }`}
                         >
@@ -1080,7 +1080,7 @@ export default function AdminView({
                                 className="h-28 object-contain border-2 border-verdant-cream"
                                 referrerPolicy="no-referrer"
                               />
-                              <p className="font-mono text-[8px] text-[#306634] font-bold uppercase mt-1">
+                              <p className="font-mono text-[8px] text-neutral-700 font-bold uppercase mt-1">
                                 Base64 Buffer loaded - Size {((uploadedImageBase64.length * 3) / 4 / 1024).toFixed(1)} KB
                               </p>
                               <button
@@ -1096,7 +1096,7 @@ export default function AdminView({
                               <FileUp className="w-8 h-8 text-verdant-gray" />
                               <p className="font-sans text-xs text-verdant-gray font-semibold">
                                 Drag and drop image file here, or{" "}
-                                <label className="text-[#306634] underline font-black cursor-pointer">
+                                <label className="text-neutral-700 underline font-black cursor-pointer">
                                   browse paths
                                   <input
                                     type="file"
@@ -1117,7 +1117,7 @@ export default function AdminView({
                       {/* If no custom image is selected, choose a stencil pattern style */}
                       {!uploadedImageBase64 && (
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[8.5px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[8.5px] font-black text-neutral-700 uppercase tracking-widest">
                             DEFAULT GENERATIVE BACKGROUND STENCIL
                           </label>
                           <div className="grid grid-cols-3 gap-2">
@@ -1143,7 +1143,7 @@ export default function AdminView({
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="w-full cursor-pointer bg-verdant-mint hover:bg-[#528B56] text-white border-2 border-verdant-cream font-mono text-xs font-black py-4 uppercase tracking-widest transition-colors select-none shadow-mint-offset disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full cursor-pointer bg-neutral-950 hover:bg-[#D5001C] text-white border border-neutral-700 font-mono text-xs font-bold py-4 uppercase tracking-widest transition-colors select-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           id="submit-dynamic-proj-btn"
                         >
                           {isSubmitting ? "SAVING TO FIREBASE..." : editingProjectId ? "SAVE CHANGES & UPDATE" : "PUBLISH TO GALLERY"}
@@ -1183,7 +1183,7 @@ export default function AdminView({
                               <h4 className="text-verdant-cream font-black text-xs uppercase tracking-tight">
                                 {proj.title}
                               </h4>
-                              <p className="text-[#306634] font-bold text-[9px] uppercase tracking-wider mt-0.5">
+                              <p className="text-neutral-700 font-bold text-[9px] uppercase tracking-wider mt-0.5">
                                 {proj.category}
                               </p>
                             </div>
@@ -1240,13 +1240,13 @@ export default function AdminView({
                 <div className="relative border-[3px] border-verdant-cream bg-verdant-charcoal p-6 md:p-8 shadow-charcoal-offset">
                   <h2 className="font-syne font-black text-xl text-verdant-cream tracking-widest uppercase border-b border-verdant-cream/20 pb-3 mb-6 flex items-center justify-between">
                     <span>EDIT PORTFOLIO IDENTITY & STORY</span>
-                    <User className="w-5 h-5 text-[#306634]" />
+                    <User className="w-5 h-5 text-neutral-700" />
                   </h2>
 
                   <form onSubmit={handleUpdateProfileSubmit} className="flex flex-col gap-6 text-left">
                     {/* Synchronize status message */}
                     {profileSuccess && (
-                      <div className="flex items-center gap-2 bg-[#306634]/35 p-3.5 border-2 border-[#306634] text-white font-mono text-[10.5px] uppercase font-black leading-relaxed">
+                      <div className="flex items-center gap-2 bg-neutral-900/60 p-3.5 border-2 border-neutral-800 text-white font-mono text-[10.5px] uppercase font-black leading-relaxed">
                         <Check className="w-4 h-4 shrink-0 text-white" />
                         <span>{profileSuccess}</span>
                       </div>
@@ -1261,7 +1261,7 @@ export default function AdminView({
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             FIRST NAME / INITIALS *
                           </label>
                           <input
@@ -1270,12 +1270,12 @@ export default function AdminView({
                             placeholder="e.g., JULIARISTY"
                             value={pFullName}
                             onChange={(e) => setPFullName(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             LAST NAME OR HIGHLIGHTED LOGO *
                           </label>
                           <input
@@ -1284,13 +1284,13 @@ export default function AdminView({
                             placeholder="e.g., VENICE CASTILLO"
                             value={pLastNameHighlight}
                             onChange={(e) => setPLastNameHighlight(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                         </div>
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           HERO SUBTITLE / SERVICE HEADLINE *
                         </label>
                         <input
@@ -1299,12 +1299,12 @@ export default function AdminView({
                           placeholder="e.g., COMPUTER SCIENCE STUDENT & DIGITAL DESIGNER"
                           value={pHeadline}
                           onChange={(e) => setPHeadline(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                         />
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           HERO INTRODUCTORY BIOGRAPHY *
                         </label>
                         <textarea
@@ -1313,7 +1313,7 @@ export default function AdminView({
                           placeholder="Introduction bio..."
                           value={pBiography}
                           onChange={(e) => setPBiography(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-4 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634] resize-none"
+                          className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-4 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
                         />
                       </div>
                     </div>
@@ -1327,7 +1327,7 @@ export default function AdminView({
 
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
                         <div className="md:col-span-8 flex flex-col gap-2">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             AVATAR PORTRAIT IMAGE (CLICK / DRAG TO IMPORT)
                           </label>
                           
@@ -1351,7 +1351,7 @@ export default function AdminView({
                             onClick={() => document.getElementById("profile-pic-uploader")?.click()}
                           >
                             <FileUp className="w-6 h-6 text-verdant-yellow" />
-                            <span className="font-mono text-[9px] text-[#306634] font-black tracking-widest uppercase">
+                            <span className="font-mono text-[9px] text-neutral-700 font-black tracking-widest uppercase">
                               UPLOAD PICTURE / PNG, JPG, WEBP
                             </span>
                             <span className="font-mono text-[8px] text-zinc-500">
@@ -1393,7 +1393,7 @@ export default function AdminView({
                           ) : (
                             <div className="text-center font-mono text-[8px] text-zinc-500 flex flex-col gap-1.5 items-center justify-center h-full">
                               <span>NO IMAGE</span>
-                              <span className="text-[7px] text-[#306634] uppercase font-bold">
+                              <span className="text-[7px] text-neutral-700 uppercase font-bold">
                                 (CANVAS ACTIVE)
                               </span>
                             </div>
@@ -1411,7 +1411,7 @@ export default function AdminView({
 
                       <div className="flex flex-col gap-3">
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             ABOUT PARAGRAPH 1 (INTRODUCTION)
                           </label>
                           <textarea
@@ -1419,12 +1419,12 @@ export default function AdminView({
                             placeholder="Hello paragraph..."
                             value={pPara1}
                             onChange={(e) => setPPara1(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-3.5 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634] resize-none"
+                            className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-3.5 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
                           />
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             ABOUT PARAGRAPH 2 (CORE INTERESTS & ACADEMICS)
                           </label>
                           <textarea
@@ -1432,12 +1432,12 @@ export default function AdminView({
                             placeholder="Core interests paragraph..."
                             value={pPara2}
                             onChange={(e) => setPPara2(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-3.5 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634] resize-none"
+                            className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-3.5 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
                           />
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             ABOUT PARAGRAPH 3 (PHILOSOPHY & EXPERIENCE)
                           </label>
                           <textarea
@@ -1445,7 +1445,7 @@ export default function AdminView({
                             placeholder="Philosophical paragraph..."
                             value={pPara3}
                             onChange={(e) => setPPara3(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-3.5 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634] resize-none"
+                            className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-3.5 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
                           />
                         </div>
                       </div>
@@ -1460,7 +1460,7 @@ export default function AdminView({
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             PORTFOLIO CONTACT EMAIL *
                           </label>
                           <input
@@ -1469,12 +1469,12 @@ export default function AdminView({
                             placeholder="e.g., juliaristycastillo0@gmail.com"
                             value={pContactEmail}
                             onChange={(e) => setPContactEmail(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             LINKEDIN ACCOUNT URL *
                           </label>
                           <input
@@ -1483,12 +1483,12 @@ export default function AdminView({
                             placeholder="e.g., https://linkedin.com"
                             value={pLinkedinUrl}
                             onChange={(e) => setPLinkedinUrl(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             INSTAGRAM PROFILE URL
                           </label>
                           <input
@@ -1496,12 +1496,12 @@ export default function AdminView({
                             placeholder="e.g., https://instagram.com/"
                             value={pInstagramUrl}
                             onChange={(e) => setPInstagramUrl(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                             DOCK / WEBSITE URL
                           </label>
                           <input
@@ -1509,7 +1509,7 @@ export default function AdminView({
                             placeholder="e.g., https://juliaristy.me/"
                             value={pWebsiteUrl}
                             onChange={(e) => setPWebsiteUrl(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                         </div>
                       </div>
@@ -1524,7 +1524,7 @@ export default function AdminView({
 
                       <div className="border border-verdant-cream/10 bg-verdant-dark/40 p-4 font-mono text-xs flex flex-col gap-4">
                         <p className="font-sans text-[11px] text-verdant-gray leading-relaxed font-semibold">
-                          Receive instant, real-time message notifications straight to your Gmail address (<span className="text-[#306634] font-semibold">{pContactEmail || "juliaristycastillo0@gmail.com"}</span>) without having to constantly log in to this dashboard!
+                          Receive instant, real-time message notifications straight to your Gmail address (<span className="text-neutral-700 font-semibold">{pContactEmail || "juliaristycastillo0@gmail.com"}</span>) without having to constantly log in to this dashboard!
                         </p>
                         
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-verdant-cream/5 pt-3">
@@ -1538,7 +1538,7 @@ export default function AdminView({
                             onClick={() => setPEmailNotificationEnabled(!pEmailNotificationEnabled)}
                             className={`cursor-pointer px-4 py-2 text-[10px] font-black border-2 transition-all ${
                               pEmailNotificationEnabled
-                                ? "bg-emerald-800 border-emerald-400 text-emerald-200"
+                                ? "bg-neutral-900 border-[#D5001C] text-[#D5001C]"
                                 : "bg-neutral-800 border-neutral-600 text-neutral-400"
                             }`}
                           >
@@ -1547,7 +1547,7 @@ export default function AdminView({
                         </div>
 
                         <div className="flex flex-col gap-1.5 border-t border-verdant-cream/5 pt-3">
-                          <label className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest flex items-center gap-1.5">
+                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest flex items-center gap-1.5">
                             <span>WEB3FORMS ACCESS KEY (FREE)</span>
                             <a 
                               href="https://web3forms.com" 
@@ -1563,7 +1563,7 @@ export default function AdminView({
                             placeholder="e.g., aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
                             value={pEmailNotificationKey}
                             onChange={(e) => setPEmailNotificationKey(e.target.value.trim())}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#306634]"
+                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
                           />
                           <p className="text-[10px] text-zinc-500 font-sans leading-relaxed">
                             Web3Forms is a secure, spam-guarded form dispatcher. Register your Gmail on their homepage to instantly receive your free token, copy-paste it here, click Save, and you're set!
@@ -1575,7 +1575,7 @@ export default function AdminView({
                     {/* Submit settings button */}
                     <button
                       type="submit"
-                      className="w-full cursor-pointer bg-verdant-mint hover:bg-[#528B56] text-white border-2 border-verdant-cream font-mono text-xs font-black py-4 uppercase tracking-widest transition-colors select-none shadow-mint-offset"
+                      className="w-full cursor-pointer bg-neutral-950 hover:bg-[#D5001C] text-white border border-neutral-700 font-mono text-xs font-bold py-4 uppercase tracking-widest transition-colors select-none shadow-sm"
                     >
                       SAVE PROFILE SETTINGS
                     </button>
@@ -1598,25 +1598,25 @@ export default function AdminView({
                   {/* Metric Dashboard row */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 border border-verdant-cream/20 bg-verdant-dark p-4 font-mono">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">TOTAL RECEIVED MESSAGE(S)</span>
+                      <span className="text-[9px] text-neutral-700 font-black uppercase tracking-wider">TOTAL RECEIVED MESSAGE(S)</span>
                       <span className="text-2xl font-black text-white">{messages.length}</span>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">UNREPLIED / PENDING</span>
+                      <span className="text-[9px] text-neutral-700 font-black uppercase tracking-wider">UNREPLIED / PENDING</span>
                       <span className="text-2xl font-black text-verdant-yellow">
                         {messages.filter(m => !m.replied).length}
                       </span>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider">TOTAL UNIQUE VIEWS</span>
+                      <span className="text-[9px] text-neutral-700 font-black uppercase tracking-wider">TOTAL UNIQUE VIEWS</span>
                       <span className="text-2xl font-black text-white">
                         {pageViews !== null ? pageViews : "..."}
                       </span>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-[#306634] font-black uppercase tracking-wider font-bold">MUTUAL SECURITY</span>
+                      <span className="text-[9px] text-neutral-700 font-black uppercase tracking-wider font-bold">MUTUAL SECURITY</span>
                       <span className="text-[10px] text-emerald-400 font-bold uppercase py-1 select-none flex items-center gap-1.5 leading-none mt-1">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#D5001C] animate-pulse" />
                         <span>CLOUDSYNC STEADY</span>
                       </span>
                     </div>
@@ -1655,7 +1655,7 @@ export default function AdminView({
                                   <span className="text-xs font-black text-verdant-cream uppercase font-mono leading-none flex items-center gap-2 flex-wrap">
                                     <span>{msg.name}</span>
                                     {msg.replied && (
-                                      <span className="text-[8px] bg-emerald-950 border border-emerald-500 font-bold px-1.5 py-0.5 text-emerald-200">
+                                      <span className="text-[8px] bg-neutral-900 border border-neutral-700 font-bold px-1.5 py-0.5 text-neutral-300">
                                         REPLIED
                                       </span>
                                     )}
@@ -1682,17 +1682,17 @@ export default function AdminView({
                             {msg.replied && (
                               <div className="mt-2 bg-[#FAF8F5]/5 border border-dashed border-[#FAF8F5]/20 p-3 flex flex-col gap-2">
                                 <div className="flex items-center justify-between">
-                                  <span className="font-mono text-[9px] uppercase font-black text-[#528B56] flex items-center gap-1">
-                                    <CheckCircle className="w-3.5 h-3.5" />
+                                  <span className="font-mono text-[9px] uppercase font-bold text-neutral-800 flex items-center gap-1.5">
+                                    <CheckCircle className="w-3.5 h-3.5 text-[#D5001C]" />
                                     <span>SENT REPLY RECORD:</span>
                                   </span>
                                   {msg.replyTimestamp && (
-                                    <span className="font-mono text-[8px] text-zinc-600">
+                                    <span className="font-mono text-[8px] text-zinc-500">
                                       {new Date(msg.replyTimestamp).toLocaleString()}
                                     </span>
                                   )}
                                 </div>
-                                <p className="font-sans text-xs text-verdant-gray leading-normal italic font-semibold">
+                                <p className="font-sans text-xs text-neutral-600 leading-normal italic font-medium">
                                   "{msg.replyContent}"
                                 </p>
                               </div>
@@ -1700,8 +1700,8 @@ export default function AdminView({
 
                             {/* Reply Form Trigger (if unreplied) */}
                             {!msg.replied ? (
-                              <div className="mt-2 flex flex-col gap-2 bg-verdant-dark p-3.5 border border-dashed border-[#DCA221]/30">
-                                <span className="font-mono text-[9px] uppercase font-black text-[#DCA221] block font-bold">
+                              <div className="mt-2 flex flex-col gap-2 bg-neutral-950 p-3.5 border border-neutral-800">
+                                <span className="font-mono text-[9px] uppercase font-bold text-neutral-300 block">
                                   ✏️ Compose Email Reply Body:
                                 </span>
                                 <textarea
@@ -1713,16 +1713,16 @@ export default function AdminView({
                                       [msg.id]: e.target.value
                                     }));
                                   }}
-                                  className="w-full bg-verdant-charcoal text-verdant-cream p-2 font-sans text-xs border border-verdant-cream/30 focus:outline-none focus:border-verdant-yellow resize-none leading-relaxed font-semibold placeholder:text-zinc-600"
+                                  className="w-full bg-neutral-900 text-neutral-100 p-2 font-sans text-xs border border-neutral-700 focus:outline-none focus:border-[#D5001C] resize-none leading-relaxed font-medium placeholder:text-zinc-500"
                                   placeholder="Type response email content here..."
                                 />
                                 <div className="flex gap-2">
                                   <button
                                     type="button"
                                     onClick={() => handleSendEmailReply(msg)}
-                                    className="flex-grow cursor-pointer bg-verdant-mint hover:bg-verdant-cream hover:text-verdant-dark text-white border border-verdant-cream font-mono text-[10px] font-black uppercase py-2.5 tracking-widest flex items-center justify-center gap-1.5 transition-colors"
+                                    className="flex-grow cursor-pointer bg-neutral-900 hover:bg-black text-white hover:border-[#D5001C] border border-neutral-700 font-mono text-[10px] font-bold uppercase py-2.5 tracking-widest flex items-center justify-center gap-2 transition-colors"
                                   >
-                                    <Send className="w-3.5 h-3.5" />
+                                    <Send className="w-3.5 h-3.5 text-[#D5001C]" />
                                     <span>LAUNCH EMAIL CLIENT & MARK REPLIED</span>
                                   </button>
                                   <button
@@ -1795,7 +1795,7 @@ export default function AdminView({
                   </div>
 
                   {profileSuccess && (
-                     <div className="flex items-center gap-2 bg-[#306634]/30 p-3 border-2 border-[#306634] text-white font-mono text-[10px] uppercase font-black leading-relaxed">
+                     <div className="flex items-center gap-2 bg-neutral-900/60 p-3 border-2 border-neutral-800 text-white font-mono text-[10px] uppercase font-black leading-relaxed">
                        <Check className="w-4 h-4 shrink-0 text-white" />
                        <span>{profileSuccess}</span>
                      </div>
@@ -1807,16 +1807,16 @@ export default function AdminView({
                       
                       {/* Font selector */}
                       <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           1. Header & Title Typography Pairing (3-5 Selections)
                         </header>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {[
-                            { name: "Syne (Default Bold)", val: "Syne", style: "font-syne font-black" },
-                            { name: "Space Grotesk (Tech Modern)", val: "Space Grotesk", style: "font-space font-bold" },
-                            { name: "Plus Jakarta Sans (Minimal Sans)", val: "Plus Jakarta Sans", style: "font-sans font-bold" },
-                            { name: "JetBrains Mono (Technical)", val: "JetBrains Mono", style: "font-mono font-bold" },
-                            { name: "Playfair Display (Premium Serif)", val: "Playfair Display", style: "font-serif italic font-medium" }
+                            { name: "Plus Jakarta Sans (Precision Neo-Grotesque)", val: "Plus Jakarta Sans", style: "font-sans font-bold" },
+                            { name: "Space Grotesk (Aerodynamic Tech)", val: "Space Grotesk", style: "font-space font-bold" },
+                            { name: "JetBrains Mono (Technical Spec)", val: "JetBrains Mono", style: "font-mono font-bold" },
+                            { name: "Syne (Architectural Bold)", val: "Syne", style: "font-syne font-black" },
+                            { name: "Playfair Display (Editorial Serif)", val: "Playfair Display", style: "font-serif italic font-medium" }
                           ].map((f) => (
                             <button
                               key={f.val}
@@ -1830,7 +1830,7 @@ export default function AdminView({
                                   : "border-verdant-cream/20 hover:border-verdant-mint bg-verdant-charcoal"
                               }`}
                             >
-                              <span className="text-[9px] text-[#306634] font-mono leading-none tracking-wider mb-2">
+                              <span className="text-[9px] text-neutral-700 font-mono leading-none tracking-wider mb-2">
                                 {f.name}
                               </span>
                               <span className={`text-sm text-verdant-cream leading-none ${f.style}`}>
@@ -1843,7 +1843,7 @@ export default function AdminView({
 
                       {/* Body Font Selection */}
                       <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           2. Body & Narrative Typography
                         </header>
                         <div className="grid grid-cols-2 gap-2">
@@ -1876,15 +1876,17 @@ export default function AdminView({
 
                       {/* Layout Background mesh styles */}
                       <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
-                          3. Canvas Backing Grid Style
+                        <header className="font-mono text-[9px] font-black text-[#D5001C] uppercase tracking-widest">
+                          3. Canvas Backing Finish (Professional Architectural Choices - No Grids)
                         </header>
                         <div className="grid grid-cols-2 gap-2">
                           {[
-                            { name: "Warm Checkered Board", val: "checker-grid", desc: "Zine-style checks pattern" },
-                            { name: "Artistic Isometric Grid", val: "grid-mesh", desc: "Technical architectural grid lines" },
-                            { name: "Soft Radial Grain Glow", val: "radial-grain", desc: "Ambient painterly spotlight blur" },
-                            { name: "Solid Clean Minimal", val: "solid-plain", desc: "Vanilla plain backdrop without mesh texture" }
+                            { name: "Carrera Pure Solid", val: "solid-plain", desc: "Ultra-clean uniform minimalist background" },
+                            { name: "Aerodynamic Soft Vignette", val: "soft-vignette", desc: "Subtle corner atmospheric lighting falloff" },
+                            { name: "Studio Precision Gradient", val: "studio-gradient", desc: "Smooth modern vertical linear gradation" },
+                            { name: "Matte Light Platinum", val: "matte-platinum", desc: "Soft velvety architectural neutral tone" },
+                            { name: "Warm Gallery White", val: "gallery-white", desc: "Pure contemporary exhibition showcase" },
+                            { name: "Carbon Obsidian Monolith", val: "monolith-plane", desc: "Deep obsidian solid technical plane" }
                           ].map((b) => (
                             <button
                               key={b.val}
@@ -1894,14 +1896,14 @@ export default function AdminView({
                               }}
                               className={`p-3 border text-xs text-left cursor-pointer transition-all flex flex-col justify-between ${
                                 pBgAccentStyle === b.val
-                                  ? "border-2 border-verdant-yellow bg-verdant-yellow/10"
-                                  : "border-verdant-cream/20 hover:border-verdant-mint bg-verdant-charcoal"
+                                  ? "border-2 border-[#D5001C] bg-[#D5001C]/10"
+                                  : "border-neutral-700/60 hover:border-neutral-400 bg-neutral-900"
                               }`}
                             >
-                              <span className="text-[10px] text-[#306634] font-mono leading-none tracking-tight font-black uppercase mb-1">
+                              <span className="text-[10px] text-white font-mono leading-none tracking-tight font-black uppercase mb-1">
                                 {b.name}
                               </span>
-                              <span className="text-[9px] text-verdant-gray leading-normal block">
+                              <span className="text-[9px] text-neutral-400 leading-normal block">
                                 {b.desc}
                               </span>
                             </button>
@@ -1911,7 +1913,7 @@ export default function AdminView({
 
                       {/* Text Casing Transformation */}
                       <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           4. Global Heading Text Casing (All Caps Toggle)
                         </header>
                         <div className="grid grid-cols-2 gap-2">
@@ -1949,16 +1951,16 @@ export default function AdminView({
                       
                       {/* Primary colors & interactive paint bubbles */}
                       <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           5. Brand Theme Primary Accent (Borders, Main Buttons)
                         </header>
                         <div className="grid grid-cols-5 gap-1.5 mb-2">
                           {[
-                            { name: "Cypress Moss (Default)", hex: "#306634" },
-                            { name: "Midnight Navy", hex: "#1E3A8A" },
-                            { name: "Royal Amethyst", hex: "#7C3AED" },
-                            { name: "Crimson Pepper", hex: "#DC2626" },
-                            { name: "Deep Charcoal", hex: "#1E293B" }
+                            { name: "Porsche Carbon (Default)", hex: "#0A0A0A" },
+                            { name: "Guards Red", hex: "#D5001C" },
+                            { name: "Gentian Blue", hex: "#1C355E" },
+                            { name: "Racing Yellow", hex: "#F1C40F" },
+                            { name: "Cypress Green", hex: "#0A0A0A" }
                           ].map((col) => (
                             <button
                               key={col.hex}
@@ -2001,7 +2003,7 @@ export default function AdminView({
                                 handleStyleChange("themeColorPrimary", e.target.value);
                               }}
                               className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-3 border-2 border-verdant-cream focus:outline-none"
-                              placeholder="#306634"
+                              placeholder="#0A0A0A"
                             />
                           </div>
                         </div>
@@ -2009,16 +2011,16 @@ export default function AdminView({
 
                       {/* Secondary Color accent */}
                       <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           6. Brand Tones Secondary Accent (Highlighters, Golden Badges)
                         </header>
                         <div className="grid grid-cols-5 gap-1.5 mb-2">
                           {[
-                            { name: "Oat Sunflower (Default)", hex: "#DCA221" },
-                            { name: "Bright Coral Red", hex: "#F43F5E" },
-                            { name: "Classic Ocean Blue", hex: "#3B82F6" },
-                            { name: "Vivid Emerald Teal", hex: "#10B981" },
-                            { name: "Amber Harvest", hex: "#F59E0B" }
+                            { name: "Guards Red (Default)", hex: "#D5001C" },
+                            { name: "Racing Yellow", hex: "#F5B041" },
+                            { name: "Speed Silver", hex: "#8A9096" },
+                            { name: "Carrera Blue", hex: "#3B82F6" },
+                            { name: "Sunflower Gold", hex: "#DCA221" }
                           ].map((col) => (
                             <button
                               key={col.hex}
@@ -2069,15 +2071,15 @@ export default function AdminView({
 
                       {/* Backdrop Canvas Canvas color settings */}
                       <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           7. Desktop Base Canvas Color (Page Backdrop)
                         </header>
                         <div className="grid grid-cols-2 gap-2 mb-2">
                           {[
-                            { name: "Bleached Linen (Ivory Cream)", hex: "#FAF8F5" },
-                            { name: "Parchment Oatmeal", hex: "#EFECE5" },
-                            { name: "Modernist Absolute Off-White", hex: "#F9FAF9" },
-                            { name: "Classic Noir Dark Theme", hex: "#0E170F" }
+                            { name: "Porsche Light Platinum (#F8F9FA)", hex: "#F8F9FA" },
+                            { name: "Absolute Pure White (#FFFFFF)", hex: "#FFFFFF" },
+                            { name: "Bleached Linen Ivory (#FAF8F5)", hex: "#FAF8F5" },
+                            { name: "Graphite Noir Dark (#0E170F)", hex: "#0E170F" }
                           ].map((col) => (
                             <button
                               key={col.hex}
@@ -2122,15 +2124,15 @@ export default function AdminView({
 
                       {/* Card components background color */}
                       <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
+                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
                           8. Component Cards Background Color
                         </header>
                         <div className="grid grid-cols-2 gap-2 mb-2">
                           {[
-                            { name: "Soft Oats Oatmeal", hex: "#F2EEE3" },
-                            { name: "Lighter Parchment", hex: "#EBE7DB" },
-                            { name: "Zine Pure White", hex: "#FCFDFD" },
-                            { name: "Deep Charcoal Card Dark", hex: "#1D261E" }
+                            { name: "Precision Pure White (#FFFFFF)", hex: "#FFFFFF" },
+                            { name: "Carrera Platinum Card (#F4F5F7)", hex: "#F4F5F7" },
+                            { name: "Soft Linen Oatmeal (#F2EEE3)", hex: "#F2EEE3" },
+                            { name: "Carbon Noir Card (#18181B)", hex: "#18181B" }
                           ].map((col) => (
                             <button
                               key={col.hex}
