@@ -209,10 +209,6 @@ export default function WorkView({
                 <div className="flex flex-col gap-4">
                   {/* Visual rendering frame */}
                   <div className="relative aspect-video bg-neutral-950 border border-neutral-800 flex items-center justify-center p-3 overflow-hidden select-none">
-                    <div className="absolute top-2 left-2 bg-neutral-900/90 border border-neutral-700 text-neutral-200 font-mono text-[8px] font-bold px-2 py-0.5 uppercase tracking-widest z-10">
-                      {proj.badge}
-                    </div>
-
                     {proj.imageType && proj.imageType.startsWith("data:image/") ? (
                       <img
                         src={proj.imageType}
@@ -415,7 +411,7 @@ export default function WorkView({
                           <span 
                             className="font-mono text-[9px] border border-neutral-200 bg-neutral-50 text-neutral-700 px-2.5 py-0.5 font-bold uppercase tracking-widest"
                           >
-                            {currentProj.badge}
+                            {currentProj.category}
                           </span>
                           <span className="font-mono text-[9.5px] text-neutral-500 font-bold uppercase">
                             YEAR: <span className="text-neutral-900 font-black">{currentProj.year}</span>
