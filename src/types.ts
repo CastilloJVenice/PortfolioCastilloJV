@@ -78,6 +78,9 @@ export interface ProfileSettings {
   // Infinite ticker tape customized words
   tickerPhrases?: string[];
 
+  // Custom project categories for filter tabs & project creation
+  projectCategories?: string[];
+
   // Widget visibility toggles (allows removing original widgets on page)
   hideHeroPolaroid?: boolean;
   hideProcessTicker?: boolean;
