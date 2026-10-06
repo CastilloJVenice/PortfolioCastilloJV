@@ -138,7 +138,7 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
       ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
       ctx.font = "600 8px 'JetBrains Mono', monospace";
       ctx.textAlign = "left";
-      ctx.fillText("CAD MODEL // MESH_911", 16, 26);
+      ctx.fillText("3D GEOMETRIC MODEL", 16, 26);
       ctx.textAlign = "right";
       ctx.fillText(`X:${mousePos.x.toFixed(0)} Y:${mousePos.y.toFixed(0)}`, width - 16, 26);
 
@@ -149,7 +149,7 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
       ctx.fill();
       ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
       ctx.textAlign = "left";
-      ctx.fillText("SYSTEM ACTIVE // INTERACTIVE CAD", 28, height - 21);
+      ctx.fillText("INTERACTIVE VIEW", 28, height - 21);
 
       angle += 0.012;
       animationFrameId = requestAnimationFrame(drawCADTelemetry);
@@ -205,7 +205,7 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
           ) : (
             <div className="inline-flex items-center gap-2 border border-neutral-200 bg-white px-3.5 py-1.5 font-mono text-[10px] uppercase font-bold tracking-[0.22em] text-neutral-600 shadow-sm" id="hero-badge">
               <span className="w-1.5 h-1.5 bg-[#D5001C]" />
-              <span>{profileSettings?.headline || "COMPUTER SCIENCE STUDENT & DIGITAL DESIGNER"}</span>
+              <span>{profileSettings?.headline || "COMPUTER SCIENCE GRADUATE & DIGITAL DESIGNER"}</span>
             </div>
           )}
 
@@ -266,7 +266,7 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
             <p className="font-sans text-xs md:text-sm text-neutral-600 max-w-2xl leading-relaxed mt-2 font-normal normal-case tracking-normal" id="hero-subtitle">
               {profileSettings?.biography || (
                 <>
-                  Hello! I'm a Computer Science student at the University of the Cordilleras. My interests sit at <span className="text-neutral-900 font-semibold">UI/UX Design</span>, where design meets behavior; <span className="text-neutral-900 font-semibold">Cryptography</span>, where math meets security; and <span className="text-neutral-900 font-semibold">Theoretical Computer Science</span>, where logic meets the limits of what's computable. I like understanding things deeply and not just how to build them, but why they work.
+                  Hello! I'm a Computer Science graduate from the University of the Cordilleras. I focus on <span className="text-neutral-900 font-semibold">UI/UX Design</span>, <span className="text-neutral-900 font-semibold">Cryptography</span>, and <span className="text-neutral-900 font-semibold">Software Development</span>. I create intuitive user interfaces, explore system security, and build practical applications that solve real problems.
                 </>
               )}
             </p>
@@ -358,14 +358,14 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
           <div className="flex flex-col md:flex-row md:items-end justify-between select-none mb-10 gap-4 border-b border-neutral-200 pb-6">
             <div className="flex flex-col items-start text-left">
               <span className="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-[0.25em] mb-2 flex items-center gap-2">
-                <span className="w-2 h-[2px] bg-verdant-yellow" />
-                <span>FEATURED SYSTEMS & PROTOTYPES</span>
+                <span className="w-2 h-[2px] bg-[#D5001C]" />
+                <span>FEATURED PROJECTS</span>
               </span>
               <h2 className={`font-syne font-black text-neutral-900 text-3xl md:text-5xl leading-none tracking-tight ${casingClass}`}>
                 SOME OF MY PROJECTS
               </h2>
               <p className="font-sans text-xs md:text-sm text-neutral-500 mt-2 max-w-xl font-normal leading-relaxed">
-                Selected technical prototypes and interactive systems created while studying Computer Science at the University of the Cordilleras.
+                Selected projects and prototypes created while studying Computer Science at the University of the Cordilleras.
               </p>
             </div>
 
@@ -410,8 +410,8 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
                       ) : proj.imageType === "lunar" ? (
                         <div className="relative w-full h-full flex flex-col justify-between p-4 bg-neutral-950 text-white font-mono">
                           <div className="flex justify-between items-center text-[7.5px] text-neutral-400">
-                            <span>PQC_LATTICE // POST-QUANTUM</span>
-                            <span className="text-verdant-yellow font-bold">256-BIT</span>
+                            <span>CRYPTOGRAPHY // PQC</span>
+                            <span className="text-[#D5001C] font-bold">256-BIT</span>
                           </div>
                           <div className="flex items-center justify-center my-auto">
                             <svg className="w-16 h-16 text-neutral-300" viewBox="0 0 40 40" fill="none" stroke="currentColor">
@@ -423,15 +423,15 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
                             </svg>
                           </div>
                           <div className="flex justify-between text-[7px] text-neutral-500 font-mono tracking-wider">
-                            <span>ECC_AUTH: VERIFIED</span>
-                            <span className="text-neutral-400">SHA256: 8f9b...14</span>
+                            <span>SECURITY // VERIFIED</span>
+                            <span className="text-neutral-400">SHA-256</span>
                           </div>
                         </div>
                       ) : proj.imageType === "void" ? (
                         <div className="relative w-full h-full flex flex-col justify-between p-4 bg-neutral-950 text-white font-mono">
                           <div className="flex justify-between items-center text-[7.5px] text-neutral-400">
-                            <span>FIGMA_SPEC // UI/UX</span>
-                            <span className="text-neutral-300 font-bold">390 × 844 PX</span>
+                            <span>FIGMA // UI/UX DESIGN</span>
+                            <span className="text-neutral-300 font-bold">MOBILE</span>
                           </div>
                           <div className="flex items-center justify-center my-auto">
                             <div className="w-28 h-14 border border-neutral-700 bg-neutral-900 p-1.5 flex flex-col justify-between">
@@ -445,15 +445,15 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
                             </div>
                           </div>
                           <div className="flex justify-between text-[7px] text-neutral-500">
-                            <span>LAYOUT_GRID: 8PT</span>
-                            <span className="text-verdant-yellow">PROTOTYPE</span>
+                            <span>DESIGN SYSTEM</span>
+                            <span className="text-[#D5001C]">PROTOTYPE</span>
                           </div>
                         </div>
                       ) : proj.imageType === "logic" ? (
                         <div className="relative w-full h-full flex flex-col justify-between p-4 bg-neutral-950 text-white font-mono">
                           <div className="flex justify-between items-center text-[7.5px] text-neutral-400">
-                            <span>BLENDER_3D // MESH</span>
-                            <span className="text-neutral-300 font-bold">VERTICES: 12.4K</span>
+                            <span>BLENDER // 3D MODEL</span>
+                            <span className="text-neutral-300 font-bold">CYCLES</span>
                           </div>
                           <div className="flex items-center justify-center my-auto">
                             <svg className="w-16 h-16 text-neutral-300" viewBox="0 0 40 40" fill="none" stroke="currentColor">
@@ -464,13 +464,13 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
                             </svg>
                           </div>
                           <div className="flex justify-between text-[7px] text-neutral-500">
-                            <span>FOV: 50MM // SHADER</span>
-                            <span className="text-neutral-400">CYCLES_ENGINE</span>
+                            <span>RENDER // SHADER</span>
+                            <span className="text-neutral-400">CYCLES</span>
                           </div>
                         </div>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-neutral-900">
-                          <span className="font-mono text-[8px] text-neutral-400 uppercase tracking-widest">TECHNICAL SPEC</span>
+                          <span className="font-mono text-[8px] text-neutral-400 uppercase tracking-widest">PROJECT PREVIEW</span>
                         </div>
                       )}
                     </div>
@@ -500,7 +500,7 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
                   }}
                   className="mt-4 w-full cursor-pointer bg-white border border-neutral-300 group-hover:border-neutral-950 group-hover:bg-neutral-950 group-hover:text-white text-neutral-900 font-mono text-[10px] font-bold uppercase py-2.5 transition-all tracking-[0.2em] select-none"
                 >
-                  VIEW SPECIFICATIONS
+                  VIEW PROJECT
                 </button>
               </div>
             ))}
