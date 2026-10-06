@@ -1,126 +1,128 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@450;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-syne: "Syne", sans-serif;
+  --font-syne: "Plus Jakarta Sans", "Space Grotesk", sans-serif;
   --font-space: "Space Grotesk", sans-serif;
 
-  /* Premium Painterly Light Palette (Inspired by Van Gogh's Green Flower paintings, Almond Blossoms & Irises) */
-  --color-verdant-dark: #FAF8F5;        /* Sun-bleached linen/canvas white */
-  --color-verdant-charcoal: #F2EEE3;    /* Soft warm oatmeal card background */
-  --color-verdant-green-deep: #2A482D;  /* Rich cypress moss/ivy oil pigment green */
-  --color-verdant-mint: #306634;        /* Vivid leafy viridian green lines & elements */
-  --color-verdant-lime: #528B56;        /* Bright spring-sap sage green accents */
-  --color-verdant-yellow: #DCA221;      /* Radiant sunny goldenrod/sunflower yellow */
-  --color-verdant-gray: #4B564A;        /* Olive charcoal for body typography */
-  --color-verdant-cream: #142215;       /* Intense oil charcoal-green for headers */
+  /* Porsche Technical Precision Palette */
+  --color-verdant-dark: #F8F9FA;        /* Porsche Clean Aerodynamic White / Light Platinum */
+  --color-verdant-charcoal: #FFFFFF;    /* Pristine Crisp White Card Background */
+  --color-verdant-green-deep: #09090B;  /* Deep Precision Obsidian Black */
+  --color-verdant-mint: #0A0A0A;        /* Razor-sharp Obsidian Black for Primary Elements */
+  --color-verdant-lime: #18181B;        /* High-tech Zinc/Carbon Structural Tone */
+  --color-verdant-yellow: #D5001C;      /* Porsche Guards Red Precision Accent */
+  --color-verdant-gray: #52525B;        /* Neutral Zinc Body Typography */
+  --color-verdant-cream: #0A0A0A;       /* Deep Obsidian Headers & Titles */
 }
 
-/* Gritty noise texture matching the wheat field / oil canvas style */
-.grid-mesh {
-  background-size: 24px 24px;
-  background-image: 
-    linear-gradient(to right, rgba(48, 102, 52, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(48, 102, 52, 0.05) 1px, transparent 1px);
-}
-
-.solid-plain {
+/* Carrera Minimalist Pure Finishes - Strictly No Grids */
+.solid-plain,
+.grid-mesh,
+.checker-grid,
+.dot-matrix,
+.tech-blueprint,
+.carbon-mesh {
   background-image: none !important;
 }
 
+/* Aerodynamic Soft Vignette - No Grids */
+.soft-vignette {
+  background-image: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.95) 0%, rgba(240, 242, 245, 0.5) 100%) !important;
+}
+
+/* Studio Precision Gradient - No Grids */
+.studio-gradient {
+  background-image: linear-gradient(180deg, #FFFFFF 0%, #F4F5F7 100%) !important;
+}
+
+/* Matte Light Platinum - No Grids */
+.matte-platinum {
+  background-color: #F8F9FA !important;
+  background-image: none !important;
+}
+
+/* Contemporary Gallery White - No Grids */
+.gallery-white {
+  background-color: #FFFFFF !important;
+  background-image: none !important;
+}
+
+/* Monolith Obsidian Plane - No Grids */
+.monolith-plane {
+  background-color: #0E0E10 !important;
+  background-image: none !important;
+}
+
+/* Subtle Aerodynamic Ambient Spotlight */
 .radial-grain {
-  background-image: radial-gradient(circle at 50% 50%, rgba(48, 102, 52, 0.08) 0%, transparent 80%),
-                    radial-gradient(circle at 10% 20%, rgba(220, 162, 33, 0.08) 0%, transparent 60%) !important;
+  background-image: radial-gradient(circle at 50% 0%, rgba(213, 0, 28, 0.02) 0%, transparent 60%) !important;
 }
 
-.verdant-grain {
-  position: relative;
-}
-.verdant-grain::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  opacity: 0.04;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-}
-
-/* Elegant light zine checkered layout pattern */
-.checker-grid {
-  background-color: var(--color-verdant-dark);
-  background-image: 
-    linear-gradient(45deg, #F0EDE2 25%, transparent 25%), 
-    linear-gradient(-45deg, #F0EDE2 25%, transparent 25%), 
-    linear-gradient(45deg, transparent 75%, #F0EDE2 75%), 
-    linear-gradient(-45deg, transparent 75%, #F0EDE2 75%);
-  background-size: 100px 100px;
-  background-position: 0 0, 0 50px, 50px -50px, -50px 0px;
-}
-
-/* Thick raw borders */
+/* Clean, crisp 1px precision engineering borders */
 .border-brutal {
-  border: 3.5px solid var(--color-verdant-mint);
+  border: 1px solid #E4E4E7;
 }
 
 .border-opaque {
-  border: 2.5px solid rgba(48, 102, 52, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .border-yellow-brutal {
-  border: 3.5px solid var(--color-verdant-yellow);
+  border: 1px solid var(--color-verdant-yellow);
 }
 
-/* Premium shadows designed from the imagery */
+/* Sleek modern precision shadows */
 .shadow-double-offset {
-  box-shadow: 4px 4px 0px 0px rgba(48, 102, 52, 0.15), 8px 8px 0px 0px rgba(18, 30, 20, 0.15);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 }
 
 .shadow-mint-offset {
-  box-shadow: 6px 6px 0px 0px var(--color-verdant-mint);
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.08);
 }
 
 .shadow-yellow-offset {
-  box-shadow: 6px 6px 0px 0px var(--color-verdant-yellow);
+  box-shadow: 0 4px 14px 0 rgba(213, 0, 28, 0.2);
 }
 
 .shadow-charcoal-offset {
-  box-shadow: 6px 6px 0px 0px var(--color-verdant-cream);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
 }
 
-/* Highlight markers */
+/* Minimalist technical highlights */
 .highlighter-stripe {
-  background: linear-gradient(120deg, rgba(220, 162, 33, 0.95) 0%, rgba(220, 162, 33, 0.95) 100%);
+  background: linear-gradient(120deg, rgba(213, 0, 28, 0.12) 0%, rgba(213, 0, 28, 0.12) 100%);
   background-repeat: no-repeat;
-  background-size: 100% 75%;
-  background-position: 0 85%;
+  background-size: 100% 40%;
+  background-position: 0 90%;
 }
 
 .highlighter-mint {
-  background: linear-gradient(120deg, rgba(48, 102, 52, 0.2) 0%, rgba(48, 102, 52, 0.2) 100%);
+  background: linear-gradient(120deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.06) 100%);
   background-repeat: no-repeat;
-  background-size: 100% 75%;
-  background-position: 0 85%;
+  background-size: 100% 40%;
+  background-position: 0 90%;
 }
 
-/* Custom Webkit scrollbar matching the light theme */
+/* Minimalist technical scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-verdant-dark);
+  background: #F1F3F5;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-verdant-charcoal);
-  border: 1.5px solid var(--color-verdant-mint);
+  background: #D4D4D8;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-verdant-mint);
+  background: #A1A1AA;
 }
 
-/* Continuous infinite marqee ticker */
+/* Aerodynamic continuous ticker */
 @keyframes continuous-scroll {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-50%); }
@@ -129,7 +131,7 @@
 .animate-verdant-ticker {
   display: flex;
   width: 200%;
-  animation: continuous-scroll 22s linear infinite;
+  animation: continuous-scroll 24s linear infinite;
 }
 .animate-verdant-ticker:hover {
   animation-play-state: paused;
