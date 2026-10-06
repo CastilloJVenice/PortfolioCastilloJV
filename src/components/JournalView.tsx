@@ -28,7 +28,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
     profileSettings?.dedicationTitle !== undefined ? profileSettings.dedicationTitle : "INCREMENTAL PROGRESS"
   );
   const [localDedicationText, setLocalDedicationText] = useState(() => 
-    profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "..."
+    profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "Building secure networks, modeling 3D space, and shaping digital user paths with clean pixel harmony."
   );
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
   }, [profileSettings?.dedicationTitle]);
 
   useEffect(() => {
-    setLocalDedicationText(profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "...");
+    setLocalDedicationText(profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "Building secure networks, modeling 3D space, and shaping digital user paths with clean pixel harmony.");
   }, [profileSettings?.dedicationText]);
 
   // Setup dynamic list helpers
@@ -193,19 +193,21 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
   };
 
   return (
-    <div className="relative min-h-screen bg-verdant-dark checker-grid text-verdant-cream overflow-hidden pb-16">
-      <div className="absolute inset-0 bg-radial-gradient from-verdant-yellow/5 via-transparent to-transparent pointer-events-none" />
-
+    <div className="relative min-h-screen bg-verdant-dark text-neutral-900 overflow-hidden pb-20">
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-10 md:pt-16 relative z-10 w-full">
         
-        {/* Huge Header Title with checker grid overlap */}
-        <div className="flex flex-col mb-12 items-start select-none">
-          <div className="relative inline-block w-full">
-            <div className="absolute left-0 bottom-1 bg-verdant-yellow h-8 md:h-14 w-[85%] -skew-y-1 z-0 opacity-90 border-t border-b border-dashed border-verdant-cream" />
-            <h1 className="font-syne font-black text-verdant-cream text-5xl md:text-8xl leading-none relative z-10 tracking-widest uppercase text-left">
-              ABOUT ME
-            </h1>
-          </div>
+        {/* Header Title Section */}
+        <div className="flex flex-col mb-10 items-start select-none border-b border-neutral-200 pb-6">
+          <span className="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-[0.25em] mb-2 flex items-center gap-2">
+            <span className="w-2 h-[2px] bg-verdant-yellow" />
+            <span>BACKGROUND & EXPERIENCE</span>
+          </span>
+          <h1 className="font-syne font-black text-neutral-900 text-4xl md:text-6xl leading-none tracking-tight uppercase text-left">
+            ABOUT ME
+          </h1>
+          <p className="font-sans text-xs md:text-sm font-medium text-neutral-500 mt-2 text-left">
+            {profileSettings?.fullName || "JULIARISTY"} {profileSettings?.lastNameHighlight || "VENICE CASTILLO"} · Computer Science Student & Digital Designer
+          </p>
         </div>
 
         {/* Content Layout Grid */}
@@ -213,10 +215,10 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
           
           {/* Left Column Card: BIO & SKILLS */}
           <div className="lg:col-span-7 flex flex-col gap-8 w-full">
-            <div className="border-[3px] border-verdant-cream bg-verdant-charcoal p-6 md:p-10 text-left relative shadow-charcoal-offset w-full flex flex-col gap-6" id="manifesto-card">
-              <h2 className="font-syne font-black text-2xl text-verdant-cream tracking-widest uppercase border-b border-verdant-cream/20 pb-3 flex items-center justify-between col-span-12">
+            <div className="border border-neutral-200 bg-white p-6 md:p-8 text-left relative shadow-sm w-full flex flex-col gap-6" id="manifesto-card">
+              <h2 className="font-syne font-black text-xl text-neutral-900 tracking-tight uppercase border-b border-neutral-100 pb-3 flex items-center justify-between col-span-12">
                 <span>BIOGRAPHY</span>
-                <Cpu className="w-5 h-5 text-verdant-mint animate-pulse" />
+                <Cpu className="w-4 h-4 text-verdant-yellow" />
               </h2>
 
                 {isAdmin && onUpdateSettings ? (
@@ -232,12 +234,12 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                         setLocalBioText(val);
                         onUpdateSettings({ ...profileSettings, aboutParagraphs: val.split("\n") });
                       }}
-                      className="w-full bg-verdant-dark text-verdant-cream px-3 py-2 border-2 border-verdant-cream font-sans text-xs focus:outline-none focus:border-verdant-yellow leading-relaxed font-semibold uppercase"
+                      className="w-full bg-neutral-50 text-neutral-900 px-3 py-2 border border-neutral-300 font-sans text-xs focus:outline-none focus:border-neutral-900 leading-relaxed"
                       placeholder="Line 1 paragraph...&#10;Line 2 paragraph..."
                     />
                   </div>
                 ) : (
-                  <div className="font-sans text-sm md:text-base text-verdant-gray leading-relaxed space-y-4 text-left font-semibold">
+                  <div className="font-sans text-sm md:text-base text-neutral-600 leading-relaxed space-y-4 text-left font-normal normal-case">
                     {profileSettings?.aboutParagraphs && profileSettings.aboutParagraphs.length > 0 ? (
                       profileSettings.aboutParagraphs.map((para, idx) => (
                         <p key={idx}>{para}</p>
@@ -245,10 +247,10 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                     ) : (
                       <>
                         <p>
-                          Hello! I'm a <span className="text-[#306634] font-extrabold uppercase">Computer Science student</span> at the University of the Cordilleras.
+                          Hello! I'm a <span className="text-neutral-900 font-semibold">Computer Science student</span> at the University of the Cordilleras.
                         </p>
                         <p>
-                          My interests sit at <span className="text-[#306634] font-extrabold">UI/UX Design</span>, where design meets behavior; <span className="text-[#306634] font-extrabold">Cryptography</span>, where math meets security; and <span className="text-[#306634] font-extrabold">Theoretical Computer Science</span>, where logic meets the limits of what's computable.
+                          My interests sit at <span className="text-neutral-900 font-semibold">UI/UX Design</span>, where design meets behavior; <span className="text-neutral-900 font-semibold">Cryptography</span>, where math meets security; and <span className="text-neutral-900 font-semibold">Theoretical Computer Science</span>, where logic meets the limits of what's computable.
                         </p>
                         <p>
                           I enjoy understanding things deeply and not just how to build them, but why they work. This drive is reflected in every cryptographic system, low-poly 3D render, or visual design draft I compose.
@@ -260,21 +262,21 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
               </div>
 
             {/* SKILLS BOX LISTING */}
-            <div className="border-[3px] border-verdant-cream bg-verdant-charcoal p-6 text-left relative shadow-charcoal-offset w-full">
-              <h3 className="font-syne font-black text-xl text-verdant-cream uppercase tracking-wider border-b border-verdant-cream/10 pb-3 mb-4 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-[#306634]" />
+            <div className="border border-neutral-200 bg-white p-6 text-left relative shadow-sm w-full">
+              <h3 className="font-syne font-black text-xl text-neutral-900 uppercase tracking-tight border-b border-neutral-100 pb-3 mb-4 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-verdant-yellow" />
                 <span>PROFESSIONAL SKILLS</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
                 {/* Design Category */}
-                <div className="border border-[#306634]/20 p-4 bg-verdant-dark/40 flex flex-col justify-between">
+                <div className="border border-neutral-200 p-4 bg-neutral-50/60 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-mono text-xs text-[#306634] font-black tracking-widest uppercase mb-3">
-                      DESIGN & PROTOTYPING
+                    <h4 className="font-mono text-[11px] text-neutral-900 font-bold tracking-[0.18em] uppercase mb-3">
+                      // 01. DESIGN & PROTOTYPING
                     </h4>
-                    <ul className="space-y-3 text-[11px] font-sans text-verdant-cream/90 font-bold">
+                    <ul className="space-y-2.5 text-xs font-sans text-neutral-700">
                       {skillsList
                         .filter(s => s.category === "Design")
                         .map((skill) => (
@@ -286,7 +288,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                                   type="text"
                                   value={skill.name}
                                   onChange={(e) => handleUpdateSkill(skill.id, e.target.value)}
-                                  className="bg-transparent border-b border-dashed border-verdant-yellow/30 focus:border-verdant-yellow font-sans font-bold text-verdant-cream focus:outline-none w-full"
+                                  className="bg-transparent border-b border-neutral-300 focus:border-neutral-900 font-sans text-neutral-900 focus:outline-none w-full"
                                 />
                               ) : (
                                 <span>{skill.name}</span>
@@ -297,7 +299,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                               <button
                                 type="button"
                                 onClick={() => handleDeleteSkill(skill.id)}
-                                className="text-red-500 hover:text-red-400 p-0.5 cursor-pointer"
+                                className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer"
                                 title="Delete skill"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -312,7 +314,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                     <button
                       type="button"
                       onClick={() => handleCreateSkill("Design")}
-                      className="mt-4 border border-dashed border-verdant-yellow/30 text-verdant-yellow hover:text-white hover:border-white py-1 text-[9px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
+                      className="mt-4 border border-neutral-300 text-neutral-700 hover:border-neutral-900 hover:text-neutral-900 py-1 text-[9px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                       <span>ADD DESIGN SKILL</span>
@@ -321,24 +323,24 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                 </div>
 
                 {/* Engineering Category */}
-                <div className="border border-[#306634]/20 p-4 bg-verdant-dark/40 flex flex-col justify-between">
+                <div className="border border-neutral-200 p-4 bg-neutral-50/60 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-mono text-xs text-[#306634] font-black tracking-widest uppercase mb-3">
-                      ENGINEERING CORE
+                    <h4 className="font-mono text-[11px] text-neutral-900 font-bold tracking-[0.18em] uppercase mb-3">
+                      // 02. ENGINEERING CORE
                     </h4>
-                    <ul className="space-y-3 text-[11px] font-sans text-verdant-cream/90 font-bold">
+                    <ul className="space-y-2.5 text-xs font-sans text-neutral-700">
                       {skillsList
                         .filter(s => s.category === "Engineering")
                         .map((skill) => (
                           <li key={skill.id} className="flex items-center gap-2 group/skill justify-between">
                             <div className="flex items-center gap-2 flex-grow">
-                              <span className="w-1.5 h-1.5 bg-[#306634] shrink-0" />
+                              <span className="w-1.5 h-1.5 bg-neutral-900 shrink-0" />
                               {isAdmin && onUpdateSettings ? (
                                 <input 
                                   type="text"
                                   value={skill.name}
                                   onChange={(e) => handleUpdateSkill(skill.id, e.target.value)}
-                                  className="bg-transparent border-b border-dashed border-verdant-yellow/30 focus:border-verdant-yellow font-sans font-bold text-verdant-cream focus:outline-none w-full"
+                                  className="bg-transparent border-b border-neutral-300 focus:border-neutral-900 font-sans text-neutral-900 focus:outline-none w-full"
                                 />
                               ) : (
                                 <span>{skill.name}</span>
@@ -349,7 +351,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                               <button
                                 type="button"
                                 onClick={() => handleDeleteSkill(skill.id)}
-                                className="text-red-500 hover:text-red-400 p-0.5 cursor-pointer"
+                                className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer"
                                 title="Delete skill"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -364,7 +366,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                     <button
                       type="button"
                       onClick={() => handleCreateSkill("Engineering")}
-                      className="mt-4 border border-dashed border-[#306634]/30 text-[#306634] hover:text-white hover:border-white py-1 text-[9px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
+                      className="mt-4 border border-neutral-300 text-neutral-700 hover:border-neutral-900 hover:text-neutral-900 py-1 text-[9px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                       <span>ADD CORE SKILL</span>
@@ -373,24 +375,24 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                 </div>
 
                 {/* Productivity Category */}
-                <div className="border border-[#306634]/20 p-4 bg-verdant-dark/40 flex flex-col justify-between">
+                <div className="border border-neutral-200 p-4 bg-neutral-50/60 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-mono text-xs text-[#306634] font-black tracking-widest uppercase mb-3">
-                      DATA & CLOUD SYSTEMS
+                    <h4 className="font-mono text-[11px] text-neutral-900 font-bold tracking-[0.18em] uppercase mb-3">
+                      // 03. DATA & CLOUD SYSTEMS
                     </h4>
-                    <ul className="space-y-3 text-[11px] font-sans text-verdant-cream/90 font-bold">
+                    <ul className="space-y-2.5 text-xs font-sans text-neutral-700">
                       {skillsList
                         .filter(s => s.category === "Productivity")
                         .map((skill) => (
                           <li key={skill.id} className="flex items-center gap-2 group/skill justify-between">
                             <div className="flex items-center gap-2 flex-grow">
-                              <span className="w-1.5 h-1.5 bg-verdant-yellow shrink-0" />
+                              <span className="w-1.5 h-1.5 bg-neutral-900 shrink-0" />
                               {isAdmin && onUpdateSettings ? (
                                 <input 
                                   type="text"
                                   value={skill.name}
                                   onChange={(e) => handleUpdateSkill(skill.id, e.target.value)}
-                                  className="bg-transparent border-b border-dashed border-verdant-yellow/30 focus:border-verdant-yellow font-sans font-bold text-verdant-cream focus:outline-none w-full"
+                                  className="bg-transparent border-b border-neutral-300 focus:border-neutral-900 font-sans text-neutral-900 focus:outline-none w-full"
                                 />
                               ) : (
                                 <span>{skill.name}</span>
@@ -401,7 +403,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                               <button
                                 type="button"
                                 onClick={() => handleDeleteSkill(skill.id)}
-                                className="text-red-500 hover:text-red-400 p-0.5 cursor-pointer"
+                                className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer"
                                 title="Delete skill"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -416,7 +418,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                     <button
                       type="button"
                       onClick={() => handleCreateSkill("Productivity")}
-                      className="mt-4 border border-dashed border-verdant-yellow/30 text-verdant-yellow hover:text-white hover:border-white py-1 text-[9px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
+                      className="mt-4 border border-neutral-300 text-neutral-700 hover:border-neutral-900 hover:text-neutral-900 py-1 text-[9px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                       <span>ADD SYSTEMS SKILL</span>
@@ -425,24 +427,24 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                 </div>
 
                 {/* General/Cognitive Category */}
-                <div className="border border-[#306634]/20 p-4 bg-verdant-dark/40 flex flex-col justify-between">
+                <div className="border border-neutral-200 p-4 bg-neutral-50/60 flex flex-col justify-between">
                   <div>
-                    <h4 className="font-mono text-xs text-[#306634] font-black tracking-widest uppercase mb-3">
-                      COGNITIVE & GENERAL
+                    <h4 className="font-mono text-[11px] text-neutral-900 font-bold tracking-[0.18em] uppercase mb-3">
+                      // 04. COGNITIVE & GENERAL
                     </h4>
-                    <ul className="space-y-3 text-[11px] font-sans text-verdant-cream/90 font-bold">
+                    <ul className="space-y-2.5 text-xs font-sans text-neutral-700">
                       {skillsList
                         .filter(s => s.category === "General")
                         .map((skill) => (
                           <li key={skill.id} className="flex items-center gap-2 group/skill justify-between">
                             <div className="flex items-center gap-2 flex-grow">
-                              <span className="w-1.5 h-1.5 bg-[#306634] shrink-0" />
+                              <span className="w-1.5 h-1.5 bg-neutral-900 shrink-0" />
                               {isAdmin && onUpdateSettings ? (
                                 <input 
                                   type="text"
                                   value={skill.name}
                                   onChange={(e) => handleUpdateSkill(skill.id, e.target.value)}
-                                  className="bg-transparent border-b border-dashed border-verdant-yellow/30 focus:border-verdant-yellow font-sans font-bold text-verdant-cream focus:outline-none w-full"
+                                  className="bg-transparent border-b border-neutral-300 focus:border-neutral-900 font-sans text-neutral-900 focus:outline-none w-full"
                                 />
                               ) : (
                                 <span>{skill.name}</span>
@@ -453,7 +455,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                               <button
                                 type="button"
                                 onClick={() => handleDeleteSkill(skill.id)}
-                                className="text-red-500 hover:text-red-400 p-0.5 cursor-pointer"
+                                className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer"
                                 title="Delete skill"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -468,7 +470,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                     <button
                       type="button"
                       onClick={() => handleCreateSkill("General")}
-                      className="mt-4 border border-dashed border-[#306634]/30 text-[#306634] hover:text-white hover:border-white py-1 text-[9px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
+                      className="mt-4 border border-neutral-300 text-neutral-700 hover:border-neutral-900 hover:text-neutral-900 py-1 text-[9px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                       <span>ADD GENERAL SKILL</span>
@@ -485,10 +487,10 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
             
             {/* Certifications container with dynamic items */}
             {!profileSettings?.hideCertifications && (
-              <div className="border-[3px] border-verdant-cream bg-verdant-charcoal p-6 text-left relative shadow-charcoal-offset w-full">
-                <h3 className="font-syne font-black text-xl text-verdant-cream uppercase tracking-wider border-b border-verdant-cream/10 pb-3 mb-4 flex items-center justify-between">
+              <div className="border border-neutral-200 bg-white p-6 text-left relative shadow-sm w-full">
+                <h3 className="font-syne font-black text-xl text-neutral-900 uppercase tracking-tight border-b border-neutral-100 pb-3 mb-4 flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-verdant-yellow" />
+                    <Award className="w-4 h-4 text-verdant-yellow" />
                     <span>CERTIFICATIONS</span>
                   </span>
                   
@@ -506,9 +508,9 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                   )}
                 </h3>
 
-                <div className="flex flex-col gap-4 max-h-[580px] overflow-y-auto pr-2 custom-scrollbar w-full">
+                <div className="flex flex-col gap-3 max-h-[580px] overflow-y-auto pr-2 custom-scrollbar w-full">
                   {certificates.map((cert) => (
-                    <div key={cert.id} className="border border-verdant-cream/20 hover:border-verdant-yellow/55 bg-verdant-dark/40 p-3.5 relative flex flex-col gap-1.5 font-mono transition-colors">
+                    <div key={cert.id} className="border border-neutral-200 hover:border-neutral-900 bg-white p-3.5 relative flex flex-col gap-1.5 font-mono transition-colors">
                       
                       {isAdmin && onUpdateSettings ? (
                         <div className="flex flex-col gap-1 w-full text-left">
@@ -517,14 +519,14 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                               type="text"
                               value={cert.badge}
                               onChange={(e) => handleUpdateCert(cert.id, { badge: e.target.value })}
-                              className="bg-verdant-charcoal border border-verdant-cream/30 p-1 text-[8px] font-bold text-verdant-yellow uppercase w-20 focus:outline-none"
+                              className="bg-neutral-50 border border-neutral-300 p-1 text-[8px] font-bold text-neutral-900 uppercase w-20 focus:outline-none"
                               placeholder="Badge"
                             />
                             <input 
                               type="text"
                               value={cert.date}
                               onChange={(e) => handleUpdateCert(cert.id, { date: e.target.value })}
-                              className="bg-verdant-charcoal border border-verdant-cream/30 p-1 text-[8px] font-bold text-verdant-gray uppercase w-full focus:outline-none text-right"
+                              className="bg-neutral-50 border border-neutral-300 p-1 text-[8px] font-bold text-neutral-500 uppercase w-full focus:outline-none text-right"
                               placeholder="Date"
                             />
                           </div>
@@ -533,7 +535,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                             type="text"
                             value={cert.title}
                             onChange={(e) => handleUpdateCert(cert.id, { title: e.target.value })}
-                            className="bg-verdant-charcoal border border-verdant-cream/30 p-1 text-xs font-black text-verdant-cream uppercase w-full focus:outline-none my-0.5"
+                            className="bg-neutral-50 border border-neutral-300 p-1 text-xs font-bold text-neutral-900 uppercase w-full focus:outline-none my-0.5"
                             placeholder="Certificate Title"
                           />
 
@@ -542,13 +544,13 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                               type="text"
                               value={cert.issuer}
                               onChange={(e) => handleUpdateCert(cert.id, { issuer: e.target.value })}
-                              className="bg-verdant-charcoal border border-verdant-cream/30 p-1 text-[9px] font-bold text-[#306634] uppercase w-full focus:outline-none"
+                              className="bg-neutral-50 border border-neutral-300 p-1 text-[9px] font-medium text-neutral-600 uppercase w-full focus:outline-none"
                               placeholder="Issuer Org"
                             />
                             <button
                               type="button"
                               onClick={() => handleDeleteCert(cert.id)}
-                              className="text-red-500 hover:text-red-400 p-1 cursor-pointer"
+                              className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
                               title="Delete record"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -558,17 +560,17 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                       ) : (
                         <>
                           <div className="flex justify-between items-start gap-2">
-                            <span className="bg-verdant-yellow/10 border border-verdant-yellow text-verdant-yellow text-[8px] font-bold px-2 py-0.5 tracking-wider uppercase select-none rounded-none shrink-0">
+                            <span className="border border-neutral-200 bg-neutral-50 text-neutral-700 text-[8px] font-bold px-2 py-0.5 tracking-wider uppercase select-none rounded-none shrink-0">
                               {cert.badge}
                             </span>
-                            <span className="text-verdant-gray text-[9px] font-extrabold uppercase shrink-0">
+                            <span className="text-neutral-500 text-[9px] font-semibold uppercase shrink-0 tabular-nums">
                               {cert.date}
                             </span>
                           </div>
-                          <h4 className="text-verdant-cream font-black text-xs leading-snug tracking-wide uppercase mt-1">
+                          <h4 className="text-neutral-900 font-bold text-xs leading-snug tracking-wide uppercase mt-1">
                             {cert.title}
                           </h4>
-                          <p className="text-[#306634] text-[9.5px] uppercase font-bold tracking-tight">
+                          <p className="text-neutral-500 text-[9.5px] uppercase font-normal tracking-tight">
                             {cert.issuer}
                           </p>
                         </>
@@ -581,7 +583,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                   <button
                     type="button"
                     onClick={handleCreateCert}
-                    className="mt-4 w-full border border-dashed border-verdant-yellow text-verdant-yellow hover:text-white hover:border-white py-2 text-[10px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
+                    className="mt-4 w-full border border-neutral-300 text-neutral-800 hover:border-neutral-900 hover:text-neutral-900 py-2 text-[10px] font-mono uppercase flex items-center justify-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>ADD CERTIFICATE TO LIST</span>
@@ -592,7 +594,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
 
             {/* Visual illustrative workspace desk drafting mockup */}
             {!profileSettings?.hideWorkspacePreview && (
-              <div className="border-[3px] border-verdant-cream bg-verdant-dark p-2 relative w-full group/blueprint">
+              <div className="border border-neutral-200 bg-neutral-950 p-2 relative w-full group/blueprint">
                 
                 {/* Direct hide trigger in admin mode */}
                 {isAdmin && onUpdateSettings && (
@@ -607,17 +609,17 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                   </button>
                 )}
 
-                <div className="aspect-video relative bg-verdant-dark overflow-hidden flex flex-col justify-end p-3 border border-verdant-cream/20">
-                  <svg className="absolute inset-0 w-full h-full text-[#306634]/30 pointer-events-none" viewBox="0 0 100 60" fill="none" stroke="currentColor">
+                <div className="aspect-video relative bg-neutral-950 overflow-hidden flex flex-col justify-end p-3 border border-neutral-800">
+                  <svg className="absolute inset-0 w-full h-full text-neutral-700/50 pointer-events-none" viewBox="0 0 100 60" fill="none" stroke="currentColor">
                     <line x1="5" y1="50" x2="95" y2="50" strokeWidth="1" />
-                    <rect x="25" y="15" width="50" height="30" rx="2" strokeWidth="1.5" />
-                    <line x1="68" y1="18" x2="80" y2="5" strokeWidth="2" strokeLinecap="round" />
-                    <circle cx="28" cy="20" r="3" fill="currentColor" />
-                    <path d="M35 30 C45 20, 55 40, 65 30" strokeWidth="1" />
+                    <rect x="25" y="15" width="50" height="30" rx="1" strokeWidth="1.2" />
+                    <line x1="68" y1="18" x2="80" y2="5" strokeWidth="1.5" strokeLinecap="round" />
+                    <circle cx="28" cy="20" r="2.5" fill="currentColor" />
+                    <path d="M35 30 C45 20, 55 40, 65 30" strokeWidth="0.8" strokeDasharray="1 1" />
                   </svg>
 
-                  <span className="font-mono text-[9px] text-verdant-gray uppercase ml-auto tracking-widest opacity-80 z-10">
-                    DEVELOPER TIMELINE
+                  <span className="font-mono text-[8.5px] text-neutral-400 uppercase ml-auto tracking-[0.2em] opacity-80 z-10">
+                    CS & DESIGN FOCUS
                   </span>
                 </div>
               </div>
@@ -627,18 +629,19 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
 
         </div>
 
-        {/* Philosophy quotation section with bold yellow highlighter lines */}
-        <section className="mt-16 border-t-2 border-dashed border-verdant-cream/20 pt-16 grid grid-cols-1 md:grid-cols-12 gap-8 items-center text-left">
+        {/* Philosophy quotation section */}
+        <section className="mt-16 border-t border-neutral-200 pt-12 grid grid-cols-1 md:grid-cols-12 gap-8 items-center text-left">
           
-          <div className="md:col-span-8 flex flex-col gap-4 w-full">
-            <span className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-widest">
-              GUIDING INSIGHT
+          <div className="md:col-span-8 flex flex-col gap-3 w-full">
+            <span className="font-mono text-[9.5px] font-bold text-neutral-500 uppercase tracking-[0.22em] flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#D5001C]" />
+              <span>GUIDING INSIGHT</span>
             </span>
             
             {isAdmin && onUpdateSettings ? (
               <div className="flex flex-col gap-3 w-full">
                 <div>
-                  <span className="font-mono text-[8px] text-verdant-yellow font-black uppercase tracking-widest block mb-1">
+                  <span className="font-mono text-[8px] text-[#D5001C] font-black uppercase tracking-widest block mb-1">
                     📝 Edit Quote Body Copy:
                   </span>
                   <textarea
@@ -649,7 +652,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                       setLocalQuoteText(val);
                       onUpdateSettings({ ...profileSettings, quoteText: val });
                     }}
-                    className="w-full bg-verdant-charcoal text-white font-syne font-black text-sm uppercase p-2 border border-dashed border-verdant-yellow/40 focus:outline-none focus:border-verdant-yellow"
+                    className="w-full bg-white text-neutral-900 font-syne font-black text-sm uppercase p-2 border border-neutral-300 focus:outline-none focus:border-neutral-900"
                     placeholder="ENTER QUOTE DIRECTLY..."
                   />
                 </div>
@@ -665,17 +668,17 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                       setLocalQuoteAuthor(val);
                       onUpdateSettings({ ...profileSettings, quoteAuthor: val });
                     }}
-                    className="w-full bg-verdant-charcoal text-verdant-gray font-mono text-xs uppercase p-2 border border-dashed border-verdant-yellow/40 focus:outline-none focus:border-verdant-yellow"
+                    className="w-full bg-white text-neutral-600 font-mono text-xs uppercase p-2 border border-neutral-300 focus:outline-none focus:border-neutral-900"
                     placeholder="ENTER AUTHOR..."
                   />
                 </div>
               </div>
             ) : (
               <>
-                <h3 className="font-syne font-black text-2xl md:text-3xl text-verdant-cream uppercase italic leading-tight uppercase">
+                <h3 className="font-syne font-black text-xl md:text-2xl text-neutral-900 leading-snug">
                   "{profileSettings?.quoteText || "GREAT THINGS ARE DONE BY A SERIES OF SMALL THINGS BROUGHT TOGETHER."}"
                 </h3>
-                <p className="font-mono text-xs text-verdant-gray font-bold tracking-wider uppercase mt-3">
+                <p className="font-mono text-xs text-neutral-500 font-semibold tracking-wider uppercase mt-2">
                   — {profileSettings?.quoteAuthor || "VINCENT VAN GOGH"}
                 </p>
               </>
@@ -683,10 +686,8 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
           </div>
 
           <div className="md:col-span-4 relative">
-            <div className="absolute inset-0 bg-[#306634]/10 translate-x-2.5 translate-y-2.5 border border-verdant-cream/10" />
-            
-            <div className="relative border-2 border-dashed border-verdant-cream/20 bg-verdant-charcoal p-6 text-center">
-              <span className="font-mono text-[9px] font-bold text-verdant-gray uppercase tracking-widest block mb-1">DEDICATION</span>
+            <div className="border border-neutral-200 bg-white p-6 text-left shadow-sm">
+              <span className="font-mono text-[9px] font-bold text-neutral-400 uppercase tracking-[0.2em] block mb-2">DEDICATION</span>
               {isAdmin && onUpdateSettings ? (
                 <div className="flex flex-col gap-2 mt-2">
                   <span className="font-mono text-[7px] text-verdant-yellow font-bold uppercase tracking-widest text-left block mb-0.5">
@@ -700,7 +701,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                       setLocalDedicationTitle(val);
                       onUpdateSettings({ ...profileSettings, dedicationTitle: val });
                     }}
-                    className="w-full bg-verdant-dark text-white font-syne font-black text-xs uppercase p-1.5 border border-dashed border-verdant-yellow/40 focus:outline-none focus:border-verdant-yellow"
+                    className="w-full bg-neutral-50 text-neutral-900 font-syne font-bold text-xs uppercase p-1.5 border border-neutral-300 focus:outline-none focus:border-neutral-900"
                     placeholder="DEDICATION CARD TITLE..."
                   />
                   <span className="font-mono text-[7px] text-verdant-yellow font-bold uppercase tracking-widest text-left block mt-1.5 mb-0.5">
@@ -714,16 +715,16 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                       setLocalDedicationText(val);
                       onUpdateSettings({ ...profileSettings, dedicationText: val });
                     }}
-                    className="w-full bg-verdant-dark text-verdant-gray text-xs p-1.5 border border-dashed border-verdant-yellow/40 focus:outline-none focus:border-verdant-yellow resize-none"
+                    className="w-full bg-neutral-50 text-neutral-700 text-xs p-1.5 border border-neutral-300 focus:outline-none focus:border-neutral-900 resize-none"
                     placeholder="DEDICATION DESCRIPTION..."
                   />
                 </div>
               ) : (
                 <>
-                  <h4 className="font-syne font-black text-lg text-[#306634] tracking-widest uppercase mb-3">
+                  <h4 className="font-syne font-black text-base text-neutral-900 tracking-wider uppercase mb-2">
                     {profileSettings?.dedicationTitle || "INCREMENTAL PROGRESS"}
                   </h4>
-                  <p className="font-sans text-xs text-verdant-gray leading-relaxed font-semibold">
+                  <p className="font-sans text-xs text-neutral-600 leading-relaxed font-normal">
                     {profileSettings?.dedicationText || "Building secure networks, modeling 3D space, and shaping digital user paths with clean pixel harmony."}
                   </p>
                 </>
@@ -733,26 +734,22 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
 
         </section>
 
-        {/* CTA bottom row matching Image 3 INITIATE_CONTACT buttons */}
+        {/* CTA bottom row */}
         <footer className="mt-16 flex flex-wrap gap-4 justify-center items-center" id="init-contact">
-          <span className="font-mono text-[10px] text-[#306634] uppercase font-black tracking-widest w-full text-center block mb-2">
-            INITIATE_CONTACT
-          </span>
-          
           <button
             onClick={() => onChangeTab("CONNECT")}
-            className="group cursor-pointer bg-verdant-yellow border-2 border-slate-900 text-white font-mono text-xs font-black tracking-widest uppercase px-6 py-4 shadow-yellow-offset hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[7px_7px_0px_0px_rgba(220,162,33,1)] active:translate-x-0 active:translate-y-0 active:shadow-yellow-offset transition-all inline-flex items-center gap-2 select-none"
+            style={{ backgroundColor: "#0A0A0A", color: "#FFFFFF" }}
+            className="cursor-pointer hover:!bg-[#D5001C] text-white font-mono text-xs font-bold tracking-[0.2em] uppercase px-7 py-3.5 shadow-sm transition-all select-none"
           >
-            <span>START A PROJECT</span>
-            <span className="bg-verdant-dark border border-verdant-cream text-verdant-yellow text-[8px] font-bold px-1 py-0.5 select-none font-sans">NEW</span>
+            START A PROJECT
           </button>
 
           <button
             onClick={handleDownloadDossier}
-            className="group cursor-pointer bg-transparent border-2 border-verdant-cream hover:bg-verdant-cream hover:text-white text-verdant-cream font-mono text-xs font-black tracking-widest uppercase px-6 py-4 inline-flex items-center gap-2 transition-all select-none"
+            className="group cursor-pointer bg-white border border-neutral-300 hover:border-neutral-950 hover:bg-neutral-950 hover:text-white text-neutral-900 font-mono text-xs font-bold tracking-[0.2em] uppercase px-7 py-3.5 inline-flex items-center gap-2 transition-all select-none shadow-sm"
           >
-            <FileText className="w-4 h-4 text-verdant-cream/50 group-hover:text-white" />
-            <span>DOWNLOAD_DOSSIER.TXT</span>
+            <FileText className="w-4 h-4 text-neutral-500 group-hover:text-white" />
+            <span>DOWNLOAD PROFILE (.TXT)</span>
           </button>
         </footer>
 
