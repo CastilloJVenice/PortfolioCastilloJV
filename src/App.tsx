@@ -94,6 +94,17 @@ export default function App() {
         const needsBioMigration = Boolean(data.biography && data.biography.includes("limits of what's computable"));
         const needsDedicationMigration = Boolean(data.dedicationText && data.dedicationText.includes("pixel harmony"));
         const needsParagraphMigration = Boolean(data.aboutParagraphs && data.aboutParagraphs.some(p => p.includes("limits of what's computable")));
+        const hasStudentBio = Boolean(data.biography && data.biography.includes("Computer Science student"));
+        const hasStudentParagraphs = Boolean(data.aboutParagraphs && data.aboutParagraphs.some(p => p.includes("Computer Science student")));
+
+        const cleanedBio = needsBioMigration 
+          ? DEFAULT_PROFILE_SETTINGS.biography 
+          : (data.biography ? data.biography.replaceAll("Computer Science student", "Computer Science graduate") : DEFAULT_PROFILE_SETTINGS.biography);
+        const cleanedParagraphs = needsParagraphMigration 
+          ? DEFAULT_PROFILE_SETTINGS.aboutParagraphs 
+          : (data.aboutParagraphs && data.aboutParagraphs.length > 0 
+              ? data.aboutParagraphs.map(p => p.replaceAll("Computer Science student", "Computer Science graduate")) 
+              : DEFAULT_PROFILE_SETTINGS.aboutParagraphs);
 
         const sanitized: ProfileSettings = {
           ...data,
@@ -104,17 +115,18 @@ export default function App() {
           bgAccentStyle: hasLegacyGrid || !data.bgAccentStyle ? "solid-plain" : data.bgAccentStyle,
           fontFamilyHeader: (!data.fontFamilyHeader || data.fontFamilyHeader === "Syne") ? "Plus Jakarta Sans" : data.fontFamilyHeader,
           fontFamilyBody: (!data.fontFamilyBody) ? "Plus Jakarta Sans" : data.fontFamilyBody,
-          headline: data.headline || DEFAULT_PROFILE_SETTINGS.headline,
-          biography: needsBioMigration ? DEFAULT_PROFILE_SETTINGS.biography : (data.biography || DEFAULT_PROFILE_SETTINGS.biography),
-          aboutParagraphs: needsParagraphMigration ? DEFAULT_PROFILE_SETTINGS.aboutParagraphs : (data.aboutParagraphs && data.aboutParagraphs.length > 0 ? data.aboutParagraphs : DEFAULT_PROFILE_SETTINGS.aboutParagraphs),
+          headline: data.headline ? data.headline.replaceAll("STUDENT", "GRADUATE") : DEFAULT_PROFILE_SETTINGS.headline,
+          biography: cleanedBio,
+          aboutParagraphs: cleanedParagraphs,
           dedicationTitle: data.dedicationTitle || DEFAULT_PROFILE_SETTINGS.dedicationTitle,
           dedicationText: needsDedicationMigration ? DEFAULT_PROFILE_SETTINGS.dedicationText : (data.dedicationText || DEFAULT_PROFILE_SETTINGS.dedicationText),
+          projectCategories: (data.projectCategories && data.projectCategories.length > 0) ? data.projectCategories : DEFAULT_PROFILE_SETTINGS.projectCategories,
         };
         setProfileSettings(sanitized);
         localStorage.setItem("portfolio_profile_settings", JSON.stringify(sanitized));
 
         // If legacy colors existed in Firestore, update remote database so it stays updated
-        if (hasLegacyColor || needsBioMigration || needsDedicationMigration || needsParagraphMigration) {
+        if (hasLegacyColor || needsBioMigration || needsDedicationMigration || needsParagraphMigration || hasStudentBio || hasStudentParagraphs) {
           setDoc(doc(db, "profile", "settings"), sanitized, { merge: true }).catch((e) => {
             console.error("Auto-migrated legacy theme colors in Firestore:", e);
           });
