@@ -393,11 +393,6 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
                 <div className="flex flex-col gap-4">
                   {/* Visual Frame rendering the item */}
                   <div className="relative aspect-video bg-neutral-950 border border-neutral-800 flex flex-col justify-between p-3 overflow-hidden select-none">
-                    {/* Top badge */}
-                    <div className="absolute top-2 left-2 bg-neutral-900/90 border border-neutral-700 text-neutral-200 font-mono text-[8px] font-bold px-2 py-0.5 uppercase tracking-widest z-20">
-                      {proj.badge}
-                    </div>
-
                     {/* Render programmatic technical representations */}
                     <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-10">
                       {proj.imageType && proj.imageType.startsWith("data:image/") ? (
