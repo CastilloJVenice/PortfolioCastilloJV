@@ -305,7 +305,7 @@ export default function SayHiView({ profileSettings }: SayHiViewProps) {
               </div>
 
               <p className="font-sans text-[11px] text-neutral-500 leading-relaxed font-normal mt-3">
-                Available for software development, UI/UX design, and technical student or client projects.
+                Available for software development, UI/UX design, and client or collaboration projects.
               </p>
             </div>
           </div>
