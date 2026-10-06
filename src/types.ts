@@ -10,7 +10,7 @@ export interface Project {
   title: string;
   category: string; // Used for Category / Tab sort filter
   tag: string;      // Tech tags string (e.g. "React / TypeScript / Vite")
-  badge: "CASE STUDY" | "EXPERIMENTAL" | "MASTERPRINT" | string;
+  badge?: string;
   year: string;
   description: string;
   extendedDescription?: string; // Optional deep description when workspace expands
