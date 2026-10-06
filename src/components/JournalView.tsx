@@ -25,10 +25,10 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
     profileSettings?.quoteAuthor !== undefined ? profileSettings.quoteAuthor : "Vincent van Gogh"
   );
   const [localDedicationTitle, setLocalDedicationTitle] = useState(() => 
-    profileSettings?.dedicationTitle !== undefined ? profileSettings.dedicationTitle : "INCREMENTAL PROGRESS"
+    profileSettings?.dedicationTitle !== undefined ? profileSettings.dedicationTitle : "WORK PHILOSOPHY"
   );
   const [localDedicationText, setLocalDedicationText] = useState(() => 
-    profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "Building secure networks, modeling 3D space, and shaping digital user paths with clean pixel harmony."
+    profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "Building clean user interfaces, exploring software security, and developing reliable digital solutions."
   );
 
   useEffect(() => {
@@ -44,11 +44,11 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
   }, [profileSettings?.quoteAuthor]);
 
   useEffect(() => {
-    setLocalDedicationTitle(profileSettings?.dedicationTitle !== undefined ? profileSettings.dedicationTitle : "INCREMENTAL PROGRESS");
+    setLocalDedicationTitle(profileSettings?.dedicationTitle !== undefined ? profileSettings.dedicationTitle : "WORK PHILOSOPHY");
   }, [profileSettings?.dedicationTitle]);
 
   useEffect(() => {
-    setLocalDedicationText(profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "Building secure networks, modeling 3D space, and shaping digital user paths with clean pixel harmony.");
+    setLocalDedicationText(profileSettings?.dedicationText !== undefined ? profileSettings.dedicationText : "Building clean user interfaces, exploring software security, and developing reliable digital solutions.");
   }, [profileSettings?.dedicationText]);
 
   // Setup dynamic list helpers
@@ -206,7 +206,7 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
             ABOUT ME
           </h1>
           <p className="font-sans text-xs md:text-sm font-medium text-neutral-500 mt-2 text-left">
-            {profileSettings?.fullName || "JULIARISTY"} {profileSettings?.lastNameHighlight || "VENICE CASTILLO"} · Computer Science Student & Digital Designer
+            {profileSettings?.fullName || "JULIARISTY"} {profileSettings?.lastNameHighlight || "VENICE CASTILLO"} · {profileSettings?.headline || "Computer Science Graduate & Digital Designer"}
           </p>
         </div>
 
@@ -247,13 +247,13 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
                     ) : (
                       <>
                         <p>
-                          Hello! I'm a <span className="text-neutral-900 font-semibold">Computer Science student</span> at the University of the Cordilleras.
+                          Hello! I'm a <span className="text-neutral-900 font-semibold">Computer Science graduate</span> from the University of the Cordilleras.
                         </p>
                         <p>
-                          My interests sit at <span className="text-neutral-900 font-semibold">UI/UX Design</span>, where design meets behavior; <span className="text-neutral-900 font-semibold">Cryptography</span>, where math meets security; and <span className="text-neutral-900 font-semibold">Theoretical Computer Science</span>, where logic meets the limits of what's computable.
+                          My work centers on <span className="text-neutral-900 font-semibold">UI/UX Design</span>, <span className="text-neutral-900 font-semibold">Cryptography</span>, and <span className="text-neutral-900 font-semibold">Software Development</span>. I focus on building clear interfaces, secure software, and reliable applications.
                         </p>
                         <p>
-                          I enjoy understanding things deeply and not just how to build them, but why they work. This drive is reflected in every cryptographic system, low-poly 3D render, or visual design draft I compose.
+                          I care about creating technology that is thoughtful, accessible, and grounded in practical problem solving — from interactive prototypes to secure code and 3D modeling.
                         </p>
                       </>
                     )}
@@ -722,10 +722,10 @@ export default function JournalView({ onChangeTab, profileSettings, isAdmin = fa
               ) : (
                 <>
                   <h4 className="font-syne font-black text-base text-neutral-900 tracking-wider uppercase mb-2">
-                    {profileSettings?.dedicationTitle || "INCREMENTAL PROGRESS"}
+                    {profileSettings?.dedicationTitle || "WORK PHILOSOPHY"}
                   </h4>
                   <p className="font-sans text-xs text-neutral-600 leading-relaxed font-normal">
-                    {profileSettings?.dedicationText || "Building secure networks, modeling 3D space, and shaping digital user paths with clean pixel harmony."}
+                    {profileSettings?.dedicationText || "Building clean user interfaces, exploring software security, and developing reliable digital solutions."}
                   </p>
                 </>
               )}
