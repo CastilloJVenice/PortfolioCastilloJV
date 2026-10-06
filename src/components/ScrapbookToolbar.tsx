@@ -70,107 +70,136 @@ export function StickerRenderer({ src, size = 100 }: { src: string; size?: numbe
   }
 
   switch (src) {
-    case "daisy":
+    case "gt-spec":
+    case "star": // legacy mapping
       return (
-        <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className="drop-shadow-md select-none pointer-events-none">
-          <circle cx="50" cy="50" r="14" fill="#DCA221" stroke="#306634" strokeWidth="3" />
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-            <ellipse 
-              key={angle}
-              cx="50" 
-              cy="23" 
-              rx="10" 
-              ry="18" 
-              fill="#F9FAF9" 
-              stroke="#306634" 
-              strokeWidth="3" 
-              transform={`rotate(${angle} 50 50)`} 
-            />
+        <svg width={size} height={size * 0.75} viewBox="0 0 160 120" fill="none" className="drop-shadow-md select-none pointer-events-none">
+          <rect x="4" y="4" width="152" height="112" rx="3" fill="#0A0A0A" stroke="#27272A" strokeWidth="2" />
+          <path d="M4 26 L156 26" stroke="#27272A" strokeWidth="1.5" />
+          <rect x="12" y="11" width="8" height="8" fill="#D5001C" />
+          <text x="26" y="19" fill="#FFFFFF" fontFamily="monospace" fontSize="9" fontWeight="bold" letterSpacing="1.5">GT // SPEC 01</text>
+          <text x="125" y="19" fill="#71717A" fontFamily="monospace" fontSize="8">VER 2.4</text>
+          <text x="14" y="65" fill="#FFFFFF" fontFamily="sans-serif" fontSize="24" fontWeight="900" letterSpacing="1">911 GT</text>
+          <path d="M14 74 L146 74" stroke="#D5001C" strokeWidth="2.5" />
+          <text x="14" y="93" fill="#A1A1AA" fontFamily="monospace" fontSize="7.5" letterSpacing="1.5">AERODYNAMIC // DOWNFORCE</text>
+          <text x="14" y="106" fill="#71717A" fontFamily="monospace" fontSize="7">LAT: 1.45G // 9000 RPM</text>
+        </svg>
+      );
+    case "iso-certified":
+    case "badge": // legacy mapping
+      return (
+        <svg width={size} height={size} viewBox="0 0 120 120" fill="none" className="drop-shadow-md select-none pointer-events-none">
+          <circle cx="60" cy="60" r="54" stroke="#0A0A0A" strokeWidth="3" fill="#FFFFFF" />
+          <circle cx="60" cy="60" r="46" stroke="#D5001C" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
+          <circle cx="60" cy="60" r="36" stroke="#0A0A0A" strokeWidth="1" fill="#F8F9FA" />
+          <path d="M60 6 L60 20 M60 100 L60 114 M6 60 L20 60 M100 60 L114 60" stroke="#0A0A0A" strokeWidth="2" />
+          <text x="60" y="52" fill="#0A0A0A" fontFamily="sans-serif" fontSize="10" fontWeight="900" textAnchor="middle" letterSpacing="1">ISO 9001</text>
+          <text x="60" y="66" fill="#D5001C" fontFamily="monospace" fontSize="7" fontWeight="bold" textAnchor="middle" letterSpacing="1.5">QUALIFIED</text>
+          <text x="60" y="78" fill="#71717A" fontFamily="monospace" fontSize="6" textAnchor="middle">PRECISION ENG</text>
+        </svg>
+      );
+    case "radar-target":
+    case "daisy": // legacy mapping
+      return (
+        <svg width={size} height={size} viewBox="0 0 120 120" fill="none" className="drop-shadow-md select-none pointer-events-none">
+          <circle cx="60" cy="60" r="52" stroke="#18181B" strokeWidth="1.5" strokeDasharray="6 3" fill="#FFFFFF" />
+          <circle cx="60" cy="60" r="36" stroke="#27272A" strokeWidth="1" fill="none" />
+          <circle cx="60" cy="60" r="18" stroke="#D5001C" strokeWidth="1.5" fill="none" />
+          <line x1="60" y1="4" x2="60" y2="116" stroke="#27272A" strokeWidth="1" />
+          <line x1="4" y1="60" x2="116" y2="60" stroke="#27272A" strokeWidth="1" />
+          <circle cx="60" cy="60" r="3" fill="#D5001C" />
+          <circle cx="78" cy="42" r="2.5" fill="#D5001C" />
+          <text x="83" y="44" fill="#0A0A0A" fontFamily="monospace" fontSize="7" fontWeight="bold">TARGET</text>
+          <text x="12" y="18" fill="#71717A" fontFamily="monospace" fontSize="6.5">AZ: 045°</text>
+          <text x="12" y="27" fill="#71717A" fontFamily="monospace" fontSize="6.5">RNG: 8.4KM</text>
+        </svg>
+      );
+    case "cad-wireframe":
+    case "heart": // legacy mapping
+      return (
+        <svg width={size} height={size} viewBox="0 0 120 120" fill="none" className="drop-shadow-md select-none pointer-events-none">
+          <rect x="6" y="6" width="108" height="108" rx="2" fill="#F8F9FA" stroke="#E4E4E7" strokeWidth="1.5" />
+          <path d="M60 25 L95 45 L95 85 L60 105 L25 85 L25 45 Z" stroke="#0A0A0A" strokeWidth="2" fill="none" />
+          <path d="M60 25 L60 65 L95 45" stroke="#0A0A0A" strokeWidth="1.5" />
+          <path d="M60 65 L25 45" stroke="#0A0A0A" strokeWidth="1.5" />
+          <path d="M60 65 L60 105" stroke="#0A0A0A" strokeWidth="1.5" />
+          <circle cx="60" cy="25" r="2.5" fill="#D5001C" />
+          <circle cx="95" cy="45" r="2.5" fill="#0A0A0A" />
+          <circle cx="95" cy="85" r="2.5" fill="#0A0A0A" />
+          <circle cx="60" cy="105" r="2.5" fill="#0A0A0A" />
+          <circle cx="25" cy="85" r="2.5" fill="#0A0A0A" />
+          <circle cx="25" cy="45" r="2.5" fill="#0A0A0A" />
+          <text x="12" y="18" fill="#0A0A0A" fontFamily="monospace" fontSize="7" fontWeight="bold">CAD // 3D ISO</text>
+          <text x="64" y="114" fill="#71717A" fontFamily="monospace" fontSize="6">[X:0, Y:0, Z:1]</text>
+        </svg>
+      );
+    case "carbon-composite":
+    case "coffee": // legacy mapping
+      return (
+        <svg width={size} height={size * 0.9} viewBox="0 0 140 120" fill="none" className="drop-shadow-md select-none pointer-events-none">
+          <polygon points="70,6 130,38 130,82 70,114 10,82 10,38" fill="#18181B" stroke="#27272A" strokeWidth="2" />
+          <polygon points="70,14 122,42 122,78 70,106 18,78 18,42" fill="#0A0A0A" stroke="#D5001C" strokeWidth="1" strokeDasharray="4 2" />
+          <text x="70" y="52" fill="#FFFFFF" fontFamily="sans-serif" fontSize="11" fontWeight="900" textAnchor="middle" letterSpacing="1.5">CARBON</text>
+          <text x="70" y="66" fill="#A1A1AA" fontFamily="monospace" fontSize="8" fontWeight="bold" textAnchor="middle" letterSpacing="1">COMPOSITE</text>
+          <line x1="45" y1="72" x2="95" y2="72" stroke="#D5001C" strokeWidth="1.5" />
+          <text x="70" y="84" fill="#71717A" fontFamily="monospace" fontSize="6.5" textAnchor="middle">HIGH-MODULUS WEAVE</text>
+        </svg>
+      );
+    case "approved-qa":
+    case "tape": // legacy mapping
+      return (
+        <div 
+          style={{ width: size * 1.5, height: size * 0.55 }} 
+          className="bg-neutral-950 border border-neutral-700 text-white p-2 flex flex-col justify-between select-none pointer-events-none shadow-md rotate-[-3deg] relative"
+        >
+          <div className="flex items-center justify-between border-b border-neutral-800 pb-0.5">
+            <span className="font-mono text-[7px] text-[#D5001C] font-black uppercase tracking-widest">
+              QA INSPECTED & VERIFIED
+            </span>
+            <span className="font-mono text-[6.5px] text-neutral-400">#911-PASS</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-sans font-black text-xs text-white tracking-widest uppercase">
+              APPROVED
+            </span>
+            <div className="flex items-center gap-0.5">
+              {[3, 8, 4, 10, 6, 2, 7, 5, 9, 3].map((h, i) => (
+                <div key={i} style={{ height: `${h}px` }} className="w-0.5 bg-neutral-300" />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    case "status-chip":
+    case "smiley": // legacy mapping
+      return (
+        <svg width={size} height={size * 0.75} viewBox="0 0 140 100" fill="none" className="drop-shadow-md select-none pointer-events-none">
+          <rect x="15" y="10" width="110" height="80" rx="3" fill="#0A0A0A" stroke="#27272A" strokeWidth="1.5" />
+          {[25, 45, 65, 85, 105].map((x) => (
+            <g key={x}>
+              <line x1={x} y1="4" x2={x} y2="10" stroke="#71717A" strokeWidth="2" />
+              <line x1={x} y1="90" x2={x} y2="96" stroke="#71717A" strokeWidth="2" />
+            </g>
           ))}
-          <circle cx="50" cy="50" r="14" fill="#DCA221" stroke="#306634" strokeWidth="3" />
+          <circle cx="30" cy="30" r="3" fill="#D5001C" />
+          <text x="38" y="33" fill="#FFFFFF" fontFamily="monospace" fontSize="8" fontWeight="bold">CHIP // SEC</text>
+          <text x="30" y="52" fill="#E4E4E7" fontFamily="sans-serif" fontSize="12" fontWeight="900" letterSpacing="1">ECC-256</text>
+          <text x="30" y="68" fill="#71717A" fontFamily="monospace" fontSize="7">CRYPTO HARDENED</text>
+          <text x="30" y="78" fill="#D5001C" fontFamily="monospace" fontSize="6.5">STATUS: OPTIMAL</text>
         </svg>
       );
-    case "star":
+    case "telemetry-vector":
+    case "leaf": // legacy mapping
       return (
-        <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className="drop-shadow-md select-none pointer-events-none">
-          <path 
-            d="M50 5 L63 36 L95 38 L70 60 L78 92 L50 74 L22 92 L30 60 L5 38 L37 36 Z" 
-            fill="#DCA221" 
-            stroke="#306634" 
-            strokeWidth="4" 
-            strokeLinejoin="round" 
-          />
+        <svg width={size} height={size * 0.75} viewBox="0 0 150 100" fill="none" className="drop-shadow-md select-none pointer-events-none">
+          <rect x="4" y="4" width="142" height="92" rx="2" fill="#FFFFFF" stroke="#0A0A0A" strokeWidth="1.5" />
+          <path d="M12 70 Q 55 15, 138 35" stroke="#0A0A0A" strokeWidth="2.5" fill="none" />
+          <path d="M12 78 Q 60 30, 138 45" stroke="#D5001C" strokeWidth="1.5" fill="none" />
+          <path d="M12 86 Q 65 45, 138 55" stroke="#A1A1AA" strokeWidth="1" strokeDasharray="3 2" fill="none" />
+          <text x="14" y="20" fill="#0A0A0A" fontFamily="sans-serif" fontSize="9" fontWeight="900" letterSpacing="1">AERO VECTOR</text>
+          <text x="14" y="32" fill="#71717A" fontFamily="monospace" fontSize="7">CD: 0.28 // DOWNFORCE</text>
+          <text x="96" y="85" fill="#D5001C" fontFamily="monospace" fontSize="7" fontWeight="bold">▼ -140 KG</text>
         </svg>
-      );
-    case "smiley":
-      return (
-        <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className="drop-shadow-md select-none pointer-events-none">
-          <circle cx="50" cy="50" r="42" fill="#FAF8F5" stroke="#306634" strokeWidth="4" />
-          <circle cx="35" cy="40" r="5" fill="#306634" />
-          <circle cx="65" cy="40" r="5" fill="#306634" />
-          <path d="M 30,60 A 20,20 0 0,0 70,60" stroke="#306634" strokeWidth="4" strokeLinecap="round" fill="none" />
-        </svg>
-      );
-    case "heart":
-      return (
-        <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className="drop-shadow-md select-none pointer-events-none">
-          <path 
-            d="M12,40 C12,18 42,16 50,38 C58,16 88,18 88,40 C88,68 50,92 50,92 C50,92 12,68 12,40 Z" 
-            fill="#DC2626" 
-            stroke="#1E170F" 
-            strokeWidth="4" 
-            strokeLinejoin="round" 
-          />
-        </svg>
-      );
-    case "leaf":
-      return (
-        <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className="drop-shadow-md select-none pointer-events-none">
-          <path 
-            d="M50,90 C80,90 90,60 90,40 C90,20 70,5 50,5 C30,5 10,20 10,40 C10,60 20,90 50,90 Z" 
-            fill="#306634" 
-            stroke="#F2EEE3" 
-            strokeWidth="3.5" 
-          />
-          <path d="M50,7 M50,88" stroke="#F2EEE3" strokeWidth="3" strokeLinecap="round" />
-          <path d="M50,30 Q75,25 85,20" stroke="#F2EEE3" strokeWidth="3.5" strokeLinecap="round" />
-          <path d="M50,45 Q75,45 88,48" stroke="#F2EEE3" strokeWidth="3.5" strokeLinecap="round" />
-          <path d="M50,60 Q70,70 82,75" stroke="#F2EEE3" strokeWidth="3.5" strokeLinecap="round" />
-          <path d="M50,30 Q25,25 15,20" stroke="#F2EEE3" strokeWidth="3.5" strokeLinecap="round" />
-          <path d="M50,45 Q25,45 12,48" stroke="#F2EEE3" strokeWidth="3.5" strokeLinecap="round" />
-          <path d="M50,60 Q30,70 18,75" stroke="#F2EEE3" strokeWidth="3.5" strokeLinecap="round" />
-        </svg>
-      );
-    case "tape":
-      return (
-        <div 
-          style={{ width: size * 1.5, height: size * 0.4 }} 
-          className="bg-transparent border-2 border-dashed border-verdant-yellow/60 bg-verdant-yellow/20 backdrop-blur-[1px] rotate-[-5deg] flex items-center justify-center select-none pointer-events-none shadow-sm rounded-sm"
-        >
-          <span className="font-mono text-[9px] text-[#306634] font-bold uppercase tracking-widest leading-none">APPROVED</span>
-        </div>
-      );
-    case "coffee":
-      return (
-        <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className="drop-shadow-md select-none pointer-events-none">
-          <path d="M25,35 L75,35 L70,80 L30,80 Z" fill="#F2EEE3" stroke="#306634" strokeWidth="4" />
-          <path d="M75,45 C85,45 85,60 72,60" stroke="#306634" strokeWidth="4" strokeLinecap="round" />
-          <path d="M40,15 Q43,25 40,30" stroke="#DCA221" strokeWidth="3" strokeLinecap="round" />
-          <path d="M50,12 Q53,23 50,28" stroke="#DCA221" strokeWidth="3" strokeLinecap="round" />
-          <path d="M60,15 Q63,25 60,30" stroke="#DCA221" strokeWidth="3" strokeLinecap="round" />
-          <rect x="35" y="50" width="30" height="15" rx="3" fill="#DCA221" stroke="#306634" strokeWidth="2.5" />
-          <circle cx="50" cy="57" r="3" fill="#F2EEE3" />
-        </svg>
-      );
-    case "badge":
-      return (
-        <div 
-          style={{ width: size, height: size }} 
-          className="rounded-full border-4 border-double border-verdant-mint bg-verdant-yellow text-verdant-cream flex flex-col items-center justify-center text-center font-syne select-none pointer-events-none rotate-[6deg] shadow-lg p-1"
-        >
-          <span className="text-[10px] sm:text-xs font-black uppercase tracking-tight leading-none text-verdant-dark">100%</span>
-          <span className="text-[9px] sm:text-[10px] font-bold leading-none text-white mt-0.5">EST. 2026</span>
-        </div>
       );
     default:
       return null;
@@ -180,14 +209,16 @@ export function StickerRenderer({ src, size = 100 }: { src: string; size?: numbe
 interface ScrapbookToolbarProps {
   profileSettings: ProfileSettings;
   activeTab: ActiveTab;
+  onChangeTab?: (tab: ActiveTab) => void;
   onUpdateSettings: (settings: ProfileSettings) => void;
-  onSaveDatabase: () => Promise<void>;
+  onSaveDatabase: (latest?: ProfileSettings) => Promise<void>;
   onCloseAdmin: () => void;
 }
 
 export default function ScrapbookToolbar({
   profileSettings,
   activeTab,
+  onChangeTab,
   onUpdateSettings,
   onSaveDatabase,
   onCloseAdmin
@@ -224,16 +255,16 @@ export default function ScrapbookToolbar({
     return () => window.removeEventListener("scrapbook-sticker-select", handleScreenSelect);
   }, []);
 
-  // Preset stickers list
+  // Preset stickers list (High-Tech Precision Porsche Engineering & Telemetry)
   const presetStickers = [
-    { key: "daisy", label: "🌼 Botanical Daisy" },
-    { key: "star", label: "⭐ Retro Star" },
-    { key: "smiley", label: "🙂 Cute Face" },
-    { key: "heart", label: "❤️ Hearth Stamp" },
-    { key: "leaf", label: "🌿 Green Leaves" },
-    { key: "tape", label: "🎟️ Washi Tape" },
-    { key: "coffee", label: "☕ Designer Brew" },
-    { key: "badge", label: "🏅 Quality Badge" }
+    { key: "gt-spec", label: "🏎️ 911 GT // SPEC Emblem" },
+    { key: "iso-certified", label: "⚙️ ISO 9001 Quality Mark" },
+    { key: "radar-target", label: "🎯 Telemetry Radar Reticle" },
+    { key: "cad-wireframe", label: "📐 CAD 3D Isometric Cube" },
+    { key: "carbon-composite", label: "⬛ Carbon Fiber Composite" },
+    { key: "approved-qa", label: "🏷️ QA Inspected & Passed" },
+    { key: "status-chip", label: "⚡ ECC-256 Silicon Chip" },
+    { key: "telemetry-vector", label: "💨 Aero Downforce Vector" }
   ];
 
   // Video backgrounds
@@ -317,7 +348,7 @@ export default function ScrapbookToolbar({
     setIsSaving(true);
     setSaveSuccess(false);
     try {
-      await onSaveDatabase();
+      await onSaveDatabase(profileSettings);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (e) {
@@ -339,12 +370,12 @@ export default function ScrapbookToolbar({
           <motion.button
             layoutId="designer-studio-floating"
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#DCA221] text-white border-2 border-slate-900 px-4 py-3 shadow-charcoal-offset cursor-pointer font-mono text-xs font-black uppercase tracking-wider hover:bg-emerald-800 transition-all text-left"
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-neutral-950 text-white border border-neutral-700 hover:border-[#D5001C] hover:bg-black px-4 py-3 shadow-2xl cursor-pointer font-mono text-xs font-bold uppercase tracking-wider transition-all text-left"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
           >
-            <Sparkles className="w-4 h-4 text-white animate-pulse" />
+            <Sparkles className="w-4 h-4 text-[#D5001C] animate-pulse" />
             <span>Open Canvas Studio</span>
           </motion.button>
         )}
@@ -355,39 +386,51 @@ export default function ScrapbookToolbar({
         {isOpen && (
           <motion.div
             layoutId="designer-studio-floating"
-            className="fixed bottom-6 right-6 top-20 w-80 sm:w-96 bg-verdant-charcoal border-[3px] border-verdant-cream overflow-hidden z-50 flex flex-col shadow-charcoal-offset text-left rounded-none"
+            className="fixed bottom-6 right-6 top-20 w-80 sm:w-96 bg-neutral-950 text-neutral-100 border border-neutral-700/80 overflow-hidden z-50 flex flex-col shadow-2xl text-left rounded-none"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 15 }}
           >
             {/* Header section with brand info */}
-            <header className="bg-verdant-dark p-4 border-b-[3px] border-verdant-cream flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-1.5">
-                <div className="w-7 h-7 bg-[#DCA221] border border-slate-900 rounded-none flex items-center justify-center font-black text-xs text-white">
-                  C
+            <header className="bg-neutral-900 p-3.5 border-b border-neutral-800 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-[#D5001C] rounded-none flex items-center justify-center font-black text-xs text-white">
+                  P
                 </div>
                 <div>
-                  <h3 className="font-syne font-black text-verdant-cream text-[13px] uppercase tracking-wide leading-none">
+                  <h3 className="font-sans font-bold text-white text-[12px] uppercase tracking-wide leading-none">
                     Studio Design Canvas
                   </h3>
-                  <span className="font-mono text-[9px] text-verdant-lime font-bold uppercase tracking-wider block mt-0.5">
-                    Editing Page: <span className="text-white">{activeTab}</span>
+                  <span className="font-mono text-[8.5px] text-neutral-400 font-semibold uppercase tracking-wider block mt-0.5">
+                    PAGE: <span className="text-white font-bold">{activeTab}</span>
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
+                {onChangeTab && (
+                  <button
+                    type="button"
+                    onClick={() => onChangeTab("ADMIN")}
+                    className="px-2 py-1 bg-[#D5001C] hover:bg-[#b00017] text-white font-mono text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                    title="Open full Admin Dashboard"
+                  >
+                    <span>DASHBOARD</span>
+                    <span>➔</span>
+                  </button>
+                )}
                 <button 
                   onClick={onCloseAdmin}
                   title="Logout admin access"
-                  className="p-1 hover:bg-verdant-charcoal border border-transparent hover:border-red-500/20 text-red-400 rounded-none cursor-pointer transition-colors"
+                  className="p-1 hover:bg-neutral-800 text-neutral-400 hover:text-red-400 rounded-none cursor-pointer transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-verdant-charcoal border border-transparent hover:border-verdant-cream text-verdant-cream rounded-none cursor-pointer"
+                  className="p-1 hover:bg-neutral-800 text-neutral-400 hover:text-white rounded-none cursor-pointer"
+                  title="Minimize"
                 >
-                  <ChevronRight className="w-4 h-4 text-verdant-yellow" />
+                  <ChevronRight className="w-4 h-4 text-[#D5001C]" />
                 </button>
               </div>
             </header>
@@ -433,7 +476,7 @@ export default function ScrapbookToolbar({
 
                   {/* Text blocks templates input */}
                   <div className="border border-verdant-cream/15 p-3 bg-verdant-dark/20 flex flex-col gap-2">
-                    <header className="font-mono text-[9px] font-bold text-[#306634] uppercase tracking-wider flex items-center gap-1">
+                    <header className="font-mono text-[9px] font-bold text-neutral-300 font-bold uppercase tracking-wider flex items-center gap-1">
                       <Type className="w-3.5 h-3.5" />
                       <span>1. Custom Typography Text Box</span>
                     </header>
@@ -482,7 +525,7 @@ export default function ScrapbookToolbar({
 
                   {/* Shapes templates input */}
                   <div className="border border-verdant-cream/15 p-3 bg-verdant-dark/20 flex flex-col gap-2">
-                    <header className="font-mono text-[9px] font-bold text-[#306634] uppercase tracking-wider flex items-center gap-1">
+                    <header className="font-mono text-[9px] font-bold text-neutral-300 font-bold uppercase tracking-wider flex items-center gap-1">
                       <Circle className="w-3.5 h-3.5" />
                       <span>2. Organic Shapes & Dividers</span>
                     </header>
@@ -504,7 +547,7 @@ export default function ScrapbookToolbar({
                           shapeType: "rectangle",
                           width: 120,
                           height: 60,
-                          textColor: "#306634"
+                          textColor: "#0A0A0A"
                         })}
                         className="py-2 border border-verdant-cream/20 hover:border-verdant-yellow bg-verdant-charcoal text-[9px] font-mono hover:text-white text-verdant-cream"
                       >
@@ -515,7 +558,7 @@ export default function ScrapbookToolbar({
                           type: "shape",
                           shapeType: "line",
                           width: 160,
-                          textColor: "#306634"
+                          textColor: "#0A0A0A"
                         })}
                         className="py-2 border border-verdant-cream/20 hover:border-verdant-yellow bg-verdant-charcoal text-[9px] font-mono hover:text-white text-verdant-cream"
                       >
@@ -537,7 +580,7 @@ export default function ScrapbookToolbar({
 
                   {/* Custom Draggable widgets */}
                   <div className="border border-verdant-cream/15 p-3 bg-verdant-dark/20 flex flex-col gap-2">
-                    <header className="font-mono text-[9px] font-bold text-[#306634] uppercase tracking-wider flex items-center gap-1">
+                    <header className="font-mono text-[9px] font-bold text-neutral-300 font-bold uppercase tracking-wider flex items-center gap-1">
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>3. Live Interactive Mini Widgets</span>
                     </header>
@@ -549,7 +592,7 @@ export default function ScrapbookToolbar({
                           scale: 1.0,
                           rotation: 0
                         })}
-                        className="py-2 border border-[#306634]/30 hover:border-verdant-yellow bg-verdant-charcoal text-[9px] font-mono font-black text-white hover:bg-[#306634]/10"
+                        className="py-2 border border-neutral-700 hover:border-verdant-yellow bg-verdant-charcoal text-[9px] font-mono font-black text-white hover:bg-neutral-800"
                       >
                         🕒 Real Clock
                       </button>
@@ -560,7 +603,7 @@ export default function ScrapbookToolbar({
                           scale: 1.0,
                           rotation: -1
                         })}
-                        className="py-2 border border-[#306634]/30 hover:border-verdant-yellow bg-verdant-charcoal text-[9px] font-mono font-black text-white hover:bg-[#306634]/10"
+                        className="py-2 border border-neutral-700 hover:border-verdant-yellow bg-verdant-charcoal text-[9px] font-mono font-black text-white hover:bg-neutral-800"
                       >
                         📻 Tape Player
                       </button>
@@ -571,7 +614,7 @@ export default function ScrapbookToolbar({
                           scale: 1.0,
                           rotation: 3
                         })}
-                        className="py-2 border border-[#306634]/30 hover:border-verdant-yellow bg-verdant-charcoal text-[9px] font-mono font-black text-white hover:bg-[#306634]/10"
+                        className="py-2 border border-neutral-700 hover:border-verdant-yellow bg-verdant-charcoal text-[9px] font-mono font-black text-white hover:bg-neutral-800"
                       >
                         ⚡ Status Feed
                       </button>
@@ -604,7 +647,7 @@ export default function ScrapbookToolbar({
 
                   {/* Graphic stickers and upload block */}
                   <div className="border border-verdant-cream/15 p-3 bg-verdant-dark/20 flex flex-col gap-2.5">
-                    <header className="font-mono text-[9px] font-bold text-[#306634] uppercase tracking-wider flex items-center justify-between">
+                    <header className="font-mono text-[9px] font-bold text-neutral-300 font-bold uppercase tracking-wider flex items-center justify-between">
                       <span>4. Built-in Graphic Stamps / Stickers</span>
                       <Maximize2 className="w-3 h-3 text-stone-500" />
                     </header>
@@ -633,7 +676,7 @@ export default function ScrapbookToolbar({
                         </span>
                         <Upload className="w-3 h-3 text-verdant-yellow" />
                       </div>
-                      <label className="cursor-pointer bg-verdant-charcoal border border-[#306634]/40 hover:border-verdant-yellow p-1.5 text-center text-[10px] font-mono text-verdant-cream hover:text-white transition-colors block">
+                      <label className="cursor-pointer bg-verdant-charcoal border border-neutral-700 hover:border-verdant-yellow p-1.5 text-center text-[10px] font-mono text-verdant-cream hover:text-white transition-colors block">
                         Drop Custom PNG Sticker
                         <input 
                           type="file" 
@@ -653,7 +696,7 @@ export default function ScrapbookToolbar({
                 <div className="flex flex-col gap-4">
                   {/* Select target element to edit */}
                   <div className="flex flex-col gap-1 bg-verdant-dark/30 p-2 border border-verdant-cream/15">
-                    <label className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-widest block">
+                    <label className="font-mono text-[9px] text-neutral-300 font-bold font-black uppercase tracking-widest block">
                       🎨 Selected Canvas Layer to Modify
                     </label>
                     <select
@@ -688,7 +731,7 @@ export default function ScrapbookToolbar({
                       
                       {/* Depth Sorting Layer */}
                       <div className="flex justify-between items-center bg-verdant-dark p-2 border border-verdant-cream/10">
-                        <span className="font-mono text-[9px] font-bold text-[#306634] uppercase">Depth Structure:</span>
+                        <span className="font-mono text-[9px] font-bold text-neutral-300 font-bold uppercase">Depth Structure:</span>
                         <div className="flex gap-1">
                           <button
                             type="button"
@@ -712,7 +755,7 @@ export default function ScrapbookToolbar({
 
                       {/* Display Page Selector field */}
                       <div className="flex flex-col gap-1">
-                        <label className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-widest block">
+                        <label className="font-mono text-[9px] text-neutral-300 font-bold font-black uppercase tracking-widest block">
                           Target Display Page Location
                         </label>
                         <select
@@ -781,7 +824,7 @@ export default function ScrapbookToolbar({
 
                           {/* Font Family selector */}
                           <div className="flex flex-col gap-1">
-                            <label className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-widest block">
+                            <label className="font-mono text-[9px] text-neutral-300 font-bold font-black uppercase tracking-widest block">
                               Custom Font Style
                             </label>
                             <select
@@ -799,7 +842,7 @@ export default function ScrapbookToolbar({
 
                           {/* Custom Color Paint selection */}
                           <div className="flex flex-col gap-1">
-                            <label className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-widest block">
+                            <label className="font-mono text-[9px] text-neutral-300 font-bold font-black uppercase tracking-widest block">
                               Font Text Color
                             </label>
                             <div className="flex gap-2">
@@ -831,7 +874,7 @@ export default function ScrapbookToolbar({
                               step="1"
                               value={selectedElementObj.textSizePx || 16}
                               onChange={(e) => handleUpdateProp(selectedElementObj.id, { textSizePx: parseInt(e.target.value) })}
-                              className="w-full accent-emerald-700 cursor-pointer"
+                              className="w-full accent-red-600 cursor-pointer"
                             />
                           </div>
 
@@ -844,7 +887,7 @@ export default function ScrapbookToolbar({
                           
                           {/* Shape background fill */}
                           <div className="flex flex-col gap-1">
-                            <label className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-widest block">
+                            <label className="font-mono text-[9px] text-neutral-300 font-bold font-black uppercase tracking-widest block">
                               Shape Paint Color fill
                             </label>
                             <div className="flex gap-2">
@@ -930,67 +973,68 @@ export default function ScrapbookToolbar({
                   </div>
 
                   {/* Backdrop flats presets */}
-                  <div className="border border-verdant-cream/15 p-3 flex flex-col gap-3">
-                    <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-wider flex items-center justify-between">
-                      <span>☘️ Backdrop Flat colors</span>
-                      <Palette className="w-3.5 h-3.5" />
+                  <div className="border border-neutral-200/60 p-3 bg-neutral-900/40 flex flex-col gap-3">
+                    <header className="font-mono text-[9px] font-bold text-neutral-300 uppercase tracking-wider flex items-center justify-between">
+                      <span>🎨 Canvas Backdrop Color</span>
+                      <Palette className="w-3.5 h-3.5 text-[#D5001C]" />
                     </header>
                     <div className="grid grid-cols-2 gap-1.5">
                       {[
-                        { name: "White Linen", hex: "#FAF8F5" },
-                        { name: "Oats Oatmeal", hex: "#EFECE5" },
-                        { name: "Zine Off-White", hex: "#F9FAF9" },
-                        { name: "Cosmic Spruce Dark", hex: "#0E170F" }
+                        { name: "Carrera Pure White", hex: "#FFFFFF" },
+                        { name: "Porsche Platinum", hex: "#F8F9FA" },
+                        { name: "Chalk Gray", hex: "#F3F4F6" },
+                        { name: "Slate Agate", hex: "#E5E7EB" },
+                        { name: "Obsidian Carbon", hex: "#0A0A0A" }
                       ].map((cp) => (
                         <button
                           key={cp.hex}
                           onClick={() => onUpdateSettings({ ...profileSettings, customCanvasBg: cp.hex })}
-                          className={`p-2 border text-left flex items-center gap-1.5 cursor-pointer bg-verdant-dark/20 ${
-                            profileSettings.customCanvasBg === cp.hex ? "border-2 border-[#DCA221]" : "border-verdant-cream/15 hover:border-[#DCA221]"
+                          className={`p-2 border text-left flex items-center gap-1.5 cursor-pointer bg-neutral-900 ${
+                            profileSettings.customCanvasBg === cp.hex ? "border-2 border-[#D5001C]" : "border-neutral-700 hover:border-neutral-400"
                           }`}
                         >
-                          <span style={{ backgroundColor: cp.hex }} className="w-3.5 h-3.5 border border-verdant-cream shrink-0 inline-block" />
-                          <span className="font-mono text-[9px] text-verdant-cream leading-none font-bold truncate">{cp.name}</span>
+                          <span style={{ backgroundColor: cp.hex }} className="w-3.5 h-3.5 border border-neutral-600 shrink-0 inline-block" />
+                          <span className="font-mono text-[9px] text-neutral-200 leading-none font-bold truncate">{cp.name}</span>
                         </button>
                       ))}
                     </div>
                     <div className="flex gap-2">
                       <input 
                         type="color"
-                        value={profileSettings.customCanvasBg || "#FAF8F5"}
+                        value={profileSettings.customCanvasBg || "#F8F9FA"}
                         onChange={(e) => onUpdateSettings({ ...profileSettings, customCanvasBg: e.target.value })}
-                        className="w-8 h-8 border border-verdant-cream cursor-pointer"
+                        className="w-8 h-8 border border-neutral-700 cursor-pointer bg-transparent"
                       />
                       <input 
                         type="text"
                         value={profileSettings.customCanvasBg || ""}
                         onChange={(e) => onUpdateSettings({ ...profileSettings, customCanvasBg: e.target.value })}
-                        placeholder="#FAF8F5"
-                        className="w-full bg-verdant-dark text-verdant-cream px-2 font-mono text-xs border border-verdant-cream focus:outline-none"
+                        placeholder="#F8F9FA"
+                        className="w-full bg-neutral-900 text-white px-2 font-mono text-xs border border-neutral-700 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   {/* Nature MP4 video backings */}
-                  <div className="border border-verdant-cream/15 p-3 flex flex-col gap-3">
-                    <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-wider flex items-center justify-between">
-                      <span>🎥 Ambient Nature Video Wallpaper</span>
-                      <Video className="w-3.5 h-3.5" />
+                  <div className="border border-neutral-200/60 p-3 bg-neutral-900/40 flex flex-col gap-3">
+                    <header className="font-mono text-[9px] font-bold text-neutral-300 uppercase tracking-wider flex items-center justify-between">
+                      <span>🎥 Ambient Loop Video Wallpaper</span>
+                      <Video className="w-3.5 h-3.5 text-[#D5001C]" />
                     </header>
-                    <p className="text-[10px] text-zinc-500 font-semibold leading-relaxed">
-                      Transform the backdrop with gorgeous atmospheric video streams looped automatically underneath components.
+                    <p className="text-[10px] text-zinc-400 font-normal leading-relaxed">
+                      Optionally activate a subtle ambient video stream beneath components.
                     </p>
                     <div className="flex flex-col gap-1.5">
                       {videoPresets.map((vid) => (
                         <button
                           key={vid.url}
                           onClick={() => onUpdateSettings({ ...profileSettings, customBgVideoUrl: vid.url })}
-                          className={`p-2 border text-left text-[10px] font-mono flex items-center justify-between cursor-pointer bg-verdant-dark/20 ${
-                            profileSettings.customBgVideoUrl === vid.url ? "border-2 border-verdant-yellow text-verdant-yellow" : "border-verdant-cream/15 text-verdant-cream hover:text-verdant-yellow"
+                          className={`p-2 border text-left text-[10px] font-mono flex items-center justify-between cursor-pointer bg-neutral-900 ${
+                            profileSettings.customBgVideoUrl === vid.url ? "border-2 border-[#D5001C] text-[#D5001C]" : "border-neutral-700 text-neutral-300 hover:text-white"
                           }`}
                         >
                           <span>{vid.name}</span>
-                          {profileSettings.customBgVideoUrl === vid.url && <Check className="w-3/12 h-3.5 text-verdant-yellow shrink-0 fill-current" />}
+                          {profileSettings.customBgVideoUrl === vid.url && <Check className="w-3.5 h-3.5 text-[#D5001C] shrink-0" />}
                         </button>
                       ))}
                     </div>
@@ -1003,29 +1047,31 @@ export default function ScrapbookToolbar({
                         value={profileSettings.customBgVideoUrl || ""}
                         onChange={(e) => onUpdateSettings({ ...profileSettings, customBgVideoUrl: e.target.value })}
                         placeholder="https://example.com/ambient-loop.mp4"
-                        className="w-full bg-verdant-dark text-verdant-cream px-2 py-1.5 font-mono text-[10px] border border-verdant-cream focus:outline-none"
+                        className="w-full bg-neutral-900 text-white px-2 py-1.5 font-mono text-[10px] border border-neutral-700 focus:outline-none"
                       />
                     </div>
                   </div>
 
-                  {/* Backdrop canvas textures overlay */}
-                  <div className="border border-verdant-cream/15 p-3 flex flex-col gap-3">
-                    <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-wider flex items-center gap-1.5">
-                      <LayoutGrid className="w-3.5 h-3.5" />
-                      <span>Backing Canvas Grid Mesh</span>
+                  {/* Backdrop canvas finish overlay (no grids) */}
+                  <div className="border border-neutral-700/80 p-3 bg-neutral-900/60 flex flex-col gap-3">
+                    <header className="font-mono text-[9px] font-bold text-neutral-200 uppercase tracking-wider flex items-center gap-1.5">
+                      <LayoutGrid className="w-3.5 h-3.5 text-[#D5001C]" />
+                      <span>Minimalist Background Finishes (No Grids)</span>
                     </header>
                     <div className="grid grid-cols-2 gap-1.5">
                       {[
-                        { label: "Checkered Board", val: "checker-grid" },
-                        { label: "Architectural Grid", val: "grid-mesh" },
-                        { label: "Ambient Blur Glow", val: "radial-grain" },
-                        { label: "Plain Solid Background", val: "solid-plain" }
+                        { label: "Carrera Pure Solid", val: "solid-plain" },
+                        { label: "Aerodynamic Soft Vignette", val: "soft-vignette" },
+                        { label: "Studio Precision Gradient", val: "studio-gradient" },
+                        { label: "Matte Light Platinum", val: "matte-platinum" },
+                        { label: "Warm Gallery White", val: "gallery-white" },
+                        { label: "Obsidian Monolith Plane", val: "monolith-plane" }
                       ].map((gm) => (
                         <button
                           key={gm.val}
                           onClick={() => onUpdateSettings({ ...profileSettings, bgAccentStyle: gm.val })}
-                          className={`p-2 border text-left text-[10px] font-mono cursor-pointer bg-verdant-dark/20 ${
-                            profileSettings.bgAccentStyle === gm.val ? "border-2 border-verdant-yellow text-verdant-yellow" : "border-verdant-cream/15 text-verdant-cream"
+                          className={`p-2 border text-left text-[10px] font-mono cursor-pointer bg-neutral-900 ${
+                            profileSettings.bgAccentStyle === gm.val ? "border-2 border-[#D5001C] text-white font-bold" : "border-neutral-700 text-neutral-300 hover:text-white"
                           }`}
                         >
                           {gm.label}
@@ -1035,10 +1081,10 @@ export default function ScrapbookToolbar({
                   </div>
 
                   {/* Brand Theme Accent Colors */}
-                  <div className="border border-verdant-cream/15 p-3 flex flex-col gap-3">
-                    <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-wider flex items-center justify-between">
+                  <div className="border border-neutral-700/80 p-3 bg-neutral-900/60 flex flex-col gap-3">
+                    <header className="font-mono text-[9px] font-bold text-neutral-200 uppercase tracking-wider flex items-center justify-between">
                       <span>🎨 Brand Accents & Colors</span>
-                      <Palette className="w-3.5 h-3.5" />
+                      <Palette className="w-3.5 h-3.5 text-[#D5001C]" />
                     </header>
                     <p className="text-[10px] text-zinc-500 font-semibold leading-relaxed">
                       Tweak primary line accents, glowing secondary alerts, widget cards background, and text colors on the fly.
@@ -1052,16 +1098,16 @@ export default function ScrapbookToolbar({
                       <div className="flex gap-2">
                         <input 
                           type="color"
-                          value={profileSettings.themeColorPrimary || "#306634"}
+                          value={profileSettings.themeColorPrimary || "#0A0A0A"}
                           onChange={(e) => onUpdateSettings({ ...profileSettings, themeColorPrimary: e.target.value })}
-                          className="w-8 h-8 border border-verdant-cream cursor-pointer rounded-none shrink-0"
+                          className="w-8 h-8 border border-neutral-700 cursor-pointer rounded-none shrink-0"
                         />
                         <input 
                           type="text"
                           value={profileSettings.themeColorPrimary || ""}
                           onChange={(e) => onUpdateSettings({ ...profileSettings, themeColorPrimary: e.target.value })}
-                          placeholder="#306634"
-                          className="w-full bg-verdant-dark text-verdant-cream px-2 py-1 font-mono text-xs border border-verdant-cream focus:outline-none"
+                          placeholder="#0A0A0A"
+                          className="w-full bg-neutral-900 text-white px-2 py-1 font-mono text-xs border border-neutral-700 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -1157,7 +1203,7 @@ export default function ScrapbookToolbar({
 
                   {/* Font Typography & Text Casing */}
                   <div className="border border-verdant-cream/15 p-3 flex flex-col gap-3">
-                    <header className="font-mono text-[9px] font-black text-[#306634] uppercase tracking-wider flex items-center justify-between">
+                    <header className="font-mono text-[9px] font-black text-neutral-300 font-bold uppercase tracking-wider flex items-center justify-between">
                       <span>✍️ Font Pairing & Letter Case</span>
                       <Type className="w-3.5 h-3.5" />
                     </header>
@@ -1228,7 +1274,7 @@ export default function ScrapbookToolbar({
 
                   <div className="flex flex-col gap-3.5">
                     <div className="flex flex-col gap-1">
-                      <label className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-widest block font-sans">
+                      <label className="font-mono text-[9px] text-neutral-300 font-bold font-black uppercase tracking-widest block font-sans">
                         Founder First Name
                       </label>
                       <input 
@@ -1241,7 +1287,7 @@ export default function ScrapbookToolbar({
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-widest block font-sans">
+                      <label className="font-mono text-[9px] text-neutral-300 font-bold font-black uppercase tracking-widest block font-sans">
                         Last Name Highlight
                       </label>
                       <input 
@@ -1254,7 +1300,7 @@ export default function ScrapbookToolbar({
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-widest block font-sans">
+                      <label className="font-mono text-[9px] text-neutral-300 font-bold font-black uppercase tracking-widest block font-sans">
                         Core Dynamic Catchphrase
                       </label>
                       <textarea 
@@ -1267,7 +1313,7 @@ export default function ScrapbookToolbar({
                     </div>
 
                     <div className="flex flex-col gap-1">
-                      <label className="font-mono text-[9px] text-[#306634] font-black uppercase tracking-widest block font-sans">
+                      <label className="font-mono text-[9px] text-neutral-300 font-bold font-black uppercase tracking-widest block font-sans">
                         Short Biography Paragraph
                       </label>
                       <textarea 
@@ -1286,7 +1332,7 @@ export default function ScrapbookToolbar({
                       </header>
                       <div className="flex flex-col gap-2 bg-verdant-dark/20 p-2 border border-verdant-cream/10">
                         <div className="flex flex-col gap-1">
-                          <label className="font-mono text-[8px] text-[#306634] font-black uppercase tracking-widest">
+                          <label className="font-mono text-[8px] text-neutral-300 font-bold font-black uppercase tracking-widest">
                             Dedication Box Title
                           </label>
                           <input 
@@ -1298,7 +1344,7 @@ export default function ScrapbookToolbar({
                           />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className="font-mono text-[8px] text-[#306634] font-black uppercase tracking-widest">
+                          <label className="font-mono text-[8px] text-neutral-300 font-bold font-black uppercase tracking-widest">
                             Dedication Box Body
                           </label>
                           <textarea 
@@ -1318,7 +1364,7 @@ export default function ScrapbookToolbar({
                         <span>🛠️ Custom Ticker Phrases</span>
                       </header>
                       <div className="flex flex-col gap-1 bg-verdant-dark/20 p-2 border border-verdant-cream/10">
-                        <label className="font-mono text-[8px] text-[#306634] font-black uppercase tracking-widest leading-normal">
+                        <label className="font-mono text-[8px] text-neutral-300 font-bold font-black uppercase tracking-widest leading-normal">
                           Phrases list (One phrase per line)
                         </label>
                         <textarea 
@@ -1403,7 +1449,7 @@ export default function ScrapbookToolbar({
             {/* Sticky bottom save/publish bar */}
             <div className="p-4 bg-verdant-dark border-t-[3px] border-verdant-cream flex flex-col gap-1.5 shrink-0">
               {saveSuccess && (
-                <div className="flex items-center gap-1 bg-[#306634]/30 border-2 border-[#306634] text-white font-mono text-[9px] uppercase font-black tracking-wider leading-none p-2 justify-center animate-bounce">
+                <div className="flex items-center gap-1 bg-neutral-900 border-2 border-neutral-700 text-white font-mono text-[9px] uppercase font-black tracking-wider leading-none p-2 justify-center animate-bounce">
                   <Check className="w-3.5 h-3.5 text-white" />
                   <span>DESIGN SAVED SECURELY!</span>
                 </div>
@@ -1419,7 +1465,7 @@ export default function ScrapbookToolbar({
                   type="button"
                   onClick={handlePublish}
                   disabled={isSaving}
-                  className="flex-1 bg-verdant-yellow text-white border-2 border-slate-900 hover:bg-white hover:text-[#306634] px-3 py-2.5 font-mono text-[10px] uppercase font-black tracking-widest transition-colors cursor-pointer shadow-yellow-offset flex items-center justify-center gap-1"
+                  className="flex-1 bg-verdant-yellow text-white border-2 border-slate-900 hover:bg-white hover:text-neutral-300 font-bold px-3 py-2.5 font-mono text-[10px] uppercase font-black tracking-widest transition-colors cursor-pointer shadow-yellow-offset flex items-center justify-center gap-1"
                 >
                   {isSaving ? (
                     <span>COMPILING...</span>
