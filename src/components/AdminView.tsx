@@ -277,7 +277,6 @@ export default function AdminView({
     setTimeout(() => setCategorySuccess(null), 3000);
   };
   const [techTags, setTechTags] = useState("");
-  const [badge, setBadge] = useState<"CASE STUDY" | "EXPERIMENTAL" | "MASTERPRINT">("CASE STUDY");
   const [year, setYear] = useState(() => new Date().getFullYear().toString());
   const [accentColor, setAccentColor] = useState("#0A0A0A");
   const [linkBgColor, setLinkBgColor] = useState("");
@@ -505,7 +504,6 @@ export default function AdminView({
     setCategory(proj.category);
     setIsCustomCategoryInput(!availableCategories.includes(proj.category));
     setTechTags(proj.tag);
-    setBadge(proj.badge as any || "CASE STUDY");
     setYear(proj.year);
     setAccentColor(proj.accentColor || "#0A0A0A");
     setLinkBgColor(proj.linkBgColor || "");
@@ -526,7 +524,6 @@ export default function AdminView({
     setCategory("Game Development");
     setIsCustomCategoryInput(false);
     setTechTags("");
-    setBadge("CASE STUDY");
     setYear(new Date().getFullYear().toString());
     setAccentColor("#0A0A0A");
     setLinkBgColor("");
@@ -562,7 +559,6 @@ export default function AdminView({
       title: title.toUpperCase(),
       category: category.trim() || "Others",  // Store exactly the dynamic filter value
       tag: techTags,
-      badge: badge,
       year: year,
       description: description,
       extendedDescription: extendedDescription || undefined,
@@ -867,7 +863,7 @@ export default function AdminView({
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Category/Tab Selector */}
                         <div className="flex flex-col gap-1.5">
                           <div className="flex justify-between items-center">
@@ -914,22 +910,6 @@ export default function AdminView({
                               <option value="__CUSTOM__">+ Enter custom category...</option>
                             </select>
                           )}
-                        </div>
-
-                        {/* Badge type */}
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            VISUAL BADGE LABEL *
-                          </label>
-                          <select
-                            value={badge}
-                            onChange={(e) => setBadge(e.target.value as any)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none"
-                          >
-                            <option value="CASE STUDY">CASE STUDY</option>
-                            <option value="EXPERIMENTAL">EXPERIMENTAL</option>
-                            <option value="MASTERPRINT">MASTERPRINT</option>
-                          </select>
                         </div>
 
                         {/* Year */}
@@ -1385,7 +1365,7 @@ export default function AdminView({
 
                           {/* Detail row */}
                           <div className="flex justify-between items-center border-t border-verdant-cream/10 pt-1.5 text-[8px] text-zinc-500">
-                            <span>{proj.badge} // {proj.year}</span>
+                            <span>{proj.year}</span>
                             <span className="text-[7.5px] truncate max-w-[120px]" title={proj.tag}>{proj.tag}</span>
                           </div>
                         </div>
