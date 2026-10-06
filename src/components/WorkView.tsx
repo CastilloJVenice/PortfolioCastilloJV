@@ -5,7 +5,7 @@
 
 import { motion, AnimatePresence } from "motion/react";
 import { Play, RotateCcw, Share2, Volume2, Sparkles, FolderGit2, X, AlertCircle, ExternalLink } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { ActiveTab, Project, ProfileSettings } from "../types";
 
 interface WorkViewProps {
@@ -14,6 +14,8 @@ interface WorkViewProps {
   onClearSelectedProject: () => void;
   projects: Project[];
   profileSettings?: ProfileSettings;
+  isAdmin?: boolean;
+  onUpdateSettings?: (settings: ProfileSettings) => void;
 }
 
 export default function WorkView({ 
@@ -21,11 +23,56 @@ export default function WorkView({
   selectedProjectId, 
   onClearSelectedProject, 
   projects, 
-  profileSettings 
+  profileSettings,
+  isAdmin = false,
+  onUpdateSettings
 }: WorkViewProps) {
   const [activePlayground, setActivePlayground] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
+  const [newCategoryInput, setNewCategoryInput] = useState("");
+
+  const defaultCategories = ["Game Development", "Cryptography", "3D Modelling", "UIUX Design", "Graphics Design", "Others"];
+  const configuredCategories = (profileSettings?.projectCategories && profileSettings.projectCategories.length > 0)
+    ? profileSettings.projectCategories
+    : defaultCategories;
+
+  // Deduplicate and combine configured categories with any active categories in existing projects
+  const categoriesList = Array.from(
+    new Set([
+      "All",
+      ...configuredCategories,
+      ...projects.map((p) => p.category).filter(Boolean)
+    ])
+  );
+
+  const handleAddCategory = (e: FormEvent) => {
+    e.preventDefault();
+    const trimmed = newCategoryInput.trim();
+    if (!trimmed || !onUpdateSettings) return;
+
+    if (!configuredCategories.includes(trimmed)) {
+      const updatedCategories = [...configuredCategories, trimmed];
+      onUpdateSettings({
+        ...(profileSettings || {
+          fullName: "JULIARISTY",
+          lastNameHighlight: "VENICE CASTILLO",
+          headline: "COMPUTER SCIENCE GRADUATE & DIGITAL DESIGNER",
+          biography: "",
+          aboutParagraphs: [],
+          contactEmail: "",
+          instagramUrl: "",
+          linkedinUrl: "",
+          websiteUrl: ""
+        }),
+        projectCategories: updatedCategories
+      });
+      setSelectedCategory(trimmed);
+    }
+    setNewCategoryInput("");
+    setShowAddCategoryInput(false);
+  };
 
   // Auto-initialize active playground if selected from Gallery view
   useEffect(() => {
@@ -63,16 +110,19 @@ export default function WorkView({
           <h1 className={`font-syne font-black text-neutral-900 text-3xl md:text-5xl leading-none tracking-tight ${casingClass}`}>
             PROJECT PORTFOLIO
           </h1>
+          <p className="font-sans text-xs md:text-sm text-neutral-500 mt-2 font-normal leading-relaxed text-left max-w-2xl">
+            Selected projects and prototypes across design, development, and 3D modeling.
+          </p>
         </div>
 
         {/* Organized tab filters list */}
-        <div className="flex flex-wrap gap-2 mb-8 border-b border-neutral-200 pb-5 text-left relative z-10 select-none">
-          {["All", "Game Development", "Cryptography", "3D Modelling", "UIUX Design"].map((cat) => (
+        <div className="flex flex-wrap items-center gap-2 mb-8 border-b border-neutral-200 pb-5 text-left relative z-10 select-none">
+          {categoriesList.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 border text-[11px] uppercase font-mono font-bold tracking-[0.16em] cursor-pointer transition-all ${
-                selectedCategory === cat
+                selectedCategory.toLowerCase() === cat.toLowerCase()
                   ? "bg-neutral-950 text-white border-neutral-950 shadow-sm"
                   : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-900 hover:text-neutral-900"
               }`}
@@ -80,6 +130,50 @@ export default function WorkView({
               {cat}
             </button>
           ))}
+
+          {/* Quick Admin Category Adder */}
+          {isAdmin && onUpdateSettings && (
+            <div className="flex items-center gap-1.5 ml-auto">
+              {showAddCategoryInput ? (
+                <form onSubmit={handleAddCategory} className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    placeholder="New category..."
+                    value={newCategoryInput}
+                    onChange={(e) => setNewCategoryInput(e.target.value)}
+                    autoFocus
+                    className="border border-neutral-900 bg-white text-neutral-900 font-mono text-[10px] px-2.5 py-1.5 uppercase font-bold focus:outline-none w-36 shadow-sm"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-[#D5001C] hover:bg-neutral-950 text-white font-mono text-[10px] uppercase font-bold px-3 py-1.5 cursor-pointer shadow-sm"
+                  >
+                    ADD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddCategoryInput(false);
+                      setNewCategoryInput("");
+                    }}
+                    className="bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-mono text-[10px] px-2 py-1.5 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowAddCategoryInput(true)}
+                  className="px-3 py-2 border border-dashed border-neutral-400 hover:border-neutral-900 text-neutral-700 hover:text-neutral-950 font-mono text-[10.5px] uppercase font-bold tracking-wider cursor-pointer bg-neutral-50 transition-colors flex items-center gap-1.5"
+                  title="Add a new custom project category"
+                >
+                  <span className="text-[#D5001C] font-bold">+</span>
+                  <span>ADD CATEGORY</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Playgrounds Grid stack */}
@@ -87,14 +181,22 @@ export default function WorkView({
           {(() => {
             const filteredProjects = projects.filter((proj) => {
               if (selectedCategory === "All") return true;
-              return proj.category.toLowerCase() === selectedCategory.toLowerCase();
+              return proj.category?.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
             });
 
             if (filteredProjects.length === 0) {
               return (
                 <div className="border border-neutral-200 bg-white p-12 text-center font-mono text-xs text-neutral-500 uppercase tracking-widest col-span-3">
                   <AlertCircle className="w-8 h-8 text-[#D5001C] mx-auto mb-3 animate-pulse" />
-                  No projects found under "{selectedCategory}" yet.
+                  <p className="mb-4">No projects found under "{selectedCategory}" yet.</p>
+                  {isAdmin && (
+                    <button
+                      onClick={() => onChangeTab("ADMIN")}
+                      className="inline-block bg-neutral-950 hover:bg-[#D5001C] text-white font-mono text-[10px] font-bold px-4 py-2 uppercase tracking-widest cursor-pointer transition-colors shadow-sm"
+                    >
+                      + ADD PROJECT UNDER "{selectedCategory}"
+                    </button>
+                  )}
                 </div>
               );
             }
@@ -176,7 +278,7 @@ export default function WorkView({
                       </div>
                     ) : (
                       <div className="text-center font-mono text-[8px] text-neutral-400 uppercase tracking-widest">
-                        SPECIFICATION PROFILE
+                        PROJECT PREVIEW
                       </div>
                     )}
                   </div>
@@ -199,7 +301,7 @@ export default function WorkView({
                   onClick={() => setActivePlayground(proj.id)}
                   className="mt-6 w-full cursor-pointer bg-white border border-neutral-300 group-hover:border-neutral-950 group-hover:bg-neutral-950 group-hover:text-white text-neutral-900 font-mono text-[10px] font-bold py-2.5 uppercase tracking-[0.2em] transition-all select-none"
                 >
-                  VIEW SPECIFICATIONS
+                  VIEW PROJECT
                 </button>
               </div>
             ));
@@ -249,7 +351,7 @@ export default function WorkView({
               <div className="flex justify-between items-center border-b border-neutral-100 pb-3 flex-shrink-0 select-none">
                 <div className="flex items-center gap-2 font-mono text-neutral-900">
                   <FolderGit2 className="w-4 h-4 text-[#D5001C]" />
-                  <span className="text-[10px] md:text-xs uppercase font-bold tracking-[0.2em]">PROJECT SPECIFICATIONS // DETAILED VIEW</span>
+                  <span className="text-[10px] md:text-xs uppercase font-bold tracking-[0.2em]">PROJECT DETAILS</span>
                 </div>
                 {/* Close Button */}
                 <button
@@ -303,7 +405,7 @@ export default function WorkView({
                           <div className="text-center font-mono text-[9px] uppercase tracking-widest text-neutral-300 p-6 relative w-full h-full flex flex-col items-center justify-center min-h-[160px]">
                             <Sparkles className="w-10 h-10 text-[#D5001C] mx-auto mb-3" />
                             <span className="font-bold block tracking-wider text-white uppercase mb-1.5">{currentProj.title}</span>
-                            <span className="text-neutral-500 text-[8px] tracking-[0.2em]">{currentProj.category} SPECIFICATION PROFILE</span>
+                            <span className="text-neutral-500 text-[8px] tracking-[0.2em]">{currentProj.category} PROJECT</span>
                           </div>
                         )}
                       </div>
@@ -341,7 +443,7 @@ export default function WorkView({
                               className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-2 flex items-center gap-1.5 select-none"
                             >
                               <Sparkles className="w-3.5 h-3.5 text-[#D5001C] shrink-0" />
-                              <span>EXTENDED SPECIFICATIONS & NOTES</span>
+                              <span>OVERVIEW & PROJECT NOTES</span>
                             </h4>
                             <p className="font-sans text-xs md:text-sm text-neutral-700 leading-relaxed whitespace-pre-line font-normal bg-neutral-50 border border-neutral-200 p-4">
                               {currentProj.extendedDescription}
