@@ -9,7 +9,7 @@ export const DEFAULT_PROJECTS: Project[] = [
     badge: "PROTOTYPE",
     year: "2026",
     description: "A prototype simulating a crypto-agile API authentication framework integrating post-quantum cryptography (PQC) and Elliptic Curve Cryptography (ECC) to withstand future quantum risks. Feel free to test the system below.",
-    accentColor: "#306634",
+    accentColor: "#0A0A0A",
     imageType: "lunar",
     link: "https://crypto-agilitypqcthesis.streamlit.app/"
   },
@@ -21,7 +21,7 @@ export const DEFAULT_PROJECTS: Project[] = [
     badge: "MOBILE APP",
     year: "2025",
     description: "An unpublished specialized mobile application celebrating local heritage and traditional culture, co-designed and prototyped using Figma and Android Studio.",
-    accentColor: "#DCA221",
+    accentColor: "#D5001C",
     imageType: "void"
   },
   {
@@ -32,7 +32,7 @@ export const DEFAULT_PROJECTS: Project[] = [
     badge: "3D DESIGN",
     year: "2024",
     description: "An initial 3D study exploring organic modeling, procedural icing displacement maps, glassy sprinkles, and dramatic table-side studio camera lighting setup in Blender.",
-    accentColor: "#528B56",
+    accentColor: "#0A0A0A",
     imageType: "logic"
   },
   {
@@ -43,7 +43,7 @@ export const DEFAULT_PROJECTS: Project[] = [
     badge: "ANIMATION",
     year: "2025",
     description: "A delicate structural folding physics showcase animating an intricate letter-envelope and decorative gift box unfolding using precise animation keyframes in Blender.",
-    accentColor: "#306634",
+    accentColor: "#D5001C",
     imageType: "lunar"
   },
   {
@@ -54,7 +54,7 @@ export const DEFAULT_PROJECTS: Project[] = [
     badge: "PORTFOLIO DESIGN",
     year: "2024",
     description: "The initial creative design draft for a high-contrast portfolio website featuring computer science badges, cybernetic network trails, and clean typography.",
-    accentColor: "#DCA221",
+    accentColor: "#0A0A0A",
     imageType: "void"
   }
 ];
