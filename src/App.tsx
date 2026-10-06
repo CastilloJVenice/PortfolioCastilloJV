@@ -87,9 +87,14 @@ export default function App() {
     const unsubProfile = onSnapshot(doc(db, "profile", "settings"), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data() as ProfileSettings;
-        // Migrate any legacy palette defaults to Porsche Tech standards (no green or grids)
+        // Migrate any legacy palette defaults or old copy
         const hasLegacyGrid = data.bgAccentStyle === "grid-mesh" || data.bgAccentStyle === "checker-grid" || data.bgAccentStyle === "dot-matrix" || data.bgAccentStyle === "tech-blueprint" || data.bgAccentStyle === "carbon-mesh";
         const hasLegacyColor = data.themeColorPrimary === "#306634" || data.themeColorSecondary === "#DCA221" || data.customCanvasBg === "#FAF8F5" || hasLegacyGrid;
+        // Only migrate specific field if that field contains legacy template words
+        const needsBioMigration = Boolean(data.biography && data.biography.includes("limits of what's computable"));
+        const needsDedicationMigration = Boolean(data.dedicationText && data.dedicationText.includes("pixel harmony"));
+        const needsParagraphMigration = Boolean(data.aboutParagraphs && data.aboutParagraphs.some(p => p.includes("limits of what's computable")));
+
         const sanitized: ProfileSettings = {
           ...data,
           themeColorPrimary: (!data.themeColorPrimary || data.themeColorPrimary === "#306634" || data.themeColorPrimary.includes("3066")) ? "#0A0A0A" : data.themeColorPrimary,
@@ -99,12 +104,17 @@ export default function App() {
           bgAccentStyle: hasLegacyGrid || !data.bgAccentStyle ? "solid-plain" : data.bgAccentStyle,
           fontFamilyHeader: (!data.fontFamilyHeader || data.fontFamilyHeader === "Syne") ? "Plus Jakarta Sans" : data.fontFamilyHeader,
           fontFamilyBody: (!data.fontFamilyBody) ? "Plus Jakarta Sans" : data.fontFamilyBody,
+          headline: data.headline || DEFAULT_PROFILE_SETTINGS.headline,
+          biography: needsBioMigration ? DEFAULT_PROFILE_SETTINGS.biography : (data.biography || DEFAULT_PROFILE_SETTINGS.biography),
+          aboutParagraphs: needsParagraphMigration ? DEFAULT_PROFILE_SETTINGS.aboutParagraphs : (data.aboutParagraphs && data.aboutParagraphs.length > 0 ? data.aboutParagraphs : DEFAULT_PROFILE_SETTINGS.aboutParagraphs),
+          dedicationTitle: data.dedicationTitle || DEFAULT_PROFILE_SETTINGS.dedicationTitle,
+          dedicationText: needsDedicationMigration ? DEFAULT_PROFILE_SETTINGS.dedicationText : (data.dedicationText || DEFAULT_PROFILE_SETTINGS.dedicationText),
         };
         setProfileSettings(sanitized);
         localStorage.setItem("portfolio_profile_settings", JSON.stringify(sanitized));
 
         // If legacy colors existed in Firestore, update remote database so it stays updated
-        if (hasLegacyColor) {
+        if (hasLegacyColor || needsBioMigration || needsDedicationMigration || needsParagraphMigration) {
           setDoc(doc(db, "profile", "settings"), sanitized, { merge: true }).catch((e) => {
             console.error("Auto-migrated legacy theme colors in Firestore:", e);
           });
@@ -326,7 +336,10 @@ export default function App() {
                 projects={projects}
                 profileSettings={profileSettings}
                 isAdmin={isAdmin}
-                onUpdateSettings={(updated) => setProfileSettings(updated)}
+                onUpdateSettings={(updated) => {
+                  setProfileSettings(updated);
+                  handleUpdateProfile(updated).catch(err => console.error("Auto-saving profile:", err));
+                }}
               />
             </motion.div>
           )}
@@ -360,10 +373,13 @@ export default function App() {
               className="flex-grow flex flex-col"
             >
               <JournalView 
-                onChangeTab={handleChangeTab}
+                onChangeTab={handleChangeTab} 
                 profileSettings={profileSettings}
                 isAdmin={isAdmin}
-                onUpdateSettings={(updated) => setProfileSettings(updated)}
+                onUpdateSettings={(updated) => {
+                  setProfileSettings(updated);
+                  handleUpdateProfile(updated).catch(err => console.error("Auto-saving profile:", err));
+                }}
               />
             </motion.div>
           )}
