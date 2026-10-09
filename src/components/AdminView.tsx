@@ -30,7 +30,7 @@ async function sha256(message: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-function shrinkImageToBase64(file: File, maxW = 550, maxH = 550, quality = 0.75): Promise<string> {
+function shrinkImageToBase64(file: File, maxW = 1440, maxH = 1080, quality = 0.84): Promise<string> {
   return new Promise((resolve) => {
     if (!file.type.startsWith("image/")) {
       resolve("");
@@ -45,13 +45,12 @@ function shrinkImageToBase64(file: File, maxW = 550, maxH = 550, quality = 0.75)
         let width = img.width;
         let height = img.height;
 
-        if (width > height) {
-          if (width > maxW) {
+        // If the original image is already within bounds, don't upscale
+        if (width > maxW || height > maxH) {
+          if (width / maxW > height / maxH) {
             height = Math.round((height * maxW) / width);
             width = maxW;
-          }
-        } else {
-          if (height > maxH) {
+          } else {
             width = Math.round((width * maxH) / height);
             height = maxH;
           }
@@ -62,6 +61,8 @@ function shrinkImageToBase64(file: File, maxW = 550, maxH = 550, quality = 0.75)
 
         const ctx = canvas.getContext("2d");
         if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
           ctx.drawImage(img, 0, 0, width, height);
           resolve(canvas.toDataURL("image/jpeg", quality));
         } else {
@@ -451,7 +452,7 @@ export default function AdminView({
   // Convert files to Base64 helper with intelligent compression
   const processFile = async (file: File) => {
     try {
-      const slimBase64 = await shrinkImageToBase64(file, 550, 360, 0.72);
+      const slimBase64 = await shrinkImageToBase64(file, 1440, 1080, 0.84);
       if (slimBase64) {
         setUploadedImageBase64(slimBase64);
         setImageType(slimBase64); // use compressed base64 as imageType payload
@@ -1088,7 +1089,7 @@ export default function AdminView({
                                 const filesArray = Array.from(e.target.files);
                                 for (const file of filesArray) {
                                   try {
-                                    const slimBase64 = await shrinkImageToBase64(file as File, 550, 360, 0.72);
+                                    const slimBase64 = await shrinkImageToBase64(file as File, 1440, 1080, 0.84);
                                     if (slimBase64) {
                                       setAdditionalImages((prev) => [...prev, slimBase64]);
                                     }
