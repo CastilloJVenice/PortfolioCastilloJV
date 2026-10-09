@@ -4,7 +4,7 @@
  */
 
 import { motion, AnimatePresence } from "motion/react";
-import { Play, RotateCcw, Share2, Volume2, Sparkles, FolderGit2, X, AlertCircle, ExternalLink } from "lucide-react";
+import { Play, RotateCcw, Share2, Volume2, Sparkles, FolderGit2, X, AlertCircle, ExternalLink, ZoomIn, ZoomOut, Maximize2, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { useState, useEffect, FormEvent } from "react";
 import { ActiveTab, Project, ProfileSettings } from "../types";
 
@@ -32,6 +32,77 @@ export default function WorkView({
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
   const [newCategoryInput, setNewCategoryInput] = useState("");
+
+  // In-App Lightbox state
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
+  const [lightboxTitle, setLightboxTitle] = useState<string>("");
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  // Active preview image inside project modal (allows switching main view on thumbnail click)
+  const [activeModalImage, setActiveModalImage] = useState<string | null>(null);
+
+  // When opening a new project modal, reset active modal image
+  useEffect(() => {
+    setActiveModalImage(null);
+  }, [activePlayground]);
+
+  const openLightbox = (images: string[], initialIndex: number, title: string) => {
+    if (!images || images.length === 0) return;
+    setLightboxImages(images);
+    setLightboxIndex(Math.max(0, Math.min(initialIndex, images.length - 1)));
+    setLightboxTitle(title);
+    setIsZoomed(false);
+    setIsLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+    setIsZoomed(false);
+  };
+
+  const nextLightboxImage = () => {
+    setIsZoomed(false);
+    setLightboxIndex((prev) => (prev + 1) % lightboxImages.length);
+  };
+
+  const prevLightboxImage = () => {
+    setIsZoomed(false);
+    setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length);
+  };
+
+  // Keyboard navigation for Lightbox
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowRight") {
+        nextLightboxImage();
+      } else if (e.key === "ArrowLeft") {
+        prevLightboxImage();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isLightboxOpen, lightboxImages.length]);
+
+  const handleDownloadActiveImage = () => {
+    const activeUrl = lightboxImages[lightboxIndex];
+    if (!activeUrl) return;
+    try {
+      const link = document.createElement("a");
+      link.href = activeUrl;
+      const cleanTitle = (lightboxTitle || "project").toLowerCase().replace(/[^a-z0-9]/g, "-");
+      link.download = `${cleanTitle}-photo-${lightboxIndex + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Failed to download image:", err);
+    }
+  };
 
   const defaultCategories = ["Game Development", "Cryptography", "3D Modelling", "UIUX Design", "Graphics Design", "Others"];
   const configuredCategories = (profileSettings?.projectCategories && profileSettings.projectCategories.length > 0)
@@ -208,14 +279,26 @@ export default function WorkView({
               >
                 <div className="flex flex-col gap-4">
                   {/* Visual rendering frame */}
-                  <div className="relative aspect-video bg-neutral-950 border border-neutral-800 flex items-center justify-center p-3 overflow-hidden select-none">
-                    {proj.imageType && proj.imageType.startsWith("data:image/") ? (
-                      <img
-                        src={proj.imageType}
-                        alt={proj.title}
-                        className="w-full h-full object-cover opacity-85"
-                        referrerPolicy="no-referrer"
-                      />
+                  <div 
+                    onClick={() => setActivePlayground(proj.id)}
+                    className="relative aspect-video bg-neutral-950 border border-neutral-800 flex items-center justify-center p-3 overflow-hidden select-none cursor-pointer group/cardimg"
+                    title="Click to view project details & gallery"
+                  >
+                    {(proj.imageType && (proj.imageType.startsWith("data:image/") || proj.imageType.startsWith("http"))) ? (
+                      <>
+                        <img
+                          src={proj.imageType}
+                          alt={proj.title}
+                          className="w-full h-full object-cover opacity-90 group-hover/cardimg:scale-105 group-hover/cardimg:opacity-100 transition-all duration-300"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/cardimg:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
+                          <span className="bg-neutral-950/90 text-white font-mono text-[9px] font-bold px-2.5 py-1 uppercase tracking-wider flex items-center gap-1.5 border border-neutral-700 shadow-md">
+                            <ZoomIn className="w-3 h-3 text-[#D5001C]" />
+                            <span>VIEW PROJECT & PHOTOS</span>
+                          </span>
+                        </div>
+                      </>
                     ) : proj.imageType === "lunar" ? (
                       <div className="relative w-full h-full flex flex-col justify-between p-4 bg-neutral-950 text-white font-mono">
                         <div className="flex justify-between items-center text-[7.5px] text-neutral-400">
@@ -363,9 +446,30 @@ export default function WorkView({
                 {(() => {
                   const currentProj = projects.find(p => p.id === activePlayground);
                   if (!currentProj) return <p className="font-mono text-xs text-red-500">PROJECT NOT FOUND IN LOCAL LEDGER.</p>;
+
+                  // Aggregate all available high-resolution project images
+                  const projectPhotos: string[] = [];
+                  if (currentProj.imageType && (currentProj.imageType.startsWith("data:image/") || currentProj.imageType.startsWith("http"))) {
+                    projectPhotos.push(currentProj.imageType);
+                  }
+                  if (currentProj.additionalImages && currentProj.additionalImages.length > 0) {
+                    for (const img of currentProj.additionalImages) {
+                      if (!projectPhotos.includes(img)) {
+                        projectPhotos.push(img);
+                      }
+                    }
+                  }
+
+                  const isCoverValidImage = Boolean(
+                    currentProj.imageType && 
+                    (currentProj.imageType.startsWith("data:image/") || currentProj.imageType.startsWith("http"))
+                  );
+                  const displayedImage = activeModalImage || (isCoverValidImage ? currentProj.imageType : currentProj.additionalImages?.[0]);
+                  const displayedImageIndex = displayedImage ? projectPhotos.indexOf(displayedImage) : 0;
+
                   return (
                     <div className="flex flex-col gap-5">
-                      <div className="relative aspect-video bg-neutral-950 border border-neutral-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <div className="relative aspect-video bg-neutral-950 border border-neutral-800 flex items-center justify-center overflow-hidden flex-shrink-0 group/cover">
                         {currentProj.videoUrl ? (
                           <div className="w-full h-full bg-black">
                             {currentProj.videoUrl.includes("youtube.com") || currentProj.videoUrl.includes("youtu.be") || currentProj.videoUrl.includes("vimeo.com") ? (
@@ -390,13 +494,27 @@ export default function WorkView({
                               <video src={currentProj.videoUrl} controls className="w-full h-full object-contain" />
                             )}
                           </div>
-                        ) : currentProj.imageType && currentProj.imageType.startsWith("data:image/") ? (
-                          <img
-                            src={currentProj.imageType}
-                            alt={currentProj.title}
-                            className="w-full h-full object-contain opacity-100"
-                            referrerPolicy="no-referrer"
-                          />
+                        ) : displayedImage ? (
+                          <div className="relative w-full h-full flex items-center justify-center">
+                            <img
+                              src={displayedImage}
+                              alt={currentProj.title}
+                              onClick={() => openLightbox(projectPhotos, displayedImageIndex >= 0 ? displayedImageIndex : 0, currentProj.title)}
+                              className="w-full h-full object-contain opacity-100 cursor-zoom-in select-none"
+                              referrerPolicy="no-referrer"
+                              title="Click to view full-resolution photo on site"
+                            />
+                            {/* Expand button on hover/tap */}
+                            <button
+                              type="button"
+                              onClick={() => openLightbox(projectPhotos, displayedImageIndex >= 0 ? displayedImageIndex : 0, currentProj.title)}
+                              className="absolute bottom-2.5 right-2.5 bg-neutral-950/90 hover:bg-[#D5001C] text-white border border-neutral-700 font-mono text-[9px] font-bold px-2.5 py-1 tracking-wider uppercase flex items-center gap-1.5 cursor-pointer shadow transition-all duration-200 opacity-90 group-hover/cover:opacity-100 select-none"
+                              title="Click to open full photo viewer on site"
+                            >
+                              <Maximize2 className="w-3 h-3" />
+                              <span>EXPAND FULLSCREEN</span>
+                            </button>
+                          </div>
                         ) : (
                           <div className="text-center font-mono text-[9px] uppercase tracking-widest text-neutral-300 p-6 relative w-full h-full flex flex-col items-center justify-center min-h-[160px]">
                             <Sparkles className="w-10 h-10 text-[#D5001C] mx-auto mb-3" />
@@ -450,22 +568,50 @@ export default function WorkView({
                         {/* Interactive Gallery of Secondary Photos */}
                         {currentProj.additionalImages && currentProj.additionalImages.length > 0 && (
                           <div className="flex flex-col gap-2 pt-2">
-                            <span className="text-[9px] font-mono text-neutral-500 uppercase font-semibold tracking-widest">
-                              PROJECT MEDIA GALLERY
-                            </span>
+                            <div className="flex justify-between items-center select-none">
+                              <span className="text-[9px] font-mono text-neutral-500 uppercase font-semibold tracking-widest">
+                                PROJECT MEDIA GALLERY ({currentProj.additionalImages.length} {currentProj.additionalImages.length === 1 ? "PHOTO" : "PHOTOS"})
+                              </span>
+                              <span className="text-[8px] font-mono text-neutral-400 uppercase">
+                                CLICK PHOTO TO EXPAND IN VIEWER
+                              </span>
+                            </div>
                             <div className="grid grid-cols-3 gap-2">
-                              {currentProj.additionalImages.map((imgUrl, idx) => (
-                                <div key={idx} className="relative aspect-video border border-neutral-200 bg-neutral-100 overflow-hidden group/thumb cursor-zoom-in hover:border-neutral-900 transition-colors">
-                                  <a href={imgUrl} target="_blank" rel="noopener noreferrer">
+                              {currentProj.additionalImages.map((imgUrl, idx) => {
+                                const photoIndex = projectPhotos.indexOf(imgUrl);
+                                const isCurrent = displayedImage === imgUrl;
+                                return (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveModalImage(imgUrl);
+                                      openLightbox(projectPhotos, photoIndex >= 0 ? photoIndex : idx, currentProj.title);
+                                    }}
+                                    className={`relative aspect-video border bg-neutral-900 overflow-hidden group/thumb cursor-pointer text-left transition-all ${
+                                      isCurrent ? "border-[#D5001C] ring-2 ring-[#D5001C]/30" : "border-neutral-200 hover:border-neutral-900"
+                                    }`}
+                                    title="Click to view full photo in viewer"
+                                  >
                                     <img
                                       src={imgUrl}
                                       alt={`Media ${idx + 1}`}
                                       className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
                                       referrerPolicy="no-referrer"
                                     />
-                                  </a>
-                                </div>
-                              ))}
+                                    {/* Subtle hover badge */}
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
+                                      <span className="bg-neutral-950/90 text-white font-mono text-[8px] font-bold px-2 py-0.5 tracking-wider uppercase flex items-center gap-1">
+                                        <ZoomIn className="w-2.5 h-2.5 text-[#D5001C]" />
+                                        <span>EXPAND</span>
+                                      </span>
+                                    </div>
+                                    <span className="absolute bottom-1 right-1 bg-neutral-950/80 text-white font-mono text-[7px] font-bold px-1 py-0.2 select-none">
+                                      #{idx + 1}
+                                    </span>
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -485,12 +631,37 @@ export default function WorkView({
                 <div className="flex items-center gap-2">
                   {(() => {
                     const currentProj = projects.find(p => p.id === activePlayground);
-                    if (currentProj?.link) {
+                    if (currentProj?.link && currentProj.link.trim() !== "") {
+                      const trimmedLink = currentProj.link.trim();
+                      const isImageLink = trimmedLink.startsWith("data:image/") || /\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i.test(trimmedLink);
+                      
+                      if (isImageLink) {
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const photos = (currentProj.imageType && (currentProj.imageType.startsWith("data:image/") || currentProj.imageType.startsWith("http")))
+                                ? [currentProj.imageType, ...(currentProj.additionalImages || [])]
+                                : (currentProj.additionalImages || [trimmedLink]);
+                              openLightbox(photos.length > 0 ? photos : [trimmedLink], 0, currentProj.title);
+                            }}
+                            className="px-5 py-2.5 bg-neutral-950 hover:bg-[#D5001C] text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2 cursor-pointer"
+                          >
+                            <span>{currentProj.linkLabel || "VIEW EXPANDED PHOTO"}</span>
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </button>
+                        );
+                      }
+
+                      const destinationUrl = trimmedLink.startsWith("http://") || trimmedLink.startsWith("https://")
+                        ? trimmedLink
+                        : `https://${trimmedLink}`;
+
                       return (
                         <a
-                          href={currentProj.link}
+                          href={destinationUrl}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="px-5 py-2.5 bg-neutral-950 hover:bg-[#D5001C] text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
                         >
                           <span>{currentProj.linkLabel || "OPEN LIVE PROJECT"}</span>
@@ -518,6 +689,155 @@ export default function WorkView({
                 </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+
+        {/* Fullscreen In-App Image Lightbox */}
+        {isLightboxOpen && lightboxImages.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-neutral-950/95 backdrop-blur-md flex flex-col justify-between select-none"
+            onClick={closeLightbox}
+          >
+            {/* Top Toolbar */}
+            <div 
+              className="flex items-center justify-between px-4 md:px-8 py-3 bg-neutral-950/90 border-b border-neutral-800 text-white z-30 flex-shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3">
+                <span className="w-2 h-2 bg-[#D5001C] rounded-full animate-pulse" />
+                <span className="font-mono text-xs md:text-sm font-bold tracking-widest uppercase truncate max-w-[180px] sm:max-w-xs md:max-w-md">
+                  {lightboxTitle}
+                </span>
+                <span className="font-mono text-[10px] md:text-xs text-neutral-400 bg-neutral-900 border border-neutral-800 px-2 py-0.5 font-semibold uppercase">
+                  {lightboxIndex + 1} / {lightboxImages.length}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Toggle Zoom button */}
+                <button
+                  type="button"
+                  onClick={() => setIsZoomed(!isZoomed)}
+                  className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 font-mono text-[10px] uppercase font-bold tracking-wider cursor-pointer flex items-center gap-1.5 transition-colors"
+                  title={isZoomed ? "Fit image to screen" : "Zoom to 100% scale"}
+                >
+                  {isZoomed ? <ZoomOut className="w-3.5 h-3.5" /> : <ZoomIn className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">{isZoomed ? "FIT SCREEN" : "100% ZOOM"}</span>
+                </button>
+
+                {/* Direct File Download without new tab */}
+                <button
+                  type="button"
+                  onClick={handleDownloadActiveImage}
+                  className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 font-mono text-[10px] uppercase font-bold tracking-wider cursor-pointer flex items-center gap-1.5 transition-colors"
+                  title="Download image file directly"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">SAVE</span>
+                </button>
+
+                {/* Close Button */}
+                <button
+                  type="button"
+                  onClick={closeLightbox}
+                  className="px-3 py-1.5 bg-neutral-900 hover:bg-[#D5001C] text-white border border-neutral-700 hover:border-[#D5001C] font-mono text-[10px] uppercase font-bold tracking-wider cursor-pointer flex items-center gap-1.5 transition-colors"
+                  title="Close viewer (ESC)"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">CLOSE</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Main Stage Image Area */}
+            <div 
+              className={`relative flex-1 w-full overflow-auto flex items-center justify-center p-2 md:p-6 ${
+                isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
+              }`}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  closeLightbox();
+                } else {
+                  setIsZoomed(!isZoomed);
+                }
+              }}
+            >
+              {/* Prev Arrow */}
+              {lightboxImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevLightboxImage();
+                  }}
+                  className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 p-2.5 bg-neutral-900/80 hover:bg-[#D5001C] text-white border border-neutral-700 rounded-none cursor-pointer transition-colors shadow-lg"
+                  title="Previous photo (Arrow Left)"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* Next Arrow */}
+              {lightboxImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextLightboxImage();
+                  }}
+                  className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 p-2.5 bg-neutral-900/80 hover:bg-[#D5001C] text-white border border-neutral-700 rounded-none cursor-pointer transition-colors shadow-lg"
+                  title="Next photo (Arrow Right)"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* The Actual Displayed Image */}
+              <img
+                src={lightboxImages[lightboxIndex]}
+                alt={`${lightboxTitle} - Image ${lightboxIndex + 1}`}
+                className={`transition-all duration-150 select-none ${
+                  isZoomed
+                    ? "max-w-none w-auto h-auto object-none shadow-2xl"
+                    : "max-h-[80vh] max-w-[92vw] object-contain shadow-2xl border border-neutral-800"
+                }`}
+                referrerPolicy="no-referrer"
+              />
+            </div>
+
+            {/* Bottom Thumbnail Strip (if multiple photos) */}
+            {lightboxImages.length > 1 && (
+              <div 
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-neutral-950/90 border-t border-neutral-800 flex-shrink-0 z-30 overflow-x-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {lightboxImages.map((thumbUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setIsZoomed(false);
+                      setLightboxIndex(idx);
+                    }}
+                    className={`relative w-14 h-9 md:w-16 md:h-10 border transition-all cursor-pointer overflow-hidden flex-shrink-0 ${
+                      idx === lightboxIndex 
+                        ? "border-[#D5001C] ring-2 ring-[#D5001C]/40 opacity-100" 
+                        : "border-neutral-700 opacity-50 hover:opacity-100"
+                    }`}
+                  >
+                    <img 
+                      src={thumbUrl} 
+                      alt={`Thumbnail ${idx + 1}`} 
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer" 
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
