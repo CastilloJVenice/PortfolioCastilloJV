@@ -392,14 +392,21 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
               >
                 <div className="flex flex-col gap-4">
                   {/* Visual Frame rendering the item */}
-                  <div className="relative aspect-video bg-neutral-950 border border-neutral-800 flex flex-col justify-between p-3 overflow-hidden select-none">
+                  <div 
+                    onClick={() => {
+                      onChangeTab("PROJECTS");
+                      onSelectProject(proj.id);
+                    }}
+                    className="relative aspect-video bg-neutral-950 border border-neutral-800 flex flex-col justify-between p-3 overflow-hidden select-none cursor-pointer group/cardimg"
+                    title="Click to view project details & gallery"
+                  >
                     {/* Render programmatic technical representations */}
                     <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-10">
                       {proj.imageType && proj.imageType.startsWith("data:image/") ? (
                         <img
                           src={proj.imageType}
                           alt={proj.title}
-                          className="w-full h-full object-cover opacity-85"
+                          className="w-full h-full object-cover opacity-90 group-hover/cardimg:scale-105 group-hover/cardimg:opacity-100 transition-all duration-300"
                           referrerPolicy="no-referrer"
                         />
                       ) : proj.imageType === "lunar" ? (
