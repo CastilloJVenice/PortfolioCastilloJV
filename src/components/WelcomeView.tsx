@@ -402,7 +402,7 @@ export default function WelcomeView({ onChangeTab, onSelectProject, projects, pr
                   >
                     {/* Render programmatic technical representations */}
                     <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-10">
-                      {proj.imageType && proj.imageType.startsWith("data:image/") ? (
+                      {(proj.imageType && (proj.imageType.startsWith("data:image/") || proj.imageType.startsWith("http"))) ? (
                         <img
                           src={proj.imageType}
                           alt={proj.title}
