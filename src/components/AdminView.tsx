@@ -3,2371 +3,807 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, DragEvent, ChangeEvent, FormEvent, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Lock, FileUp, Sparkles, FolderPlus, LogOut, Check, AlertCircle, RefreshCw, Trash2, Edit3, User, Image, Link2, MessageSquare, Clock, Send, Mail, CheckCircle, Layers, Tag } from "lucide-react";
-import { Project, ProfileSettings } from "../types";
-import { db } from "../lib/firebase";
-import { doc, getDoc, setDoc, collection, onSnapshot, deleteDoc } from "firebase/firestore";
+import { Play, RotateCcw, Share2, Volume2, Sparkles, FolderGit2, X, AlertCircle, ExternalLink, ZoomIn, ZoomOut, Maximize2, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { useState, useEffect, FormEvent } from "react";
+import { ActiveTab, Project, ProfileSettings } from "../types";
 
-interface AdminViewProps {
+interface WorkViewProps {
+  onChangeTab: (tab: ActiveTab) => void;
+  selectedProjectId: string | null;
+  onClearSelectedProject: () => void;
   projects: Project[];
-  onAddProject: (project: Project) => void;
-  onUpdateProject: (project: Project) => void;
-  onResetProjects: () => void;
-  onDeleteProject: (id: string) => void;
-  onChangeTab: (tab: any) => void;
-  profileSettings: ProfileSettings;
-  onUpdateProfile: (settings: ProfileSettings) => void;
+  profileSettings?: ProfileSettings;
   isAdmin?: boolean;
-  onAuthChange?: (auth: boolean) => void;
+  onUpdateSettings?: (settings: ProfileSettings) => void;
 }
 
-async function sha256(message: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
-
-function shrinkImageToBase64(file: File, maxW = 1440, maxH = 1080, quality = 0.84): Promise<string> {
-  return new Promise((resolve) => {
-    if (!file.type.startsWith("image/")) {
-      resolve("");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new window.Image();
-      img.src = e.target?.result as string;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        let width = img.width;
-        let height = img.height;
-
-        // If the original image is already within bounds, don't upscale
-        if (width > maxW || height > maxH) {
-          if (width / maxW > height / maxH) {
-            height = Math.round((height * maxW) / width);
-            width = maxW;
-          } else {
-            width = Math.round((width * maxH) / height);
-            height = maxH;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = "high";
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL("image/jpeg", quality));
-        } else {
-          resolve(e.target?.result as string);
-        }
-      };
-      img.onerror = () => {
-        resolve(e.target?.result as string);
-      };
-    };
-    reader.onerror = () => {
-      resolve("");
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-export default function AdminView({ 
+export default function WorkView({ 
+  onChangeTab, 
+  selectedProjectId, 
+  onClearSelectedProject, 
   projects, 
-  onAddProject, 
-  onUpdateProject, 
-  onResetProjects, 
-  onDeleteProject, 
-  onChangeTab,
   profileSettings,
-  onUpdateProfile,
   isAdmin = false,
-  onAuthChange
-}: AdminViewProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem("portfolio_admin_auth") === "true";
-  });
+  onUpdateSettings
+}: WorkViewProps) {
+  const [activePlayground, setActivePlayground] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
+  const [newCategoryInput, setNewCategoryInput] = useState("");
 
+  // In-App Lightbox state
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number>(0);
+  const [lightboxTitle, setLightboxTitle] = useState<string>("");
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  // Active preview image inside project modal (allows switching main view on thumbnail click)
+  const [activeModalImage, setActiveModalImage] = useState<string | null>(null);
+
+  // When opening a new project modal, reset active modal image
   useEffect(() => {
-    if (isAdmin !== isAuthenticated) {
-      setIsAuthenticated(isAdmin);
-    }
-  }, [isAdmin]);
-  const [accessKey, setAccessKey] = useState("");
-  const [authError, setAuthError] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
+    setActiveModalImage(null);
+  }, [activePlayground]);
 
-  // Active Admin Sub-tab
-  const [adminTab, setAdminTab] = useState<"PROJECTS" | "PROFILE" | "INBOX" | "STYLE">("PROJECTS");
+  const openLightbox = (images: string[], initialIndex: number, title: string) => {
+    if (!images || images.length === 0) return;
+    setLightboxImages(images);
+    setLightboxIndex(Math.max(0, Math.min(initialIndex, images.length - 1)));
+    setLightboxTitle(title);
+    setIsZoomed(false);
+    setIsLightboxOpen(true);
+  };
 
-  // Visitor chats database tracker state
-  const [messages, setMessages] = useState<any[]>([]);
-  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
-  const [pageViews, setPageViews] = useState<number | null>(null);
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+    setIsZoomed(false);
+  };
 
+  const nextLightboxImage = () => {
+    setIsZoomed(false);
+    setLightboxIndex((prev) => (prev + 1) % lightboxImages.length);
+  };
+
+  const prevLightboxImage = () => {
+    setIsZoomed(false);
+    setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length);
+  };
+
+  // Keyboard navigation for Lightbox
   useEffect(() => {
-    if (!isAuthenticated) return;
-    const unsub = onSnapshot(collection(db, "messages"), (snapshot) => {
-      const loaded: any[] = [];
-      snapshot.forEach(docSnap => {
-        loaded.push({ id: docSnap.id, ...docSnap.data() });
-      });
-      // Sort newest and unresolved first
-      loaded.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-      setMessages(loaded);
-    });
-
-    const unsubViews = onSnapshot(doc(db, "analytics", "views"), (docSnap) => {
-      if (docSnap.exists()) {
-        setPageViews(docSnap.data().count || 0);
-      } else {
-        setPageViews(0);
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeLightbox();
+      } else if (e.key === "ArrowRight") {
+        nextLightboxImage();
+      } else if (e.key === "ArrowLeft") {
+        prevLightboxImage();
       }
-    });
-
-    return () => {
-      unsub();
-      unsubViews();
     };
-  }, [isAuthenticated]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isLightboxOpen, lightboxImages.length]);
 
-  const handleDeleteMessage = async (msgId: string) => {
-    if (window.confirm("ARE YOU SURE YOU WANT TO PERMANENTLY PURGE THIS MESSAGE FROM FIRESTORE SECURE LEDGER?")) {
-      try {
-        await deleteDoc(doc(db, "messages", msgId));
-      } catch (err) {
-        console.error("Purge failure:", err);
-      }
-    }
-  };
-
-  const handleSendEmailReply = async (msg: any) => {
-    const text = replyTexts[msg.id];
-    if (!text || !text.trim()) {
-      alert("PLEASE ENTER REPLY COPY TEXT FIRST.");
-      return;
-    }
-
-    const email = msg.email;
-    const subject = encodeURIComponent(`RE: ${profileSettings.fullName} Portfolio Connection`);
-    const body = encodeURIComponent(text);
-    
+  const handleDownloadActiveImage = () => {
+    const activeUrl = lightboxImages[lightboxIndex];
+    if (!activeUrl) return;
     try {
-      await setDoc(doc(db, "messages", msg.id), {
-        ...msg,
-        replied: true,
-        replyContent: text,
-        replyTimestamp: Date.now()
-      }, { merge: true });
-
-      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      const link = document.createElement("a");
+      link.href = activeUrl;
+      const cleanTitle = (lightboxTitle || "project").toLowerCase().replace(/[^a-z0-9]/g, "-");
+      link.download = `${cleanTitle}-photo-${lightboxIndex + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (err) {
-      console.error("Reply database tracking update failed:", err);
-      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      console.error("Failed to download image:", err);
     }
   };
 
-  // Local Profile Settings inputs
-  const [pFullName, setPFullName] = useState(profileSettings.fullName);
-  const [pLastNameHighlight, setPLastNameHighlight] = useState(profileSettings.lastNameHighlight);
-  const [pHeadline, setPHeadline] = useState(profileSettings.headline);
-  const [pBiography, setPBiography] = useState(profileSettings.biography);
-  const [pPara1, setPPara1] = useState(profileSettings.aboutParagraphs[0] || "");
-  const [pPara2, setPPara2] = useState(profileSettings.aboutParagraphs[1] || "");
-  const [pPara3, setPPara3] = useState(profileSettings.aboutParagraphs[2] || "");
-  const [pContactEmail, setPContactEmail] = useState(profileSettings.contactEmail);
-  const [pInstagramUrl, setPInstagramUrl] = useState(profileSettings.instagramUrl);
-  const [pLinkedinUrl, setPLinkedinUrl] = useState(profileSettings.linkedinUrl);
-  const [pWebsiteUrl, setPWebsiteUrl] = useState(profileSettings.websiteUrl);
-  const [pProfileImageBase64, setPProfileImageBase64] = useState<string | undefined>(profileSettings.profileImageBase64);
-  const [pEmailNotificationKey, setPEmailNotificationKey] = useState(profileSettings.emailNotificationKey || "");
-  const [pEmailNotificationEnabled, setPEmailNotificationEnabled] = useState(profileSettings.emailNotificationEnabled || false);
-  const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
+  const defaultCategories = ["Game Development", "Cryptography", "3D Modelling", "UIUX Design", "Graphics Design", "Others"];
+  const configuredCategories = (profileSettings?.projectCategories && profileSettings.projectCategories.length > 0)
+    ? profileSettings.projectCategories
+    : defaultCategories;
 
-  // Interactive Live Style states
-  const [pFontFamilyHeader, setPFontFamilyHeader] = useState(profileSettings.fontFamilyHeader || "Syne");
-  const [pFontFamilyBody, setPFontFamilyBody] = useState(profileSettings.fontFamilyBody || "Plus Jakarta Sans");
-  const [pBgAccentStyle, setPBgAccentStyle] = useState(profileSettings.bgAccentStyle || "grid-mesh");
-  const [pTextCasingStyle, setPTextCasingStyle] = useState(profileSettings.textCasingStyle || "uppercase");
-  const [pThemeColorPrimary, setPThemeColorPrimary] = useState(profileSettings.themeColorPrimary || "#0A0A0A");
-  const [pThemeColorSecondary, setPThemeColorSecondary] = useState(profileSettings.themeColorSecondary || "#DCA221");
-  const [pCustomCanvasBg, setPCustomCanvasBg] = useState(profileSettings.customCanvasBg || "#FAF8F5");
-  const [pCustomCardBg, setPCustomCardBg] = useState(profileSettings.customCardBg || "#F2EEE3");
-
-  // Sync inputs with profileSettings whenever values change globally (e.g. from parent/reset)
-  useEffect(() => {
-    setPFullName(profileSettings.fullName);
-    setPLastNameHighlight(profileSettings.lastNameHighlight);
-    setPHeadline(profileSettings.headline);
-    setPBiography(profileSettings.biography);
-    setPPara1(profileSettings.aboutParagraphs?.[0] || "");
-    setPPara2(profileSettings.aboutParagraphs?.[1] || "");
-    setPPara3(profileSettings.aboutParagraphs?.[2] || "");
-    setPContactEmail(profileSettings.contactEmail);
-    setPInstagramUrl(profileSettings.instagramUrl);
-    setPLinkedinUrl(profileSettings.linkedinUrl);
-    setPWebsiteUrl(profileSettings.websiteUrl);
-    setPProfileImageBase64(profileSettings.profileImageBase64);
-    setPEmailNotificationKey(profileSettings.emailNotificationKey || "");
-    setPEmailNotificationEnabled(profileSettings.emailNotificationEnabled || false);
-
-    setPFontFamilyHeader(profileSettings.fontFamilyHeader || "Syne");
-    setPFontFamilyBody(profileSettings.fontFamilyBody || "Plus Jakarta Sans");
-    setPBgAccentStyle(profileSettings.bgAccentStyle || "grid-mesh");
-    setPTextCasingStyle(profileSettings.textCasingStyle || "uppercase");
-    setPThemeColorPrimary(profileSettings.themeColorPrimary || "#0A0A0A");
-    setPThemeColorSecondary(profileSettings.themeColorSecondary || "#DCA221");
-    setPCustomCanvasBg(profileSettings.customCanvasBg || "#FAF8F5");
-    setPCustomCardBg(profileSettings.customCardBg || "#F2EEE3");
-  }, [profileSettings]);
-
-  // Upload Form states
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [extendedDescription, setExtendedDescription] = useState("");
-  const [category, setCategory] = useState("Game Development");
-  const [isCustomCategoryInput, setIsCustomCategoryInput] = useState(false);
-  const [newAdminCategoryName, setNewAdminCategoryName] = useState("");
-  const [categorySuccess, setCategorySuccess] = useState<string | null>(null);
-
-  const defaultAdminCategories = ["Game Development", "Cryptography", "3D Modelling", "UIUX Design", "Graphics Design", "Others"];
-  const availableCategories = Array.from(
+  // Deduplicate and combine configured categories with any active categories in existing projects
+  const categoriesList = Array.from(
     new Set([
-      ...(profileSettings.projectCategories && profileSettings.projectCategories.length > 0
-        ? profileSettings.projectCategories
-        : defaultAdminCategories),
+      "All",
+      ...configuredCategories,
       ...projects.map((p) => p.category).filter(Boolean)
     ])
   );
 
-  const handleAddNewCategory = (catName: string) => {
-    const trimmed = catName.trim();
-    if (!trimmed) return;
-    const currentList = profileSettings.projectCategories && profileSettings.projectCategories.length > 0
-      ? profileSettings.projectCategories
-      : defaultAdminCategories;
-    if (!currentList.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
-      const updatedList = [...currentList, trimmed];
-      onUpdateProfile({
-        ...profileSettings,
-        projectCategories: updatedList
+  const handleAddCategory = (e: FormEvent) => {
+    e.preventDefault();
+    const trimmed = newCategoryInput.trim();
+    if (!trimmed || !onUpdateSettings) return;
+
+    if (!configuredCategories.includes(trimmed)) {
+      const updatedCategories = [...configuredCategories, trimmed];
+      onUpdateSettings({
+        ...(profileSettings || {
+          fullName: "JULIARISTY",
+          lastNameHighlight: "VENICE CASTILLO",
+          headline: "COMPUTER SCIENCE GRADUATE & DIGITAL DESIGNER",
+          biography: "",
+          aboutParagraphs: [],
+          contactEmail: "",
+          instagramUrl: "",
+          linkedinUrl: "",
+          websiteUrl: ""
+        }),
+        projectCategories: updatedCategories
       });
-      setCategorySuccess(`Added "${trimmed}" category.`);
-      setTimeout(() => setCategorySuccess(null), 3000);
+      setSelectedCategory(trimmed);
     }
+    setNewCategoryInput("");
+    setShowAddCategoryInput(false);
   };
 
-  const handleRemoveCategory = (catName: string) => {
-    const currentList = profileSettings.projectCategories && profileSettings.projectCategories.length > 0
-      ? profileSettings.projectCategories
-      : defaultAdminCategories;
-    const updatedList = currentList.filter(c => c.toLowerCase() !== catName.toLowerCase());
-    onUpdateProfile({
-      ...profileSettings,
-      projectCategories: updatedList
-    });
-    setCategorySuccess(`Removed "${catName}".`);
-    setTimeout(() => setCategorySuccess(null), 3000);
-  };
-  const [techTags, setTechTags] = useState("");
-  const [year, setYear] = useState(() => new Date().getFullYear().toString());
-  const [accentColor, setAccentColor] = useState("#0A0A0A");
-  const [linkBgColor, setLinkBgColor] = useState("");
-  const [linkTextColor, setLinkTextColor] = useState("");
-  const [imageType, setImageType] = useState("lunar");
-  const [uploadedImageBase64, setUploadedImageBase64] = useState<string | null>(null);
-  const [projectLink, setProjectLink] = useState("");
-  const [projectLinkLabel, setProjectLinkLabel] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
-
-  const [adminUser, setAdminUser] = useState("");
-  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
-
-  // Drag and Drop states
-  const [dragActive, setDragActive] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!adminUser || !accessKey) return;
-    setIsVerifying(true);
-    setAuthError("");
-
-    try {
-      const cleanUser = adminUser.trim().toLowerCase();
-      const cleanPass = accessKey.trim();
-
-      const inputUserHash = await sha256(cleanUser);
-      const inputPassHash = await sha256(cleanPass);
-      
-      const adminDocRef = doc(db, "profile", "admin");
-      let adminSnap = await getDoc(adminDocRef);
-      
-      const correctAdminData = {
-        usernameHash: "a3850a2abbfd6269eb9f74b67c8d3b254fccd043bc06c344a150e6ee5a6b7348", // hash of "julcastillo987"
-        passwordHash: "00f7795ad165e91d7e52282ea0556c9ba7a3b086469f79bdad41d1fd388d4fba", // hash of "happypassword"
-        legacyHashes: [
-          "37fb2fd28d038c44276103dbdd9e779dce3961c13bf8287163ff6326a7ac6eef", // hash of "juliaristy123"
-          "1a824bd14710944b28623c50b6a291ebdaf6fa3be9d773800e843b7ba418b7fd"  // hash of "castillo2026"
-        ]
-      };
-      
-      if (!adminSnap.exists() || adminSnap.data()?.usernameHash === "c1356bf1ac00fa1b703e223bfb2a26563604b0458dfda0fdd1ffd8a14ecb3917") {
-        // Automatically bootstrap secure admin parameters on user's database or migrate old hashes
-        await setDoc(adminDocRef, correctAdminData);
-        adminSnap = await getDoc(adminDocRef);
-      }
-
-      const adminData = adminSnap.data();
-      const dbUserHash = adminData?.usernameHash || "a3850a2abbfd6269eb9f74b67c8d3b254fccd043bc06c344a150e6ee5a6b7348";
-      const dbPassHash = adminData?.passwordHash || "00f7795ad165e91d7e52282ea0556c9ba7a3b086469f79bdad41d1fd388d4fba";
-      const dbLegacyHashes = adminData?.legacyHashes || [];
-
-      const isUserMatch = inputUserHash === dbUserHash;
-      const isPassMatch = inputPassHash === dbPassHash || dbLegacyHashes.includes(inputPassHash);
-
-      // Console cryptographic debugger for diagnostic clarity
-      console.log("=== PORTFOLIO ADMIN KEY-EXCHANGE DIAGNOSTICS ===");
-      console.log("Entered Username (Cleaned):", cleanUser);
-      console.log("Computed User Hash:        ", inputUserHash);
-      console.log("Database Expected User Hash:", dbUserHash);
-      console.log("Username Match Result:     ", isUserMatch);
-      console.log("Computed Password Hash:    ", inputPassHash);
-      console.log("Database Expected Pass Hash:", dbPassHash);
-      console.log("Database Legacy Pass Hashes:", dbLegacyHashes);
-      console.log("Password Match Result:     ", isPassMatch);
-      console.log("================================================");
-
-      if (isUserMatch && isPassMatch) {
-        setIsAuthenticated(true);
-        if (onAuthChange) onAuthChange(true);
-        localStorage.setItem("portfolio_admin_auth", "true");
-        setAccessKey("");
-        setAdminUser("");
-      } else {
-        setAuthError("CRYPTOGRAPHIC ACCESS DENIED: INVALID USERNAME OR ACCESS KEY.");
-      }
-    } catch (err) {
-      setAuthError("SECURE CONTEXT ERROR: " + (err instanceof Error ? err.message : String(err)));
-    } finally {
-      setIsVerifying(false);
+  // Auto-initialize active playground if selected from Gallery view
+  useEffect(() => {
+    if (selectedProjectId) {
+      setActivePlayground(selectedProjectId);
+      onClearSelectedProject();
     }
+  }, [selectedProjectId, onClearSelectedProject]);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    if (onAuthChange) onAuthChange(false);
-    localStorage.removeItem("portfolio_admin_auth");
-  };
-
-  const processProfilePicFile = async (file: File) => {
-    try {
-      const slimBase64 = await shrinkImageToBase64(file, 400, 400, 0.7);
-      if (slimBase64) {
-        setPProfileImageBase64(slimBase64);
-      }
-    } catch (err) {
-      console.error("Scale image error:", err);
-    }
-  };
-
-   const handleUpdateProfileSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setProfileSuccess(null);
-
-    const updated: ProfileSettings = {
-      ...profileSettings,
-      fullName: pFullName,
-      lastNameHighlight: pLastNameHighlight,
-      headline: pHeadline,
-      biography: pBiography,
-      aboutParagraphs: [pPara1, pPara2, pPara3].filter(p => p.trim() !== ""),
-      contactEmail: pContactEmail,
-      instagramUrl: pInstagramUrl,
-      linkedinUrl: pLinkedinUrl,
-      websiteUrl: pWebsiteUrl,
-      profileImageBase64: pProfileImageBase64,
-      emailNotificationKey: pEmailNotificationKey,
-      emailNotificationEnabled: pEmailNotificationEnabled,
-      
-      // Interactive Live style variables
-      fontFamilyHeader: pFontFamilyHeader,
-      fontFamilyBody: pFontFamilyBody,
-      bgAccentStyle: pBgAccentStyle,
-      textCasingStyle: pTextCasingStyle,
-      themeColorPrimary: pThemeColorPrimary,
-      themeColorSecondary: pThemeColorSecondary,
-      customCanvasBg: pCustomCanvasBg,
-      customCardBg: pCustomCardBg
-    };
-
-    onUpdateProfile(updated);
-    setProfileSuccess("PROFILE SETTINGS SYNCHRONIZED GLOBALLY & PERSISTED SECURELY.");
-    
-    // Clear banner after some seconds
-    setTimeout(() => {
-      setProfileSuccess(null);
-    }, 4500);
-  };
-
-  const handleStyleChange = (key: keyof ProfileSettings, value: any) => {
-    const updated: ProfileSettings = {
-      ...profileSettings,
-      fullName: pFullName,
-      lastNameHighlight: pLastNameHighlight,
-      headline: pHeadline,
-      biography: pBiography,
-      aboutParagraphs: [pPara1, pPara2, pPara3].filter(p => p.trim() !== ""),
-      contactEmail: pContactEmail,
-      instagramUrl: pInstagramUrl,
-      linkedinUrl: pLinkedinUrl,
-      websiteUrl: pWebsiteUrl,
-      profileImageBase64: pProfileImageBase64,
-      emailNotificationKey: pEmailNotificationKey,
-      emailNotificationEnabled: pEmailNotificationEnabled,
-      fontFamilyHeader: pFontFamilyHeader,
-      fontFamilyBody: pFontFamilyBody,
-      bgAccentStyle: pBgAccentStyle,
-      textCasingStyle: pTextCasingStyle,
-      themeColorPrimary: pThemeColorPrimary,
-      themeColorSecondary: pThemeColorSecondary,
-      customCanvasBg: pCustomCanvasBg,
-      customCardBg: pCustomCardBg,
-      [key]: value
-    };
-    onUpdateProfile(updated);
-  };
-
-  // Convert files to Base64 helper with intelligent compression
-  const processFile = async (file: File) => {
-    try {
-      const slimBase64 = await shrinkImageToBase64(file, 1440, 1080, 0.84);
-      if (slimBase64) {
-        setUploadedImageBase64(slimBase64);
-        setImageType(slimBase64); // use compressed base64 as imageType payload
-      }
-    } catch (err) {
-      console.error("Scale cover photo error:", err);
-      // Fallback to default raw convert
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result && typeof e.target.result === "string") {
-          setUploadedImageBase64(e.target.result);
-          setImageType(e.target.result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDrag = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
-    }
-  };
-
-  const startEditing = (proj: Project) => {
-    setEditingProjectId(proj.id);
-    setTitle(proj.title);
-    setDescription(proj.description || "");
-    setExtendedDescription(proj.extendedDescription || "");
-    setCategory(proj.category);
-    setIsCustomCategoryInput(!availableCategories.includes(proj.category));
-    setTechTags(proj.tag);
-    setYear(proj.year);
-    setAccentColor(proj.accentColor || "#0A0A0A");
-    setLinkBgColor(proj.linkBgColor || "");
-    setLinkTextColor(proj.linkTextColor || "");
-    setImageType(proj.imageType || "lunar");
-    setProjectLink(proj.link || "");
-    setProjectLinkLabel(proj.linkLabel || "");
-    setUploadedImageBase64(proj.imageType && proj.imageType.startsWith("data:image/") ? proj.imageType : null);
-    setVideoUrl(proj.videoUrl || "");
-    setAdditionalImages(proj.additionalImages || []);
-  };
-
-  const cancelEditing = () => {
-    setEditingProjectId(null);
-    setTitle("");
-    setDescription("");
-    setExtendedDescription("");
-    setCategory("Game Development");
-    setIsCustomCategoryInput(false);
-    setTechTags("");
-    setYear(new Date().getFullYear().toString());
-    setAccentColor("#0A0A0A");
-    setLinkBgColor("");
-    setLinkTextColor("");
-    setImageType("lunar");
-    setProjectLink("");
-    setProjectLinkLabel("");
-    setUploadedImageBase64(null);
-    setVideoUrl("");
-    setAdditionalImages([]);
-  };
-
-  const handleAddProjectSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!title || !description || !techTags) {
-      alert("Please fill in all required fields.");
-      return;
-    }
-
-    // Check total payload size approx to prevent Firestore document limit crash
-    const estimatedSizeKb = ((uploadedImageBase64?.length || 0) + additionalImages.reduce((acc, img) => acc + img.length, 0)) * 3 / 4 / 1024;
-    if (estimatedSizeKb > 850) {
-      alert(`The combined image size is roughly ${estimatedSizeKb.toFixed(0)}KB. Firestore database has a hard 1MB (1000KB) limit per project. Please check/compress your screenshot or upload a smaller cover photo/fewer gallery photos first!`);
-      return;
-    }
-
-    setIsSubmitting(true);
-    setUploadError(null);
-    setUploadSuccess(null);
-
-    const targetProject: Project = {
-      id: editingProjectId || "dynamic-" + Date.now(),
-      title: title.toUpperCase(),
-      category: category.trim() || "Others",  // Store exactly the dynamic filter value
-      tag: techTags,
-      year: year,
-      description: description,
-      extendedDescription: extendedDescription || undefined,
-      accentColor: accentColor,
-      linkBgColor: linkBgColor || undefined,
-      linkTextColor: linkTextColor || undefined,
-      imageType: uploadedImageBase64 || imageType, // Use custom base64 or abstract placeholder
-      isCustom: true,
-      link: projectLink || undefined,
-      linkLabel: projectLinkLabel || undefined,
-      videoUrl: videoUrl || undefined,
-      additionalImages: additionalImages.length > 0 ? additionalImages : undefined
-    };
-
-    // Auto-save category into profile categories list if it's new
-    if (category.trim()) {
-      const currentCats = profileSettings.projectCategories && profileSettings.projectCategories.length > 0
-        ? profileSettings.projectCategories
-        : defaultAdminCategories;
-      if (!currentCats.map(c => c.toLowerCase()).includes(category.trim().toLowerCase())) {
-        onUpdateProfile({
-          ...profileSettings,
-          projectCategories: [...currentCats, category.trim()]
-        });
-      }
-    }
-
-    try {
-      if (editingProjectId) {
-        await onUpdateProject(targetProject);
-        setUploadSuccess(`SUCCESS: "${title}" updated successfully.`);
-        setEditingProjectId(null);
-      } else {
-        await onAddProject(targetProject);
-        setUploadSuccess(`SUCCESS: "${title}" saved to gallery.`);
-      }
-
-      // Reset Form Fields ONLY on successful write!
-      setTitle("");
-      setDescription("");
-      setExtendedDescription("");
-      setTechTags("");
-      setAccentColor("#0A0A0A");
-      setLinkBgColor("");
-      setLinkTextColor("");
-      setUploadedImageBase64(null);
-      setProjectLink("");
-      setProjectLinkLabel("");
-      setVideoUrl("");
-      setAdditionalImages([]);
-      setUploadError(null);
-    } catch (err: any) {
-      console.error("Firestore write failure:", err);
-      let errMsg = "Failed to save project. The screenshot files are too large (exceeding Firestore's 1MB document storage limit) or database authentication has expired.";
-      if (err instanceof Error) {
-        try {
-          const parsed = JSON.parse(err.message);
-          if (parsed && parsed.error) {
-            errMsg = `Database Save Error: ${parsed.error}`;
-          }
-        } catch (_) {
-          errMsg = `Error: ${err.message}`;
-        }
-      }
-      setUploadError(errMsg);
-    } finally {
-      setIsSubmitting(false);
-    }
-
-    setTimeout(() => {
-      setUploadSuccess(null);
-      setUploadError(null);
-    }, 6000);
-  };
+  const bgAccent = (profileSettings?.bgAccentStyle && !profileSettings.bgAccentStyle.includes("grid") && !profileSettings.bgAccentStyle.includes("matrix") && !profileSettings.bgAccentStyle.includes("blueprint") && !profileSettings.bgAccentStyle.includes("mesh")) 
+    ? profileSettings.bgAccentStyle 
+    : "solid-plain";
+  const customBgColor = profileSettings?.customCanvasBg || "#F8F9FA";
+  const casingClass = profileSettings?.textCasingStyle === "normal-case" ? "" : "uppercase";
 
   return (
-    <div className="relative min-h-screen bg-verdant-dark overflow-hidden text-verdant-cream pb-20">
-      <div className="absolute top-[10%] right-[5%] w-[300px] h-[300px] bg-verdant-yellow/5 rounded-full filter blur-[100px] pointer-events-none" />
-      
-      <div className="max-w-4xl mx-auto px-6 pt-12 md:pt-16 relative z-10 text-center">
+    <div 
+      style={{ backgroundColor: customBgColor }}
+      className={`relative min-h-screen overflow-hidden ${bgAccent} text-neutral-900 pb-20`}
+    >
+      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-10 md:pt-16">
         
-        {/* Dynamic transition between login panel & admin suite */}
-        <AnimatePresence mode="wait">
-          {!isAuthenticated ? (
-            <motion.div
-              key="auth-gate"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              className="max-w-md mx-auto"
+        {/* Layout Heading Section - Direct & Clean */}
+        <div className="flex flex-col items-start select-none mb-10 border-b border-neutral-200 pb-6">
+          <span className="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-[0.25em] mb-2 flex items-center gap-2">
+            <span className="w-2 h-[2px] bg-[#D5001C]" />
+            <span>FEATURED WORK</span>
+          </span>
+          <h1 className={`font-syne font-black text-neutral-900 text-3xl md:text-5xl leading-none tracking-tight ${casingClass}`}>
+            PROJECT PORTFOLIO
+          </h1>
+          <p className="font-sans text-xs md:text-sm text-neutral-500 mt-2 font-normal leading-relaxed text-left max-w-2xl">
+            Selected projects and prototypes across design, development, and 3D modeling.
+          </p>
+        </div>
+
+        {/* Organized tab filters list */}
+        <div className="flex flex-wrap items-center gap-2 mb-8 border-b border-neutral-200 pb-5 text-left relative z-10 select-none">
+          {categoriesList.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 border text-[11px] uppercase font-mono font-bold tracking-[0.16em] cursor-pointer transition-all ${
+                selectedCategory.toLowerCase() === cat.toLowerCase()
+                  ? "bg-neutral-950 text-white border-neutral-950 shadow-sm"
+                  : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-900 hover:text-neutral-900"
+              }`}
             >
-              <div className="flex flex-col items-center mb-8 select-none">
-                <div className="w-14 h-14 bg-[#DCA221]/10 border-2 border-verdant-yellow flex items-center justify-center text-verdant-yellow rounded-none mb-4">
-                  <Lock className="w-7 h-7" />
-                </div>
-                <h1 className="font-syne font-black text-verdant-cream text-3xl md:text-5xl uppercase tracking-widest">
-                  ADMIN PORTAL
-                </h1>
-                <p className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest mt-2">
-                  SECURE ACCESS CONTROL
-                </p>
-                <p className="font-sans text-xs text-verdant-gray mt-4 max-w-sm font-semibold">
-                  Please authenticate with your administrative credentials to update the portfolio.
-                </p>
-              </div>
+              {cat}
+            </button>
+          ))}
 
-              <div className="relative border-brutal border-verdant-cream bg-verdant-charcoal p-6 md:p-8 text-left">
-                <form onSubmit={handleLogin} className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                      ADMINISTRATOR USERNAME
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Enter username"
-                      value={adminUser}
-                      onChange={(e) => setAdminUser(e.target.value)}
-                      className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C] select-all mb-2"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                      ADMIN PASSWORD / KEY
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••••••••"
-                      value={accessKey}
-                      onChange={(e) => setAccessKey(e.target.value)}
-                      className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C] select-all"
-                    />
-                  </div>
-
-                  {authError && (
-                    <div className="flex items-start gap-2 bg-red-950/40 p-3 border border-red-900 text-red-100 font-mono text-[10px] uppercase font-bold leading-relaxed">
-                      <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
-                      <span>{authError}</span>
-                    </div>
-                  )}
-
+          {/* Quick Admin Category Adder */}
+          {isAdmin && onUpdateSettings && (
+            <div className="flex items-center gap-1.5 ml-auto">
+              {showAddCategoryInput ? (
+                <form onSubmit={handleAddCategory} className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    placeholder="New category..."
+                    value={newCategoryInput}
+                    onChange={(e) => setNewCategoryInput(e.target.value)}
+                    autoFocus
+                    className="border border-neutral-900 bg-white text-neutral-900 font-mono text-[10px] px-2.5 py-1.5 uppercase font-bold focus:outline-none w-36 shadow-sm"
+                  />
                   <button
                     type="submit"
-                    disabled={isVerifying}
-                    className="w-full bg-verdant-yellow text-white border-2 border-verdant-cream font-mono text-xs font-black tracking-widest uppercase py-4 mt-2 hover:bg-verdant-cream hover:text-white transition-colors cursor-pointer select-none shadow-yellow-offset"
+                    className="bg-[#D5001C] hover:bg-neutral-950 text-white font-mono text-[10px] uppercase font-bold px-3 py-1.5 cursor-pointer shadow-sm"
                   >
-                    {isVerifying ? "VERIFYING..." : "LOG IN"}
+                    ADD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddCategoryInput(false);
+                      setNewCategoryInput("");
+                    }}
+                    className="bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-mono text-[10px] px-2 py-1.5 cursor-pointer"
+                  >
+                    ✕
                   </button>
                 </form>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="dashboard-suite"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              className="text-left"
-            >
-              {/* Header block inside admin suite */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-4 border-b border-verdant-cream/20">
-                <div>
-                  <div className="inline-block bg-[#DCA221]/15 border border-[#DCA221]/40 font-mono text-[9px] uppercase font-black text-verdant-yellow px-2 py-0.5 mb-1.5 rounded-none">
-                    ADMINISTRATIVE CONTROL ACCESS ACTIVE
-                  </div>
-                  <h1 className="font-syne font-black text-verdant-cream text-3xl md:text-5xl uppercase tracking-tight">
-                    PORTFOLIO ADMIN
-                  </h1>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={onResetProjects}
-                    className="cursor-pointer border-2 border-dashed border-verdant-yellow hover:border-solid hover:bg-verdant-yellow text-verdant-yellow hover:text-white font-mono text-[10px] font-black tracking-wider uppercase px-4 py-2.5 flex items-center gap-2 transition-all"
-                    title="Restore standard projects baseline"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>RESET SYSTEMS baseline</span>
-                  </button>
-
-                  <button
-                    onClick={handleLogout}
-                    className="cursor-pointer border-2 border-verdant-cream hover:bg-verdant-cream text-verdant-cream hover:text-white font-mono text-[10px] font-black tracking-wider uppercase px-4 py-2.5 flex items-center gap-2 transition-all"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>LOG OUT</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Selector Tabs for Projects Ledger vs. User Profile vs. Style Builder */}
-              <div className="flex flex-wrap border-b border-verdant-cream/20 mb-8 gap-1.5 sm:gap-2">
+              ) : (
                 <button
                   type="button"
-                  onClick={() => setAdminTab("PROJECTS")}
-                  className={`px-4 sm:px-5 py-3 font-mono text-xs font-black tracking-wider uppercase border-t-2 border-x-2 transition-all cursor-pointer flex items-center gap-2 ${
-                    adminTab === "PROJECTS"
-                      ? "bg-verdant-charcoal border-verdant-cream text-verdant-cream font-bold"
-                      : "bg-transparent border-transparent text-verdant-gray hover:text-verdant-cream"
-                  }`}
+                  onClick={() => setShowAddCategoryInput(true)}
+                  className="px-3 py-2 border border-dashed border-neutral-400 hover:border-neutral-900 text-neutral-700 hover:text-neutral-950 font-mono text-[10.5px] uppercase font-bold tracking-wider cursor-pointer bg-neutral-50 transition-colors flex items-center gap-1.5"
+                  title="Add a new custom project category"
                 >
-                  <FolderPlus className="w-3.5 h-3.5" />
-                  <span>MANAGE PROJECTS ({projects.length})</span>
+                  <span className="text-[#D5001C] font-bold">+</span>
+                  <span>ADD CATEGORY</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setAdminTab("PROFILE")}
-                  className={`px-4 sm:px-5 py-3 font-mono text-xs font-black tracking-wider uppercase border-t-2 border-x-2 transition-all cursor-pointer flex items-center gap-2 ${
-                    adminTab === "PROFILE"
-                      ? "bg-verdant-charcoal border-verdant-cream text-verdant-cream font-bold"
-                      : "bg-transparent border-transparent text-verdant-gray hover:text-verdant-cream"
-                  }`}
-                >
-                  <User className="w-3.5 h-3.5" />
-                  <span>EDIT PROFILE & SOCIALS</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAdminTab("INBOX")}
-                  className={`px-4 sm:px-5 py-3 font-mono text-xs font-black tracking-wider uppercase border-t-2 border-x-2 transition-all cursor-pointer flex items-center gap-2 ${
-                    adminTab === "INBOX"
-                      ? "bg-verdant-charcoal border-verdant-cream text-verdant-cream font-bold"
-                      : "bg-transparent border-transparent text-verdant-gray hover:text-verdant-cream"
-                  }`}
-                >
-                  <MessageSquare className="w-3.5 h-3.5 text-verdant-yellow" />
-                  <span>VISITOR CHATS & INBOX</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAdminTab("STYLE")}
-                  className={`px-4 sm:px-5 py-3 font-mono text-xs font-black tracking-wider uppercase border-t-2 border-x-2 transition-all cursor-pointer flex items-center gap-2 ${
-                    adminTab === "STYLE"
-                      ? "bg-verdant-charcoal border-verdant-cream text-verdant-cream font-bold"
-                      : "bg-transparent border-transparent text-verdant-gray hover:text-verdant-cream"
-                  }`}
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-verdant-yellow" />
-                  <span>STYLE & PALETTES</span>
-                </button>
-              </div>
-
-              {adminTab === "PROJECTS" && (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
-                {/* Left Form segment which generates new items */}
-                <div className="lg:col-span-7 flex flex-col gap-6">
-                  <div className="relative border-[3px] border-verdant-cream bg-verdant-charcoal p-6 md:p-8 shadow-charcoal-offset">
-                    <h2 className="font-syne font-black text-xl text-verdant-cream tracking-widest uppercase border-b border-verdant-cream/20 pb-3 mb-6 flex items-center justify-between">
-                      <span>{editingProjectId ? "EDIT PROJECT PROFILE" : "REGISTER NEW PROJECT"}</span>
-                      <FolderPlus className="w-5 h-5 text-neutral-700" />
-                    </h2>
-
-                    <form onSubmit={handleAddProjectSubmit} className="flex flex-col gap-4 text-left">
-                      {/* Image feedback success */}
-                      {uploadSuccess && (
-                        <div className="flex items-center gap-2 bg-neutral-900/60 p-3 border-2 border-neutral-800 text-white font-mono text-[10px] uppercase font-black leading-relaxed">
-                          <Check className="w-4 h-4 shrink-0 text-white" />
-                          <span>{uploadSuccess}</span>
-                        </div>
-                      )}
-
-                      {/* Storage quota or large image upload error message */}
-                      {uploadError && (
-                        <div className="flex items-start gap-2 bg-red-950 p-3 border-2 border-red-600 text-red-200 font-mono text-[10px] uppercase font-bold leading-relaxed">
-                          <AlertCircle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
-                          <span>{uploadError}</span>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Title Field */}
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            PROJECT TITLE *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g., HELIOS SPATIAL REND"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                        </div>
-
-                        {/* Tech Tags */}
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            TECHNOLOGY TAGS *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g., C++ / WASM / WebGL / Canvas"
-                            value={techTags}
-                            onChange={(e) => setTechTags(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Category/Tab Selector */}
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex justify-between items-center">
-                            <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                              CATEGORY FILTER TAB *
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsCustomCategoryInput(!isCustomCategoryInput);
-                                if (!isCustomCategoryInput) setCategory("");
-                              }}
-                              className="text-[9px] font-mono text-[#D5001C] underline font-bold cursor-pointer hover:text-white"
-                            >
-                              {isCustomCategoryInput ? "← Select from list" : "+ Enter custom category"}
-                            </button>
-                          </div>
-
-                          {isCustomCategoryInput ? (
-                            <input
-                              type="text"
-                              required
-                              placeholder="e.g., Graphics Design, Others, 3D Art..."
-                              value={category}
-                              onChange={(e) => setCategory(e.target.value)}
-                              className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                            />
-                          ) : (
-                            <select
-                              value={category}
-                              onChange={(e) => {
-                                if (e.target.value === "__CUSTOM__") {
-                                  setIsCustomCategoryInput(true);
-                                  setCategory("");
-                                } else {
-                                  setCategory(e.target.value);
-                                }
-                              }}
-                              className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none"
-                            >
-                              {availableCategories.map((cat) => (
-                                <option key={cat} value={cat}>{cat}</option>
-                              ))}
-                              <option value="__CUSTOM__">+ Enter custom category...</option>
-                            </select>
-                          )}
-                        </div>
-
-                        {/* Year */}
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            RELEASE YEAR *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={year}
-                            onChange={(e) => setYear(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Description Objective Paragraph */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          PROJECT OBJECTIVES & DESCRIPTION *
-                        </label>
-                        <textarea
-                          required
-                          rows={2}
-                          placeholder="Detail the procedural framework parameters and math formulas utilized (Grid preview card / caption style)..."
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs p-4 focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
-                        />
-                      </div>
-
-                      {/* Extended Description Overlay Paragraph */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          PROJECT DETAILED DESCRIPTION (OPTIONAL - EXPANDS INSIDE THE OPENED WORKSPACE)
-                        </label>
-                        <textarea
-                          rows={4}
-                          placeholder="Detail project notes, technologies used, implementation details, or user guides that display when this project modal is opened..."
-                          value={extendedDescription}
-                          onChange={(e) => setExtendedDescription(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs p-4 focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
-                        />
-                      </div>
-
-                      {/* Optional Interactive Portal Link */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          PROJECT SIMULATOR / EXTERNAL LIVE LINK (OPTIONAL)
-                        </label>
-                        <input
-                          type="url"
-                          placeholder="e.g., https://crypto-agilitypqcthesis.streamlit.app/"
-                          value={projectLink}
-                          onChange={(e) => setProjectLink(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                        />
-                      </div>
-
-                      {/* Optional Interactive Portal Link Label */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          CUSTOM LINK BUTTON LABEL (OPTIONAL, DEFAULTS TO "LAUNCH LIVE PORTAL")
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g., TEST PROTOTYPE ON STREAMLIT or VIEW ON GITHUB"
-                          value={projectLinkLabel}
-                          onChange={(e) => setProjectLinkLabel(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                        />
-                      </div>
-
-                      {/* Project Custom Styling Overrides */}
-                      <div className="border border-dashed border-verdant-cream/20 bg-verdant-dark/40 p-4 flex flex-col gap-4">
-                        <span className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest block select-none">
-                          🎨 PROJECT BRANDING & COLOR SCHEMES
-                        </span>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          {/* Accent Color Picker */}
-                          <div className="flex flex-col gap-1.5">
-                            <label className="font-mono text-[8px] font-black text-verdant-cream uppercase tracking-widest whitespace-nowrap">
-                              TAGS/LINE ACCENT HEX
-                            </label>
-                            <div className="flex gap-2">
-                              <input
-                                type="color"
-                                value={accentColor || "#0A0A0A"}
-                                onChange={(e) => setAccentColor(e.target.value)}
-                                className="w-9 h-9 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
-                              />
-                              <input
-                                type="text"
-                                value={accentColor}
-                                onChange={(e) => setAccentColor(e.target.value)}
-                                className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-2 border-2 border-verdant-cream focus:outline-none"
-                                placeholder="#0A0A0A"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Link Button Background Color Picker */}
-                          <div className="flex flex-col gap-1.5">
-                            <label className="font-mono text-[8px] font-black text-verdant-cream uppercase tracking-widest whitespace-nowrap">
-                              LINK BACKDROP COLOR
-                            </label>
-                            <div className="flex gap-2">
-                              <input
-                                type="color"
-                                value={linkBgColor || "#DCA221"}
-                                onChange={(e) => setLinkBgColor(e.target.value)}
-                                className="w-9 h-9 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
-                              />
-                              <input
-                                type="text"
-                                value={linkBgColor}
-                                onChange={(e) => setLinkBgColor(e.target.value)}
-                                className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-2 border-2 border-verdant-cream focus:outline-none"
-                                placeholder="#DCA221"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Link Button Text Color Picker */}
-                          <div className="flex flex-col gap-1.5">
-                            <label className="font-mono text-[8px] font-black text-verdant-cream uppercase tracking-widest whitespace-nowrap">
-                              LINK TEXT COLOR
-                            </label>
-                            <div className="flex gap-2">
-                              <input
-                                type="color"
-                                value={linkTextColor || "#FFFFFF"}
-                                onChange={(e) => setLinkTextColor(e.target.value)}
-                                className="w-9 h-9 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
-                              />
-                              <input
-                                type="text"
-                                value={linkTextColor}
-                                onChange={(e) => setLinkTextColor(e.target.value)}
-                                className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-2 border-2 border-verdant-cream focus:outline-none"
-                                placeholder="#FFFFFF"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Video Link */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          VIDEO LINK / EMBED URL (OPTIONAL)
-                        </label>
-                        <input
-                          type="url"
-                          placeholder="e.g., https://www.youtube.com/embed/yourvideo or external video link"
-                          value={videoUrl}
-                          onChange={(e) => setVideoUrl(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream shadow-sm focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                        />
-                      </div>
-
-                      {/* Additional Photos Upload */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          ADDITIONAL PHOTOS GALLERY (OPTIONAL)
-                        </label>
-                        <div className="border border-dashed border-verdant-cream/30 p-4 bg-verdant-dark flex flex-col gap-3">
-                          <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={async (e) => {
-                              if (e.target.files) {
-                                const filesArray = Array.from(e.target.files);
-                                for (const file of filesArray) {
-                                  try {
-                                    const slimBase64 = await shrinkImageToBase64(file as File, 1440, 1080, 0.84);
-                                    if (slimBase64) {
-                                      setAdditionalImages((prev) => [...prev, slimBase64]);
-                                    }
-                                  } catch (err) {
-                                    console.error("Scale secondary photo error:", err);
-                                  }
-                                }
-                              }
-                            }}
-                            className="w-full bg-transparent text-xs font-mono file:mr-4 file:py-1.5 file:px-3 file:border file:border-verdant-cream file:bg-verdant-charcoal file:text-verdant-cream file:text-xs file:font-mono hover:file:bg-verdant-cream hover:file:text-verdant-dark file:cursor-pointer"
-                          />
-                          {additionalImages.length > 0 && (
-                            <div className="grid grid-cols-4 gap-2 mt-2">
-                              {additionalImages.map((imgBase64, idx) => (
-                                <div key={idx} className="relative aspect-video border border-verdant-cream bg-black">
-                                  <img src={imgBase64} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                                  <span className="absolute bottom-0 left-0 bg-neutral-950 text-white text-[7px] px-1 font-mono font-black">
-                                    {((imgBase64.length * 3) / 4 / 1024).toFixed(0)}KB
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setAdditionalImages((prev) => prev.filter((_, i) => i !== idx))}
-                                    className="absolute top-1 right-1 bg-red-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded cursor-pointer"
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Custom Drag and Drop File Upload for Images */}
-                      <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          IMAGE COVER ATTACHMENT
-                        </label>
-                        
-                        <div
-                          onDragEnter={handleDrag}
-                          onDragOver={handleDrag}
-                          onDragLeave={handleDrag}
-                          onDrop={handleDrop}
-                          className={`border-2 border-dashed rounded-none p-6 text-center transition-all ${
-                            dragActive
-                              ? "border-verdant-yellow bg-verdant-yellow/5"
-                              : uploadedImageBase64
-                              ? "border-neutral-800 bg-neutral-100"
-                              : "border-verdant-cream/30 bg-verdant-dark"
-                          }`}
-                        >
-                          {uploadedImageBase64 ? (
-                            <div className="flex flex-col items-center gap-2">
-                              <img
-                                src={uploadedImageBase64}
-                                alt="Pre-render upload frame"
-                                className="h-28 object-contain border-2 border-verdant-cream"
-                                referrerPolicy="no-referrer"
-                              />
-                              <p className="font-mono text-[8px] text-neutral-700 font-bold uppercase mt-1">
-                                Base64 Buffer loaded - Size {((uploadedImageBase64.length * 3) / 4 / 1024).toFixed(1)} KB
-                              </p>
-                              <button
-                                type="button"
-                                onClick={() => setUploadedImageBase64(null)}
-                                className="text-[9px] underline text-red-700 font-bold uppercase cursor-pointer"
-                              >
-                                Replace Attachment
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-2">
-                              <FileUp className="w-8 h-8 text-verdant-gray" />
-                              <p className="font-sans text-xs text-verdant-gray font-semibold">
-                                Drag and drop image file here, or{" "}
-                                <label className="text-neutral-700 underline font-black cursor-pointer">
-                                  browse paths
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={handleFileChange}
-                                  />
-                                </label>
-                              </p>
-                              <span className="font-mono text-[7px] text-zinc-500 uppercase tracking-widest">
-                                Limit file to 2MB. Converted securely on thread.
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* If no custom image is selected, choose a stencil pattern style */}
-                      {!uploadedImageBase64 && (
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[8.5px] font-black text-neutral-700 uppercase tracking-widest">
-                            DEFAULT GENERATIVE BACKGROUND STENCIL
-                          </label>
-                          <div className="grid grid-cols-3 gap-2">
-                            {["lunar", "void", "logic"].map((pattern) => (
-                              <button
-                                type="button"
-                                key={pattern}
-                                onClick={() => setImageType(pattern)}
-                                className={`py-2 border-2 text-[9px] font-bold uppercase font-mono cursor-pointer text-center ${
-                                  imageType === pattern
-                                    ? "bg-verdant-cream text-verdant-dark border-verdant-cream font-black"
-                                    : "bg-verdant-dark text-verdant-gray border-verdant-cream/20 hover:border-verdant-cream/50"
-                                }`}
-                              >
-                                {pattern === "lunar" ? "🌙 Lunar Waves" : pattern === "void" ? "💠 Vector Shard" : "🌾 Logic Wheat"}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="flex flex-col gap-3">
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="w-full cursor-pointer bg-neutral-950 hover:bg-[#D5001C] text-white border border-neutral-700 font-mono text-xs font-bold py-4 uppercase tracking-widest transition-colors select-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                          id="submit-dynamic-proj-btn"
-                        >
-                          {isSubmitting ? "SAVING TO FIREBASE..." : editingProjectId ? "SAVE CHANGES & UPDATE" : "PUBLISH TO GALLERY"}
-                        </button>
-                        
-                        {editingProjectId && (
-                          <button
-                            type="button"
-                            onClick={cancelEditing}
-                            className="w-full cursor-pointer bg-transparent hover:bg-neutral-800 text-verdant-cream border-2 border-dashed border-verdant-cream/40 font-mono text-xs font-black py-2.5 uppercase tracking-widest transition-all select-none"
-                          >
-                            CANCEL EDITING
-                          </button>
-                        )}
-                      </div>
-                    </form>
-                  </div>
-                </div>
-
-                {/* Right columns listing existing projects & category manager */}
-                <div className="lg:col-span-5 flex flex-col gap-6">
-                  {/* Category Filter Manager */}
-                  <div className="border-[3px] border-verdant-cream bg-verdant-charcoal p-5 font-mono">
-                    <div className="flex justify-between items-center border-b border-verdant-cream/15 pb-2.5 mb-3">
-                      <h3 className="text-verdant-cream uppercase font-black text-xs tracking-widest flex items-center gap-2">
-                        <Layers className="w-3.5 h-3.5 text-verdant-yellow" />
-                        <span>PROJECT CATEGORIES</span>
-                      </h3>
-                      <span className="text-[10px] text-verdant-gray">{availableCategories.length} TABS</span>
-                    </div>
-
-                    <p className="text-[10px] text-zinc-400 font-sans mb-3 leading-relaxed">
-                      Categories appear as filter tabs in your Projects portfolio view. Add or manage them below:
-                    </p>
-
-                    {categorySuccess && (
-                      <div className="mb-3 p-2 bg-neutral-900 border border-neutral-700 text-white text-[9.5px] uppercase font-bold flex items-center gap-1.5">
-                        <Check className="w-3 h-3 text-[#D5001C]" />
-                        <span>{categorySuccess}</span>
-                      </div>
-                    )}
-
-                    {/* Active Categories Chips */}
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {availableCategories.map((cat) => {
-                        const count = projects.filter(p => p.category?.trim().toLowerCase() === cat.trim().toLowerCase()).length;
-                        return (
-                          <div
-                            key={cat}
-                            className="bg-verdant-dark border border-verdant-cream/30 text-verdant-cream text-[9px] px-2.5 py-1 flex items-center gap-1.5"
-                          >
-                            <span className="font-bold">{cat}</span>
-                            <span className="text-zinc-500 text-[8px]">({count})</span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveCategory(cat)}
-                              className="text-zinc-400 hover:text-red-500 cursor-pointer ml-1 p-0.5"
-                              title={`Remove "${cat}" category`}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Add new Category Form */}
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        if (newAdminCategoryName.trim()) {
-                          handleAddNewCategory(newAdminCategoryName);
-                          setNewAdminCategoryName("");
-                        }
-                      }}
-                      className="flex gap-2"
-                    >
-                      <input
-                        type="text"
-                        placeholder="e.g., Graphics Design, Others..."
-                        value={newAdminCategoryName}
-                        onChange={(e) => setNewAdminCategoryName(e.target.value)}
-                        className="flex-grow bg-verdant-dark text-verdant-cream font-mono text-xs px-3 py-2 border border-verdant-cream/40 focus:outline-none focus:border-white uppercase"
-                      />
-                      <button
-                        type="submit"
-                        className="bg-neutral-950 hover:bg-[#D5001C] text-white border border-neutral-700 font-mono text-[10px] font-bold px-3 py-2 uppercase tracking-wider cursor-pointer transition-colors shadow-sm"
-                      >
-                        + ADD
-                      </button>
-                    </form>
-                  </div>
-
-                  <div className="border-[3px] border-verdant-cream bg-verdant-charcoal p-5 font-mono">
-                    <h3 className="text-verdant-cream uppercase font-black text-xs tracking-widest border-b border-verdant-cream/15 pb-2.5 mb-4 flex justify-between items-center">
-                      <span>PROJECT INDEX ({projects.length})</span>
-                      <span className="text-[10px] text-verdant-gray">LIVE DB</span>
-                    </h3>
-
-                    {/* Scrolling container */}
-                    <div className="flex flex-col gap-3.5 max-h-[640px] overflow-y-auto pr-1">
-                      {projects.map((proj) => (
-                        <div
-                          key={proj.id}
-                          className="p-3 bg-verdant-dark border border-verdant-cream/20 flex flex-col gap-2 relative group"
-                        >
-                          <div className="flex justify-between items-start gap-4">
-                            <div>
-                              <h4 className="text-verdant-cream font-black text-xs uppercase tracking-tight">
-                                {proj.title}
-                              </h4>
-                              <p className="text-neutral-700 font-bold text-[9px] uppercase tracking-wider mt-0.5">
-                                {proj.category}
-                              </p>
-                            </div>
-
-                            <div className="flex gap-2 shrink-0">
-                              {/* Edit project button */}
-                              <button
-                                onClick={() => startEditing(proj)}
-                                className={`p-1 cursor-pointer transition-transform hover:scale-110 ${
-                                  editingProjectId === proj.id ? "text-verdant-yellow" : "text-verdant-gray hover:text-verdant-yellow"
-                                }`}
-                                title="Edit project profile"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-
-                              {/* Delete project button */}
-                              <button
-                                onClick={() => {
-                                  if (confirm(`Are you sure you want to delete ${proj.title}?`)) {
-                                    onDeleteProject(proj.id);
-                                    if (editingProjectId === proj.id) {
-                                      cancelEditing();
-                                    }
-                                  }
-                                }}
-                                className="text-verdant-gray hover:text-red-500 hover:scale-110 cursor-pointer p-1 transition-transform"
-                                title="Delete project from database"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-
-                          <p className="text-verdant-gray text-[9px] leading-relaxed capitalize">
-                            {proj.description.slice(0, 95)}...
-                          </p>
-
-                          {/* Detail row */}
-                          <div className="flex justify-between items-center border-t border-verdant-cream/10 pt-1.5 text-[8px] text-zinc-500">
-                            <span>{proj.year}</span>
-                            <span className="text-[7.5px] truncate max-w-[120px]" title={proj.tag}>{proj.tag}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
               )}
-
-              {adminTab === "PROFILE" && (
-                <div className="relative border-[3px] border-verdant-cream bg-verdant-charcoal p-6 md:p-8 shadow-charcoal-offset">
-                  <h2 className="font-syne font-black text-xl text-verdant-cream tracking-widest uppercase border-b border-verdant-cream/20 pb-3 mb-6 flex items-center justify-between">
-                    <span>EDIT PORTFOLIO IDENTITY & STORY</span>
-                    <User className="w-5 h-5 text-neutral-700" />
-                  </h2>
-
-                  <form onSubmit={handleUpdateProfileSubmit} className="flex flex-col gap-6 text-left">
-                    {/* Synchronize status message */}
-                    {profileSuccess && (
-                      <div className="flex items-center gap-2 bg-neutral-900/60 p-3.5 border-2 border-neutral-800 text-white font-mono text-[10.5px] uppercase font-black leading-relaxed">
-                        <Check className="w-4 h-4 shrink-0 text-white" />
-                        <span>{profileSuccess}</span>
-                      </div>
-                    )}
-
-                    {/* Section 1: Basic Information */}
-                    <div className="flex flex-col gap-4">
-                      <h3 className="font-mono text-[10px] uppercase font-extrabold text-verdant-yellow tracking-widest flex items-center gap-2 border-b border-verdant-cream/10 pb-1.5">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>1. Primary Core Metadata</span>
-                      </h3>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            FIRST NAME / INITIALS *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g., JULIARISTY"
-                            value={pFullName}
-                            onChange={(e) => setPFullName(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            LAST NAME OR HIGHLIGHTED LOGO *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g., VENICE CASTILLO"
-                            value={pLastNameHighlight}
-                            onChange={(e) => setPLastNameHighlight(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          HERO SUBTITLE / SERVICE HEADLINE *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g., COMPUTER SCIENCE GRADUATE & DIGITAL DESIGNER"
-                          value={pHeadline}
-                          onChange={(e) => setPHeadline(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-1.5">
-                        <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          HERO INTRODUCTORY BIOGRAPHY *
-                        </label>
-                        <textarea
-                          required
-                          rows={3}
-                          placeholder="Introduction bio..."
-                          value={pBiography}
-                          onChange={(e) => setPBiography(e.target.value)}
-                          className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-4 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Section 2: Graphic Avatar Upload */}
-                    <div className="flex flex-col gap-4">
-                      <h3 className="font-mono text-[10px] uppercase font-extrabold text-verdant-yellow tracking-widest flex items-center gap-2 border-b border-verdant-cream/10 pb-1.5">
-                        <Image className="w-3.5 h-3.5" />
-                        <span>2. Creative Portrait Asset</span>
-                      </h3>
-
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
-                        <div className="md:col-span-8 flex flex-col gap-2">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            AVATAR PORTRAIT IMAGE (CLICK / DRAG TO IMPORT)
-                          </label>
-                          
-                          {/* Profile Dropzone */}
-                          <div
-                            onDragEnter={handleDrag}
-                            onDragOver={handleDrag}
-                            onDragLeave={handleDrag}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                                processProfilePicFile(e.dataTransfer.files[0]);
-                              }
-                            }}
-                            className={`border-2 border-dashed rounded-none p-5 text-center cursor-pointer flex flex-col items-center justify-center gap-2 select-none min-h-[110px] transition-all relative ${
-                              dragActive
-                                ? "bg-verdant-yellow/10 border-verdant-yellow"
-                                : "bg-verdant-dark border-verdant-cream/30 hover:border-verdant-cream/60"
-                            }`}
-                            onClick={() => document.getElementById("profile-pic-uploader")?.click()}
-                          >
-                            <FileUp className="w-6 h-6 text-verdant-yellow" />
-                            <span className="font-mono text-[9px] text-neutral-700 font-black tracking-widest uppercase">
-                              UPLOAD PICTURE / PNG, JPG, WEBP
-                            </span>
-                            <span className="font-mono text-[8px] text-zinc-500">
-                              (MAX 2MB FORMAT BASE64)
-                            </span>
-                            <input
-                              id="profile-pic-uploader"
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                if (e.target.files && e.target.files[0]) {
-                                  processProfilePicFile(e.target.files[0]);
-                                }
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Dropzone preview */}
-                        <div className="md:col-span-4 flex flex-col items-center gap-2 justify-center border-2 border-dashed border-verdant-cream/20 bg-verdant-dark p-3 aspect-square max-w-[130px] mx-auto w-full relative">
-                          {pProfileImageBase64 ? (
-                            <div className="relative w-full h-full group" id="p-avatar-preview-container">
-                              <img
-                                src={pProfileImageBase64}
-                                alt="Uploader Sandbox preview"
-                                className="w-full h-full object-cover border border-verdant-cream/10"
-                                referrerPolicy="no-referrer"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setPProfileImageBase64(undefined)}
-                                className="absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white font-mono text-[7px] px-1 py-0.5 border border-white cursor-pointer z-30"
-                                title="Remove picture & restore scribble canvas"
-                              >
-                                REMOVE
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="text-center font-mono text-[8px] text-zinc-500 flex flex-col gap-1.5 items-center justify-center h-full">
-                              <span>NO IMAGE</span>
-                              <span className="text-[7px] text-neutral-700 uppercase font-bold">
-                                (CANVAS ACTIVE)
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Section 3: About manifesto paragraphs */}
-                    <div className="flex flex-col gap-4">
-                      <h3 className="font-mono text-[10px] uppercase font-extrabold text-verdant-yellow tracking-widest flex items-center gap-2 border-b border-verdant-cream/10 pb-1.5">
-                        <User className="w-3.5 h-3.5" />
-                        <span>3. About Section Manifesto Details</span>
-                      </h3>
-
-                      <div className="flex flex-col gap-3">
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            ABOUT PARAGRAPH 1 (INTRODUCTION)
-                          </label>
-                          <textarea
-                            rows={3}
-                            placeholder="Hello paragraph..."
-                            value={pPara1}
-                            onChange={(e) => setPPara1(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-3.5 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            ABOUT PARAGRAPH 2 (CORE INTERESTS & ACADEMICS)
-                          </label>
-                          <textarea
-                            rows={3}
-                            placeholder="Core interests paragraph..."
-                            value={pPara2}
-                            onChange={(e) => setPPara2(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-3.5 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            ABOUT PARAGRAPH 3 (PHILOSOPHY & EXPERIENCE)
-                          </label>
-                          <textarea
-                            rows={3}
-                            placeholder="Philosophical paragraph..."
-                            value={pPara3}
-                            onChange={(e) => setPPara3(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-sans text-xs p-3.5 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C] resize-none"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Section 4: Contact & Social urls */}
-                    <div className="flex flex-col gap-4">
-                      <h3 className="font-mono text-[10px] uppercase font-extrabold text-verdant-yellow tracking-widest flex items-center gap-2 border-b border-verdant-cream/10 pb-1.5">
-                        <Link2 className="w-3.5 h-3.5" />
-                        <span>4. Secured Communications & Cyber-Links</span>
-                      </h3>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            PORTFOLIO CONTACT EMAIL *
-                          </label>
-                          <input
-                            type="email"
-                            required
-                            placeholder="e.g., juliaristycastillo0@gmail.com"
-                            value={pContactEmail}
-                            onChange={(e) => setPContactEmail(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            LINKEDIN ACCOUNT URL *
-                          </label>
-                          <input
-                            type="url"
-                            required
-                            placeholder="e.g., https://linkedin.com"
-                            value={pLinkedinUrl}
-                            onChange={(e) => setPLinkedinUrl(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            INSTAGRAM PROFILE URL
-                          </label>
-                          <input
-                            type="url"
-                            placeholder="e.g., https://instagram.com/"
-                            value={pInstagramUrl}
-                            onChange={(e) => setPInstagramUrl(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                            DOCK / WEBSITE URL
-                          </label>
-                          <input
-                            type="url"
-                            placeholder="e.g., https://juliaristy.me/"
-                            value={pWebsiteUrl}
-                            onChange={(e) => setPWebsiteUrl(e.target.value)}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Section 5: Gmail Instant Alerts */}
-                    <div className="flex flex-col gap-4">
-                      <h3 className="font-mono text-[10px] uppercase font-extrabold text-verdant-yellow tracking-widest flex items-center gap-2 border-b border-verdant-cream/10 pb-1.5">
-                        <Mail className="w-3.5 h-3.5" />
-                        <span>5. Gmail Hub & Real-time Alerts</span>
-                      </h3>
-
-                      <div className="border border-verdant-cream/10 bg-verdant-dark/40 p-4 font-mono text-xs flex flex-col gap-4">
-                        <p className="font-sans text-[11px] text-verdant-gray leading-relaxed font-semibold">
-                          Receive instant, real-time message notifications straight to your Gmail address (<span className="text-neutral-700 font-semibold">{pContactEmail || "juliaristycastillo0@gmail.com"}</span>) without having to constantly log in to this dashboard!
-                        </p>
-                        
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-verdant-cream/5 pt-3">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">EMAIL FORWARDING MODULE</span>
-                            <span className="text-[10px] text-zinc-400">Toggle instant Gmail notification alert</span>
-                          </div>
-                          
-                          <button
-                            type="button"
-                            onClick={() => setPEmailNotificationEnabled(!pEmailNotificationEnabled)}
-                            className={`cursor-pointer px-4 py-2 text-[10px] font-black border-2 transition-all ${
-                              pEmailNotificationEnabled
-                                ? "bg-neutral-900 border-[#D5001C] text-[#D5001C]"
-                                : "bg-neutral-800 border-neutral-600 text-neutral-400"
-                            }`}
-                          >
-                            {pEmailNotificationEnabled ? "● ACTIVE" : "○ INACTIVE"}
-                          </button>
-                        </div>
-
-                        <div className="flex flex-col gap-1.5 border-t border-verdant-cream/5 pt-3">
-                          <label className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest flex items-center gap-1.5">
-                            <span>WEB3FORMS ACCESS KEY (FREE)</span>
-                            <a 
-                              href="https://web3forms.com" 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-verdant-yellow underline hover:text-white transition-colors"
-                            >
-                              GET FREE KEY ↗
-                            </a>
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="e.g., aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
-                            value={pEmailNotificationKey}
-                            onChange={(e) => setPEmailNotificationKey(e.target.value.trim())}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-4 py-3 border-2 border-verdant-cream focus:outline-none focus:ring-1 focus:ring-[#D5001C]"
-                          />
-                          <p className="text-[10px] text-zinc-500 font-sans leading-relaxed">
-                            Web3Forms is a secure, spam-guarded form dispatcher. Register your Gmail on their homepage to instantly receive your free token, copy-paste it here, click Save, and you're set!
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Submit settings button */}
-                    <button
-                      type="submit"
-                      className="w-full cursor-pointer bg-neutral-950 hover:bg-[#D5001C] text-white border border-neutral-700 font-mono text-xs font-bold py-4 uppercase tracking-widest transition-colors select-none shadow-sm"
-                    >
-                      SAVE PROFILE SETTINGS
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {adminTab === "INBOX" && (
-                <div className="relative border-[3px] border-verdant-cream bg-verdant-charcoal p-6 md:p-8 shadow-charcoal-offset text-left flex flex-col gap-6 rounded-none">
-                  <div>
-                    <h2 className="font-syne font-black text-2xl text-verdant-cream tracking-tight uppercase flex items-center gap-2">
-                      <MessageSquare className="w-6 h-6 text-verdant-yellow" />
-                      <span>VISITOR CHATS & INBOX MAILBOX</span>
-                    </h2>
-                    <p className="font-sans text-xs text-verdant-gray mt-1 leading-relaxed font-semibold">
-                      Julie, handle incoming chats here in real-time. Craft pre-populated response emails to send back instantly.
-                    </p>
-                  </div>
-
-                  {/* Metric Dashboard row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 border border-verdant-cream/20 bg-verdant-dark p-4 font-mono">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-neutral-700 font-black uppercase tracking-wider">TOTAL RECEIVED MESSAGE(S)</span>
-                      <span className="text-2xl font-black text-white">{messages.length}</span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-neutral-700 font-black uppercase tracking-wider">UNREPLIED / PENDING</span>
-                      <span className="text-2xl font-black text-verdant-yellow">
-                        {messages.filter(m => !m.replied).length}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-neutral-700 font-black uppercase tracking-wider">TOTAL UNIQUE VIEWS</span>
-                      <span className="text-2xl font-black text-white">
-                        {pageViews !== null ? pageViews : "..."}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[9px] text-neutral-700 font-black uppercase tracking-wider font-bold">MUTUAL SECURITY</span>
-                      <span className="text-[10px] text-emerald-400 font-bold uppercase py-1 select-none flex items-center gap-1.5 leading-none mt-1">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#D5001C] animate-pulse" />
-                        <span>CLOUDSYNC STEADY</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {messages.length === 0 ? (
-                    <div className="border-2 border-dashed border-verdant-cream/20 bg-verdant-dark/40 py-16 px-6 text-center flex flex-col items-center gap-3">
-                      <Mail className="w-10 h-10 text-verdant-gray/60" />
-                      <p className="font-mono text-xs uppercase font-black text-verdant-gray tracking-wider">
-                        LEDGER REGISTER EMPTY: NO INCOMING CHATS DETECTED
-                      </p>
-                      <p className="font-sans text-[11px] text-zinc-500 max-w-sm leading-relaxed">
-                        When visitors leave a message on your "Let's Connect" tab, they are stored securely in Firestore columns and will render here instantly in real-time.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-4">
-                      {/* Message cards feed */}
-                      <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                        {messages.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className={`border-2 p-5 flex flex-col gap-4 relative transition-colors ${
-                              msg.replied 
-                                ? "border-verdant-cream/20 bg-verdant-dark/25" 
-                                : "border-[#DCA221]/50 bg-verdant-dark/45 shadow-md"
-                            }`}
-                          >
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 pb-3 border-b border-verdant-cream/10">
-                              {/* Left profile info */}
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 border border-verdant-cream bg-verdant-charcoal text-white flex items-center justify-center font-bold text-xs uppercase font-mono shrink-0">
-                                  {msg.name ? msg.name.charAt(0) : "V"}
-                                </div>
-                                <div className="flex flex-col text-left">
-                                  <span className="text-xs font-black text-verdant-cream uppercase font-mono leading-none flex items-center gap-2 flex-wrap">
-                                    <span>{msg.name}</span>
-                                    {msg.replied && (
-                                      <span className="text-[8px] bg-neutral-900 border border-neutral-700 font-bold px-1.5 py-0.5 text-neutral-300">
-                                        REPLIED
-                                      </span>
-                                    )}
-                                  </span>
-                                  <span className="text-[10px] text-zinc-500 font-mono mt-1 font-semibold select-all">
-                                    {msg.email}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Time relative/absolute display */}
-                              <div className="flex items-center gap-1 text-[9px] font-mono text-verdant-gray font-bold shrink-0 md:pr-10">
-                                <Clock className="w-3.5 h-3.5" />
-                                <span>{new Date(msg.timestamp || Date.now()).toLocaleString()}</span>
-                              </div>
-                            </div>
-
-                            {/* Message content */}
-                            <div className="bg-verdant-dark/50 p-3.5 border border-dashed border-verdant-cream/10 text-xs text-verdant-cream leading-relaxed font-sans font-semibold">
-                              "{msg.message}"
-                            </div>
-
-                            {/* Reply History / Reply Composer Thread */}
-                            {msg.replied && (
-                              <div className="mt-2 bg-[#FAF8F5]/5 border border-dashed border-[#FAF8F5]/20 p-3 flex flex-col gap-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-mono text-[9px] uppercase font-bold text-neutral-800 flex items-center gap-1.5">
-                                    <CheckCircle className="w-3.5 h-3.5 text-[#D5001C]" />
-                                    <span>SENT REPLY RECORD:</span>
-                                  </span>
-                                  {msg.replyTimestamp && (
-                                    <span className="font-mono text-[8px] text-zinc-500">
-                                      {new Date(msg.replyTimestamp).toLocaleString()}
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="font-sans text-xs text-neutral-600 leading-normal italic font-medium">
-                                  "{msg.replyContent}"
-                                </p>
-                              </div>
-                            )}
-
-                            {/* Reply Form Trigger (if unreplied) */}
-                            {!msg.replied ? (
-                              <div className="mt-2 flex flex-col gap-2 bg-neutral-950 p-3.5 border border-neutral-800">
-                                <span className="font-mono text-[9px] uppercase font-bold text-neutral-300 block">
-                                  ✏️ Compose Email Reply Body:
-                                </span>
-                                <textarea
-                                  rows={3}
-                                  value={replyTexts[msg.id] || ""}
-                                  onChange={(e) => {
-                                    setReplyTexts(prev => ({
-                                      ...prev,
-                                      [msg.id]: e.target.value
-                                    }));
-                                  }}
-                                  className="w-full bg-neutral-900 text-neutral-100 p-2 font-sans text-xs border border-neutral-700 focus:outline-none focus:border-[#D5001C] resize-none leading-relaxed font-medium placeholder:text-zinc-500"
-                                  placeholder="Type response email content here..."
-                                />
-                                <div className="flex gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSendEmailReply(msg)}
-                                    className="flex-grow cursor-pointer bg-neutral-900 hover:bg-black text-white hover:border-[#D5001C] border border-neutral-700 font-mono text-[10px] font-bold uppercase py-2.5 tracking-widest flex items-center justify-center gap-2 transition-colors"
-                                  >
-                                    <Send className="w-3.5 h-3.5 text-[#D5001C]" />
-                                    <span>LAUNCH EMAIL CLIENT & MARK REPLIED</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={async () => {
-                                      try {
-                                        await setDoc(doc(db, "messages", msg.id), {
-                                          ...msg,
-                                          replied: true,
-                                          replyContent: "Marked resolved manually",
-                                          replyTimestamp: Date.now()
-                                        }, { merge: true });
-                                      } catch (err) {
-                                        console.error("Manual solve failed:", err);
-                                      }
-                                    }}
-                                    className="cursor-pointer bg-verdant-charcoal hover:bg-neutral-800 text-verdant-cream border border-verdant-cream font-mono text-[10px] font-black uppercase px-3 py-2 flex items-center justify-center transition-colors"
-                                    title="Mark as resolved in history without composing a mail copy"
-                                  >
-                                    Mark Solved
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex gap-2 justify-end">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    // Let her reply again if needed by deleting replied flag
-                                    setDoc(doc(db, "messages", msg.id), {
-                                      ...msg,
-                                      replied: false,
-                                      replyContent: ""
-                                    }, { merge: true });
-                                  }}
-                                  className="text-[9px] hover:underline font-mono text-zinc-500 hover:text-white cursor-pointer"
-                                >
-                                  [ RE-OPEN REPLY DRAFT THREAD ]
-                                </button>
-                              </div>
-                            )}
-
-                            {/* Absolute delete trigger in header */}
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteMessage(msg.id)}
-                              className="absolute top-4 right-4 text-red-500 hover:text-red-400 opacity-60 hover:opacity-100 transition-opacity p-1 cursor-pointer"
-                              title="Permanently erase record"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {adminTab === "STYLE" && (
-                <div className="relative border-[3px] border-verdant-cream bg-verdant-charcoal p-6 md:p-8 shadow-charcoal-offset text-left flex flex-col gap-8 rounded-none">
-                  <div>
-                    <h2 className="font-syne font-black text-2xl text-verdant-cream tracking-tight uppercase flex items-center gap-2">
-                      <Sparkles className="w-6 h-6 text-verdant-yellow" />
-                      <span>Live Website Style Customizer</span>
-                    </h2>
-                    <p className="font-sans text-xs text-verdant-gray mt-1 leading-relaxed font-semibold">
-                      Drag, click, and customize fonts, palettes, and layouts live. All adjustments are compiled instantaneously on the preview.
-                    </p>
-                  </div>
-
-                  {profileSuccess && (
-                     <div className="flex items-center gap-2 bg-neutral-900/60 p-3 border-2 border-neutral-800 text-white font-mono text-[10px] uppercase font-black leading-relaxed">
-                       <Check className="w-4 h-4 shrink-0 text-white" />
-                       <span>{profileSuccess}</span>
-                     </div>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                    {/* Style controls (Left panel) */}
-                    <div className="flex flex-col gap-6">
-                      
-                      {/* Font selector */}
-                      <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          1. Header & Title Typography Pairing (3-5 Selections)
-                        </header>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {[
-                            { name: "Plus Jakarta Sans (Precision Neo-Grotesque)", val: "Plus Jakarta Sans", style: "font-sans font-bold" },
-                            { name: "Space Grotesk (Aerodynamic Tech)", val: "Space Grotesk", style: "font-space font-bold" },
-                            { name: "JetBrains Mono (Technical Spec)", val: "JetBrains Mono", style: "font-mono font-bold" },
-                            { name: "Syne (Architectural Bold)", val: "Syne", style: "font-syne font-black" },
-                            { name: "Playfair Display (Editorial Serif)", val: "Playfair Display", style: "font-serif italic font-medium" }
-                          ].map((f) => (
-                            <button
-                              key={f.val}
-                              onClick={() => {
-                                setPFontFamilyHeader(f.val);
-                                handleStyleChange("fontFamilyHeader", f.val);
-                              }}
-                              className={`p-3 border text-xs text-left cursor-pointer transition-all flex flex-col justify-between ${
-                                pFontFamilyHeader === f.val
-                                  ? "border-2 border-verdant-yellow bg-verdant-yellow/10"
-                                  : "border-verdant-cream/20 hover:border-verdant-mint bg-verdant-charcoal"
-                              }`}
-                            >
-                              <span className="text-[9px] text-neutral-700 font-mono leading-none tracking-wider mb-2">
-                                {f.name}
-                              </span>
-                              <span className={`text-sm text-verdant-cream leading-none ${f.style}`}>
-                                Juliaristy
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Body Font Selection */}
-                      <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          2. Body & Narrative Typography
-                        </header>
-                        <div className="grid grid-cols-2 gap-2">
-                          {[
-                            { name: "Plus Jakarta Sans (Inter-like Sans)", val: "Plus Jakarta Sans", style: "font-sans" },
-                            { name: "JetBrains Mono (Developer Mono)", val: "JetBrains Mono", style: "font-mono text-[10px]" }
-                          ].map((f) => (
-                            <button
-                              key={f.val}
-                              onClick={() => {
-                                setPFontFamilyBody(f.val);
-                                handleStyleChange("fontFamilyBody", f.val);
-                              }}
-                              className={`p-3 border text-xs text-left cursor-pointer transition-all flex flex-col justify-between ${
-                                pFontFamilyBody === f.val
-                                  ? "border-2 border-verdant-yellow bg-verdant-yellow/10"
-                                  : "border-verdant-cream/20 hover:border-verdant-mint bg-verdant-charcoal"
-                              }`}
-                            >
-                              <span className="text-[9px] text-zinc-500 font-mono tracking-wider mb-2 leading-none">
-                                {f.name}
-                              </span>
-                              <span className={`text-xs text-verdant-cream leading-normal ${f.style}`}>
-                                My interests sit at UI/UX Design...
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Layout Background mesh styles */}
-                      <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-[#D5001C] uppercase tracking-widest">
-                          3. Canvas Backing Finish (Professional Architectural Choices - No Grids)
-                        </header>
-                        <div className="grid grid-cols-2 gap-2">
-                          {[
-                            { name: "Carrera Pure Solid", val: "solid-plain", desc: "Ultra-clean uniform minimalist background" },
-                            { name: "Aerodynamic Soft Vignette", val: "soft-vignette", desc: "Subtle corner atmospheric lighting falloff" },
-                            { name: "Studio Precision Gradient", val: "studio-gradient", desc: "Smooth modern vertical linear gradation" },
-                            { name: "Matte Light Platinum", val: "matte-platinum", desc: "Soft velvety architectural neutral tone" },
-                            { name: "Warm Gallery White", val: "gallery-white", desc: "Pure contemporary exhibition showcase" },
-                            { name: "Carbon Obsidian Monolith", val: "monolith-plane", desc: "Deep obsidian solid technical plane" }
-                          ].map((b) => (
-                            <button
-                              key={b.val}
-                              onClick={() => {
-                                setPBgAccentStyle(b.val);
-                                handleStyleChange("bgAccentStyle", b.val);
-                              }}
-                              className={`p-3 border text-xs text-left cursor-pointer transition-all flex flex-col justify-between ${
-                                pBgAccentStyle === b.val
-                                  ? "border-2 border-[#D5001C] bg-[#D5001C]/10"
-                                  : "border-neutral-700/60 hover:border-neutral-400 bg-neutral-900"
-                              }`}
-                            >
-                              <span className="text-[10px] text-white font-mono leading-none tracking-tight font-black uppercase mb-1">
-                                {b.name}
-                              </span>
-                              <span className="text-[9px] text-neutral-400 leading-normal block">
-                                {b.desc}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Text Casing Transformation */}
-                      <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          4. Global Heading Text Casing (All Caps Toggle)
-                        </header>
-                        <div className="grid grid-cols-2 gap-2">
-                          {[
-                            { name: "ALL CAPITALIZED LETTERS", val: "uppercase", sample: "PROJECT PORTFOLIO" },
-                            { name: "Preserve Input Casing (Standard)", val: "normal-case", sample: "Project Portfolio" }
-                          ].map((c) => (
-                            <button
-                              key={c.val}
-                              onClick={() => {
-                                setPTextCasingStyle(c.val);
-                                handleStyleChange("textCasingStyle", c.val);
-                              }}
-                              className={`p-3 border text-xs text-left cursor-pointer transition-all flex flex-col justify-between ${
-                                pTextCasingStyle === c.val
-                                  ? "border-2 border-verdant-yellow bg-verdant-yellow/10"
-                                  : "border-verdant-cream/20 hover:border-verdant-mint bg-verdant-charcoal"
-                              }`}
-                            >
-                              <span className="text-[9px] text-zinc-500 font-mono tracking-tight leading-none mb-2 block uppercase">
-                                {c.name}
-                              </span>
-                              <span className="text-[11px] text-verdant-cream leading-none font-bold block">
-                                {c.sample}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                    </div>
-
-                    {/* Color palette customization (Right panel) */}
-                    <div className="flex flex-col gap-6">
-                      
-                      {/* Primary colors & interactive paint bubbles */}
-                      <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          5. Brand Theme Primary Accent (Borders, Main Buttons)
-                        </header>
-                        <div className="grid grid-cols-5 gap-1.5 mb-2">
-                          {[
-                            { name: "Porsche Carbon (Default)", hex: "#0A0A0A" },
-                            { name: "Guards Red", hex: "#D5001C" },
-                            { name: "Gentian Blue", hex: "#1C355E" },
-                            { name: "Racing Yellow", hex: "#F1C40F" },
-                            { name: "Cypress Green", hex: "#0A0A0A" }
-                          ].map((col) => (
-                            <button
-                              key={col.hex}
-                              type="button"
-                              onClick={() => {
-                                setPThemeColorPrimary(col.hex);
-                                handleStyleChange("themeColorPrimary", col.hex);
-                              }}
-                              style={{ backgroundColor: col.hex }}
-                              className={`aspect-square border-4 cursor-pointer relative ${
-                                pThemeColorPrimary === col.hex ? "border-white scale-110 shadow-sm" : "border-transparent hover:scale-105"
-                              }`}
-                              title={col.name}
-                            >
-                              {pThemeColorPrimary === col.hex && (
-                                <span className="absolute inset-0 flex items-center justify-center text-white text-[9px] font-bold">✓</span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[8px] text-zinc-400 uppercase tracking-widest block">
-                            Or dial any custom HEX color
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="color"
-                              value={pThemeColorPrimary}
-                              onChange={(e) => {
-                                setPThemeColorPrimary(e.target.value);
-                                handleStyleChange("themeColorPrimary", e.target.value);
-                              }}
-                              className="w-10 h-10 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
-                            />
-                            <input
-                              type="text"
-                              value={pThemeColorPrimary}
-                              onChange={(e) => {
-                                setPThemeColorPrimary(e.target.value);
-                                handleStyleChange("themeColorPrimary", e.target.value);
-                              }}
-                              className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-3 border-2 border-verdant-cream focus:outline-none"
-                              placeholder="#0A0A0A"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Secondary Color accent */}
-                      <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          6. Brand Tones Secondary Accent (Highlighters, Golden Badges)
-                        </header>
-                        <div className="grid grid-cols-5 gap-1.5 mb-2">
-                          {[
-                            { name: "Guards Red (Default)", hex: "#D5001C" },
-                            { name: "Racing Yellow", hex: "#F5B041" },
-                            { name: "Speed Silver", hex: "#8A9096" },
-                            { name: "Carrera Blue", hex: "#3B82F6" },
-                            { name: "Sunflower Gold", hex: "#DCA221" }
-                          ].map((col) => (
-                            <button
-                              key={col.hex}
-                              type="button"
-                              onClick={() => {
-                                setPThemeColorSecondary(col.hex);
-                                handleStyleChange("themeColorSecondary", col.hex);
-                              }}
-                              style={{ backgroundColor: col.hex }}
-                              className={`aspect-square border-4 cursor-pointer relative ${
-                                pThemeColorSecondary === col.hex ? "border-white scale-110 shadow-sm" : "border-transparent hover:scale-105"
-                              }`}
-                              title={col.name}
-                            >
-                              {pThemeColorSecondary === col.hex && (
-                                <span className="absolute inset-0 flex items-center justify-center text-white text-[9px] font-bold">✓</span>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                          <label className="font-mono text-[8px] text-zinc-400 uppercase tracking-widest block">
-                            Or dial custom HEX code
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="color"
-                              value={pThemeColorSecondary}
-                              onChange={(e) => {
-                                setPThemeColorSecondary(e.target.value);
-                                handleStyleChange("themeColorSecondary", e.target.value);
-                              }}
-                              className="w-10 h-10 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
-                            />
-                            <input
-                              type="text"
-                              value={pThemeColorSecondary}
-                              onChange={(e) => {
-                                setPThemeColorSecondary(e.target.value);
-                                handleStyleChange("themeColorSecondary", e.target.value);
-                              }}
-                              className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-3 border-2 border-verdant-cream focus:outline-none"
-                              placeholder="#DCA221"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Backdrop Canvas Canvas color settings */}
-                      <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          7. Desktop Base Canvas Color (Page Backdrop)
-                        </header>
-                        <div className="grid grid-cols-2 gap-2 mb-2">
-                          {[
-                            { name: "Porsche Light Platinum (#F8F9FA)", hex: "#F8F9FA" },
-                            { name: "Absolute Pure White (#FFFFFF)", hex: "#FFFFFF" },
-                            { name: "Bleached Linen Ivory (#FAF8F5)", hex: "#FAF8F5" },
-                            { name: "Graphite Noir Dark (#0E170F)", hex: "#0E170F" }
-                          ].map((col) => (
-                            <button
-                              key={col.hex}
-                              type="button"
-                              onClick={() => {
-                                setPCustomCanvasBg(col.hex);
-                                handleStyleChange("customCanvasBg", col.hex);
-                              }}
-                              className={`p-2.5 border text-left cursor-pointer transition-all flex items-center gap-2 bg-verdant-charcoal ${
-                                pCustomCanvasBg === col.hex ? "border-2 border-verdant-yellow" : "border-verdant-cream/20 hover:border-verdant-mint"
-                              }`}
-                            >
-                              <span style={{ backgroundColor: col.hex }} className="w-5 h-5 border border-verdant-cream inline-block shrink-0" />
-                              <span className="text-[10px] text-verdant-cream font-mono leading-none font-bold">
-                                {col.name.split(" ")[0]} ({col.hex})
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <input
-                            type="color"
-                            value={pCustomCanvasBg}
-                            onChange={(e) => {
-                              setPCustomCanvasBg(e.target.value);
-                              handleStyleChange("customCanvasBg", e.target.value);
-                            }}
-                            className="w-10 h-10 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
-                          />
-                          <input
-                            type="text"
-                            value={pCustomCanvasBg}
-                            onChange={(e) => {
-                              setPCustomCanvasBg(e.target.value);
-                              handleStyleChange("customCanvasBg", e.target.value);
-                            }}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-3 border-2 border-verdant-cream focus:outline-none"
-                            placeholder="#FAF8F5"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Card components background color */}
-                      <div className="border border-verdant-cream/20 bg-verdant-dark p-4 flex flex-col gap-3">
-                        <header className="font-mono text-[9px] font-black text-neutral-700 uppercase tracking-widest">
-                          8. Component Cards Background Color
-                        </header>
-                        <div className="grid grid-cols-2 gap-2 mb-2">
-                          {[
-                            { name: "Precision Pure White (#FFFFFF)", hex: "#FFFFFF" },
-                            { name: "Carrera Platinum Card (#F4F5F7)", hex: "#F4F5F7" },
-                            { name: "Soft Linen Oatmeal (#F2EEE3)", hex: "#F2EEE3" },
-                            { name: "Carbon Noir Card (#18181B)", hex: "#18181B" }
-                          ].map((col) => (
-                            <button
-                              key={col.hex}
-                              type="button"
-                              onClick={() => {
-                                setPCustomCardBg(col.hex);
-                                handleStyleChange("customCardBg", col.hex);
-                              }}
-                              className={`p-2.5 border text-left cursor-pointer transition-all flex items-center gap-2 bg-verdant-charcoal ${
-                                pCustomCardBg === col.hex ? "border-2 border-verdant-yellow" : "border-verdant-cream/20 hover:border-verdant-mint"
-                              }`}
-                            >
-                              <span style={{ backgroundColor: col.hex }} className="w-5 h-5 border border-verdant-cream inline-block shrink-0" />
-                              <span className="text-[10px] text-verdant-cream font-mono leading-none font-bold">
-                                {col.name.split(" ")[0]} ({col.hex})
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <input
-                            type="color"
-                            value={pCustomCardBg}
-                            onChange={(e) => {
-                              setPCustomCardBg(e.target.value);
-                              handleStyleChange("customCardBg", e.target.value);
-                            }}
-                            className="w-10 h-10 border-2 border-verdant-cream bg-transparent cursor-pointer shrink-0"
-                          />
-                          <input
-                            type="text"
-                            value={pCustomCardBg}
-                            onChange={(e) => {
-                              setPCustomCardBg(e.target.value);
-                              handleStyleChange("customCardBg", e.target.value);
-                            }}
-                            className="w-full bg-verdant-dark text-verdant-cream font-mono text-xs px-3 border-2 border-verdant-cream focus:outline-none"
-                            placeholder="#F2EEE3"
-                          />
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* Synchronize state button */}
-                  <div className="border-t border-verdant-cream/20 pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <span className="font-mono text-[9px] uppercase font-bold text-verdant-lime tracking-wider flex items-center gap-1.5 animate-pulse">
-                      <span className="w-2.5 h-2.5 bg-verdant-lime rounded-full" />
-                      <span>Live interactive clicks automatically compile onto the preview</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated: ProfileSettings = {
-                          ...profileSettings,
-                          fullName: pFullName,
-                          lastNameHighlight: pLastNameHighlight,
-                          headline: pHeadline,
-                          biography: pBiography,
-                          aboutParagraphs: [pPara1, pPara2, pPara3].filter(p => p.trim() !== ""),
-                          contactEmail: pContactEmail,
-                          instagramUrl: pInstagramUrl,
-                          linkedinUrl: pLinkedinUrl,
-                          websiteUrl: pWebsiteUrl,
-                          profileImageBase64: pProfileImageBase64,
-                          emailNotificationKey: pEmailNotificationKey,
-                          emailNotificationEnabled: pEmailNotificationEnabled,
-                          fontFamilyHeader: pFontFamilyHeader,
-                          fontFamilyBody: pFontFamilyBody,
-                          bgAccentStyle: pBgAccentStyle,
-                          textCasingStyle: pTextCasingStyle,
-                          themeColorPrimary: pThemeColorPrimary,
-                          themeColorSecondary: pThemeColorSecondary,
-                          customCanvasBg: pCustomCanvasBg,
-                          customCardBg: pCustomCardBg
-                        };
-                        onUpdateProfile(updated);
-                        setProfileSuccess("WIX LIVE DESIGN WORKSPACE FULLY SYNCHRONIZED.");
-                        setTimeout(() => setProfileSuccess(null), 3000);
-                      }}
-                      className="cursor-pointer bg-verdant-yellow text-white border-2 border-verdant-cream font-mono text-xs font-black px-6 py-3 uppercase tracking-widest hover:bg-verdant-cream hover:text-white transition-colors shadow-yellow-offset"
-                    >
-                      PUBLISH & SAVE THEME
-                    </button>
-                  </div>
-                </div>
-              )}
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
+
+        {/* Playgrounds Grid stack */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          {(() => {
+            const filteredProjects = projects.filter((proj) => {
+              if (selectedCategory === "All") return true;
+              return proj.category?.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
+            });
+
+            if (filteredProjects.length === 0) {
+              return (
+                <div className="border border-neutral-200 bg-white p-12 text-center font-mono text-xs text-neutral-500 uppercase tracking-widest col-span-3">
+                  <AlertCircle className="w-8 h-8 text-[#D5001C] mx-auto mb-3 animate-pulse" />
+                  <p className="mb-4">No projects found under "{selectedCategory}" yet.</p>
+                  {isAdmin && (
+                    <button
+                      onClick={() => onChangeTab("ADMIN")}
+                      className="inline-block bg-neutral-950 hover:bg-[#D5001C] text-white font-mono text-[10px] font-bold px-4 py-2 uppercase tracking-widest cursor-pointer transition-colors shadow-sm"
+                    >
+                      + ADD PROJECT UNDER "{selectedCategory}"
+                    </button>
+                  )}
+                </div>
+              );
+            }
+
+            return filteredProjects.map((proj) => (
+              <div
+                key={proj.id}
+                className="border border-neutral-200 bg-white p-5 flex flex-col justify-between hover:border-neutral-950 transition-all duration-300 shadow-sm hover:shadow-md group"
+              >
+                <div className="flex flex-col gap-4">
+                  {/* Visual rendering frame */}
+                  <div 
+                    onClick={() => setActivePlayground(proj.id)}
+                    className="relative aspect-video bg-neutral-950 border border-neutral-800 flex items-center justify-center p-3 overflow-hidden select-none cursor-pointer group/cardimg"
+                    title="Click to view project details & gallery"
+                  >
+                    {proj.imageType && proj.imageType.startsWith("data:image/") ? (
+                      <img
+                        src={proj.imageType}
+                        alt={proj.title}
+                        className="w-full h-full object-cover opacity-90 group-hover/cardimg:scale-105 group-hover/cardimg:opacity-100 transition-all duration-300"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : proj.imageType === "lunar" ? (
+                      <div className="relative w-full h-full flex flex-col justify-between p-4 bg-neutral-950 text-white font-mono">
+                        <div className="flex justify-between items-center text-[7.5px] text-neutral-400">
+                          <span>POST-QUANTUM / ECC</span>
+                          <span className="text-[#D5001C] font-bold">SECURITY</span>
+                        </div>
+                        <div className="flex items-center justify-center my-auto">
+                          <svg className="w-14 h-14 text-neutral-300" viewBox="0 0 40 40" fill="none" stroke="currentColor">
+                            <polygon points="20,4 36,12 36,28 20,36 4,28 4,12" strokeWidth="1.2" />
+                            <circle cx="20" cy="20" r="3" fill="#D5001C" />
+                          </svg>
+                        </div>
+                        <div className="flex justify-between text-[7px] text-neutral-500 font-mono tracking-wider">
+                          <span>ECC_AUTH: VERIFIED</span>
+                          <span className="text-neutral-400">SHA-256</span>
+                        </div>
+                      </div>
+                    ) : proj.imageType === "void" ? (
+                      <div className="relative w-full h-full flex flex-col justify-between p-4 bg-neutral-950 text-white font-mono">
+                        <div className="flex justify-between items-center text-[7.5px] text-neutral-400">
+                          <span>UI/UX PROTOTYPE</span>
+                          <span className="text-neutral-300 font-bold">MOBILE</span>
+                        </div>
+                        <div className="flex items-center justify-center my-auto">
+                          <div className="w-24 h-12 border border-neutral-700 bg-neutral-900 p-1.5 flex flex-col justify-between">
+                            <div className="h-1.5 w-8 bg-neutral-600 rounded-sm" />
+                            <div className="grid grid-cols-3 gap-1">
+                              <div className="h-4 bg-neutral-800 border border-neutral-700" />
+                              <div className="h-4 bg-neutral-800 border border-neutral-700" />
+                              <div className="h-4 bg-neutral-800 border border-neutral-700" />
+                            </div>
+                            <div className="h-1 w-12 bg-[#D5001C]" />
+                          </div>
+                        </div>
+                        <div className="flex justify-between text-[7px] text-neutral-500">
+                          <span>LAYOUT DESIGN</span>
+                          <span className="text-[#D5001C]">FIGMA</span>
+                        </div>
+                      </div>
+                    ) : proj.imageType === "logic" ? (
+                      <div className="relative w-full h-full flex flex-col justify-between p-4 bg-neutral-950 text-white font-mono">
+                        <div className="flex justify-between items-center text-[7.5px] text-neutral-400">
+                          <span>3D MESH</span>
+                          <span className="text-neutral-300 font-bold">BLENDER</span>
+                        </div>
+                        <div className="flex items-center justify-center my-auto">
+                          <svg className="w-14 h-14 text-neutral-300" viewBox="0 0 40 40" fill="none" stroke="currentColor">
+                            <ellipse cx="20" cy="20" rx="14" ry="7" strokeWidth="1.2" />
+                            <ellipse cx="20" cy="20" rx="6" ry="3" strokeWidth="1" strokeDasharray="1 1" />
+                          </svg>
+                        </div>
+                        <div className="flex justify-between text-[7px] text-neutral-500">
+                          <span>RENDER SHADER</span>
+                          <span className="text-neutral-400">CYCLES</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center font-mono text-[8px] text-neutral-400 uppercase tracking-widest">
+                        PROJECT PREVIEW
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="text-left">
+                    <h3 className={`font-syne font-black text-lg text-neutral-900 tracking-tight leading-snug group-hover:text-[#D5001C] transition-colors ${casingClass}`}>
+                      {proj.title}
+                    </h3>
+                    <p className="font-mono text-[9.5px] font-bold tracking-wider mt-1.5 uppercase text-neutral-600">
+                      {proj.tag}
+                    </p>
+                    <p className="font-sans text-xs text-neutral-500 mt-2.5 leading-relaxed font-normal">
+                      {proj.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Directly boot project modal button */}
+                <button
+                  onClick={() => setActivePlayground(proj.id)}
+                  className="mt-6 w-full cursor-pointer bg-white border border-neutral-300 group-hover:border-neutral-950 group-hover:bg-neutral-950 group-hover:text-white text-neutral-900 font-mono text-[10px] font-bold py-2.5 uppercase tracking-[0.2em] transition-all select-none"
+                >
+                  VIEW PROJECT
+                </button>
+              </div>
+            ));
+          })()}
+        </div>
+
+        {/* Separator */}
+        <hr className="my-16 border-t border-neutral-200" />
+
+        {/* Mini CTA footer */}
+        <div className="flex flex-col items-center gap-3 text-center select-none" id="work-pre-cta">
+          <span className="font-mono text-[10px] font-bold text-neutral-500 uppercase tracking-[0.25em]">
+            INITIATE COLLABORATION
+          </span>
+          <h2 className="font-syne font-black text-2xl md:text-3xl tracking-tight text-neutral-900">
+            Have a project in mind?
+          </h2>
+          <button
+            onClick={() => onChangeTab("CONNECT")}
+            style={{ backgroundColor: "#0A0A0A", color: "#FFFFFF" }}
+            className="cursor-pointer hover:!bg-[#D5001C] text-white font-mono text-xs font-bold tracking-[0.2em] uppercase px-8 py-3.5 transition-all shadow-sm hover:shadow-md mt-2"
+          >
+            START A PROJECT
+          </button>
+        </div>
 
       </div>
+
+      {/* --- Fullscreen Interactive Project Modal --- */}
+      <AnimatePresence>
+        {activePlayground && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setActivePlayground(null)}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 md:p-10"
+          >
+            <motion.div
+              initial={{ scale: 0.96, y: 12 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: 12 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-2xl max-h-[90vh] md:max-h-[85vh] bg-white border border-neutral-200 p-6 flex flex-col gap-4 shadow-2xl overflow-hidden text-neutral-900"
+            >
+              {/* Header strip */}
+              <div className="flex justify-between items-center border-b border-neutral-100 pb-3 flex-shrink-0 select-none">
+                <div className="flex items-center gap-2 font-mono text-neutral-900">
+                  <FolderGit2 className="w-4 h-4 text-[#D5001C]" />
+                  <span className="text-[10px] md:text-xs uppercase font-bold tracking-[0.2em]">PROJECT DETAILS</span>
+                </div>
+                {/* Close Button */}
+                <button
+                  onClick={() => setActivePlayground(null)}
+                  className="w-8 h-8 cursor-pointer border border-neutral-200 bg-neutral-50 text-neutral-700 flex items-center justify-center font-bold hover:bg-neutral-900 hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Dynamic Project details representation with internal scroll viewport */}
+              <div className="flex-1 overflow-y-auto pr-1.5 text-left custom-scrollbar">
+                {(() => {
+                  const currentProj = projects.find(p => p.id === activePlayground);
+                  if (!currentProj) return <p className="font-mono text-xs text-red-500">PROJECT NOT FOUND IN LOCAL LEDGER.</p>;
+
+                  // Aggregate all available high-resolution project images
+                  const projectPhotos: string[] = [];
+                  if (currentProj.imageType && (currentProj.imageType.startsWith("data:image/") || currentProj.imageType.startsWith("http"))) {
+                    projectPhotos.push(currentProj.imageType);
+                  }
+                  if (currentProj.additionalImages && currentProj.additionalImages.length > 0) {
+                    for (const img of currentProj.additionalImages) {
+                      if (!projectPhotos.includes(img)) {
+                        projectPhotos.push(img);
+                      }
+                    }
+                  }
+
+                  const displayedImage = activeModalImage || (currentProj.imageType && currentProj.imageType.startsWith("data:image/") ? currentProj.imageType : currentProj.additionalImages?.[0]);
+                  const displayedImageIndex = displayedImage ? projectPhotos.indexOf(displayedImage) : 0;
+
+                  return (
+                    <div className="flex flex-col gap-5">
+                      <div className="relative aspect-video bg-neutral-950 border border-neutral-800 flex items-center justify-center overflow-hidden flex-shrink-0 group/cover">
+                        {currentProj.videoUrl ? (
+                          <div className="w-full h-full bg-black">
+                            {currentProj.videoUrl.includes("youtube.com") || currentProj.videoUrl.includes("youtu.be") || currentProj.videoUrl.includes("vimeo.com") ? (
+                              <iframe
+                                src={
+                                  currentProj.videoUrl.includes("youtube.com/shorts/")
+                                    ? "https://www.youtube.com/embed/" + currentProj.videoUrl.split("youtube.com/shorts/")[1]?.split("?")[0]
+                                    : currentProj.videoUrl.includes("youtube.com/embed/")
+                                    ? currentProj.videoUrl
+                                    : currentProj.videoUrl.includes("watch?v=")
+                                    ? currentProj.videoUrl.replace("watch?v=", "embed/")
+                                    : currentProj.videoUrl.includes("youtu.be/")
+                                    ? "https://www.youtube.com/embed/" + currentProj.videoUrl.split("youtu.be/")[1]?.split("?")[0]
+                                    : currentProj.videoUrl
+                                }
+                                title="Project Demonstration Video"
+                                className="w-full h-full border-none"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <video src={currentProj.videoUrl} controls className="w-full h-full object-contain" />
+                            )}
+                          </div>
+                        ) : displayedImage ? (
+                          <div className="relative w-full h-full flex items-center justify-center">
+                            <img
+                              src={displayedImage}
+                              alt={currentProj.title}
+                              onClick={() => openLightbox(projectPhotos, displayedImageIndex >= 0 ? displayedImageIndex : 0, currentProj.title)}
+                              className="w-full h-full object-contain opacity-100 cursor-zoom-in select-none"
+                              referrerPolicy="no-referrer"
+                              title="Click to view full-resolution photo on site"
+                            />
+                            {/* Expand button on hover/tap */}
+                            <button
+                              type="button"
+                              onClick={() => openLightbox(projectPhotos, displayedImageIndex >= 0 ? displayedImageIndex : 0, currentProj.title)}
+                              className="absolute bottom-2.5 right-2.5 bg-neutral-950/90 hover:bg-[#D5001C] text-white border border-neutral-700 font-mono text-[9px] font-bold px-2.5 py-1 tracking-wider uppercase flex items-center gap-1.5 cursor-pointer shadow transition-all duration-200 opacity-90 group-hover/cover:opacity-100 select-none"
+                              title="Click to open full photo viewer on site"
+                            >
+                              <Maximize2 className="w-3 h-3" />
+                              <span>EXPAND FULLSCREEN</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-center font-mono text-[9px] uppercase tracking-widest text-neutral-300 p-6 relative w-full h-full flex flex-col items-center justify-center min-h-[160px]">
+                            <Sparkles className="w-10 h-10 text-[#D5001C] mx-auto mb-3" />
+                            <span className="font-bold block tracking-wider text-white uppercase mb-1.5">{currentProj.title}</span>
+                            <span className="text-neutral-500 text-[8px] tracking-[0.2em]">{currentProj.category} PROJECT</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-2">
+                          <span 
+                            className="font-mono text-[9px] border border-neutral-200 bg-neutral-50 text-neutral-700 px-2.5 py-0.5 font-bold uppercase tracking-widest"
+                          >
+                            {currentProj.category}
+                          </span>
+                          <span className="font-mono text-[9.5px] text-neutral-500 font-bold uppercase">
+                            YEAR: <span className="text-neutral-900 font-black">{currentProj.year}</span>
+                          </span>
+                        </div>
+
+                        <h3 className="font-syne font-black text-2xl text-neutral-900 uppercase tracking-tight leading-tight">
+                          {currentProj.title}
+                        </h3>
+
+                        <span 
+                          className="font-mono text-[10px] font-bold tracking-[0.2em] uppercase block text-neutral-600 border-l-2 border-[#D5001C] pl-2 py-0.5"
+                        >
+                          {currentProj.tag.toUpperCase()}
+                        </span>
+
+                        <p className="font-sans text-sm text-neutral-600 leading-relaxed font-normal">
+                          {currentProj.description}
+                        </p>
+
+                        {/* Extended detailed description */}
+                        {currentProj.extendedDescription && (
+                          <div className="pt-4 border-t border-neutral-100">
+                            <h4 
+                              className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-2 flex items-center gap-1.5 select-none"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 text-[#D5001C] shrink-0" />
+                              <span>OVERVIEW & PROJECT NOTES</span>
+                            </h4>
+                            <p className="font-sans text-xs md:text-sm text-neutral-700 leading-relaxed whitespace-pre-line font-normal bg-neutral-50 border border-neutral-200 p-4">
+                              {currentProj.extendedDescription}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Interactive Gallery of Secondary Photos */}
+                        {currentProj.additionalImages && currentProj.additionalImages.length > 0 && (
+                          <div className="flex flex-col gap-2 pt-2">
+                            <div className="flex justify-between items-center select-none">
+                              <span className="text-[9px] font-mono text-neutral-500 uppercase font-semibold tracking-widest">
+                                PROJECT MEDIA GALLERY ({currentProj.additionalImages.length} {currentProj.additionalImages.length === 1 ? "PHOTO" : "PHOTOS"})
+                              </span>
+                              <span className="text-[8px] font-mono text-neutral-400 uppercase">
+                                CLICK PHOTO TO EXPAND IN VIEWER
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              {currentProj.additionalImages.map((imgUrl, idx) => {
+                                const photoIndex = projectPhotos.indexOf(imgUrl);
+                                const isCurrent = displayedImage === imgUrl;
+                                return (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveModalImage(imgUrl);
+                                      openLightbox(projectPhotos, photoIndex >= 0 ? photoIndex : idx, currentProj.title);
+                                    }}
+                                    className={`relative aspect-video border bg-neutral-900 overflow-hidden group/thumb cursor-pointer text-left transition-all ${
+                                      isCurrent ? "border-[#D5001C] ring-2 ring-[#D5001C]/30" : "border-neutral-200 hover:border-neutral-900"
+                                    }`}
+                                    title="Click to view full photo in viewer"
+                                  >
+                                    <img
+                                      src={imgUrl}
+                                      alt={`Media ${idx + 1}`}
+                                      className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                    {/* Subtle hover badge */}
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
+                                      <span className="bg-neutral-950/90 text-white font-mono text-[8px] font-bold px-2 py-0.5 tracking-wider uppercase flex items-center gap-1">
+                                        <ZoomIn className="w-2.5 h-2.5 text-[#D5001C]" />
+                                        <span>EXPAND</span>
+                                      </span>
+                                    </div>
+                                    <span className="absolute bottom-1 right-1 bg-neutral-950/80 text-white font-mono text-[7px] font-bold px-1 py-0.2 select-none">
+                                      #{idx + 1}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        <p className="font-mono text-xs text-neutral-500 uppercase leading-relaxed font-normal border-t border-neutral-100 pt-3">
+                          <span className="text-neutral-900 font-bold mr-2">CATEGORY:</span>
+                          {currentProj.category}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Action Buttons footer */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-neutral-100 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const currentProj = projects.find(p => p.id === activePlayground);
+                    if (currentProj?.link) {
+                      return (
+                        <a
+                          href={currentProj.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-5 py-2.5 bg-neutral-950 hover:bg-[#D5001C] text-white font-mono text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
+                        >
+                          <span>{currentProj.linkLabel || "OPEN LIVE PROJECT"}</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  <button
+                    onClick={handleShare}
+                    className="px-4 py-2.5 border border-neutral-300 hover:border-neutral-950 text-neutral-800 font-mono text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>{copiedLink ? "LINK COPIED" : "SHARE"}</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setActivePlayground(null)}
+                  className="px-5 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-mono text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                >
+                  CLOSE
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Fullscreen In-App Image Lightbox */}
+        {isLightboxOpen && lightboxImages.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-neutral-950/95 backdrop-blur-md flex flex-col justify-between select-none"
+            onClick={closeLightbox}
+          >
+            {/* Top Toolbar */}
+            <div 
+              className="flex items-center justify-between px-4 md:px-8 py-3 bg-neutral-950/90 border-b border-neutral-800 text-white z-30 flex-shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3">
+                <span className="w-2 h-2 bg-[#D5001C] rounded-full animate-pulse" />
+                <span className="font-mono text-xs md:text-sm font-bold tracking-widest uppercase truncate max-w-[180px] sm:max-w-xs md:max-w-md">
+                  {lightboxTitle}
+                </span>
+                <span className="font-mono text-[10px] md:text-xs text-neutral-400 bg-neutral-900 border border-neutral-800 px-2 py-0.5 font-semibold uppercase">
+                  {lightboxIndex + 1} / {lightboxImages.length}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Toggle Zoom button */}
+                <button
+                  type="button"
+                  onClick={() => setIsZoomed(!isZoomed)}
+                  className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 font-mono text-[10px] uppercase font-bold tracking-wider cursor-pointer flex items-center gap-1.5 transition-colors"
+                  title={isZoomed ? "Fit image to screen" : "Zoom to 100% scale"}
+                >
+                  {isZoomed ? <ZoomOut className="w-3.5 h-3.5" /> : <ZoomIn className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">{isZoomed ? "FIT SCREEN" : "100% ZOOM"}</span>
+                </button>
+
+                {/* Direct File Download without new tab */}
+                <button
+                  type="button"
+                  onClick={handleDownloadActiveImage}
+                  className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-700 font-mono text-[10px] uppercase font-bold tracking-wider cursor-pointer flex items-center gap-1.5 transition-colors"
+                  title="Download image file directly"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">SAVE</span>
+                </button>
+
+                {/* Close Button */}
+                <button
+                  type="button"
+                  onClick={closeLightbox}
+                  className="px-3 py-1.5 bg-neutral-900 hover:bg-[#D5001C] text-white border border-neutral-700 hover:border-[#D5001C] font-mono text-[10px] uppercase font-bold tracking-wider cursor-pointer flex items-center gap-1.5 transition-colors"
+                  title="Close viewer (ESC)"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">CLOSE</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Main Stage Image Area */}
+            <div 
+              className={`relative flex-1 w-full overflow-auto flex items-center justify-center p-2 md:p-6 ${
+                isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
+              }`}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  closeLightbox();
+                } else {
+                  setIsZoomed(!isZoomed);
+                }
+              }}
+            >
+              {/* Prev Arrow */}
+              {lightboxImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevLightboxImage();
+                  }}
+                  className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 p-2.5 bg-neutral-900/80 hover:bg-[#D5001C] text-white border border-neutral-700 rounded-none cursor-pointer transition-colors shadow-lg"
+                  title="Previous photo (Arrow Left)"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* Next Arrow */}
+              {lightboxImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextLightboxImage();
+                  }}
+                  className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 p-2.5 bg-neutral-900/80 hover:bg-[#D5001C] text-white border border-neutral-700 rounded-none cursor-pointer transition-colors shadow-lg"
+                  title="Next photo (Arrow Right)"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* The Actual Displayed Image */}
+              <img
+                src={lightboxImages[lightboxIndex]}
+                alt={`${lightboxTitle} - Image ${lightboxIndex + 1}`}
+                className={`transition-all duration-150 select-none ${
+                  isZoomed
+                    ? "max-w-none w-auto h-auto object-none shadow-2xl"
+                    : "max-h-[80vh] max-w-[92vw] object-contain shadow-2xl border border-neutral-800"
+                }`}
+                referrerPolicy="no-referrer"
+              />
+            </div>
+
+            {/* Bottom Thumbnail Strip (if multiple photos) */}
+            {lightboxImages.length > 1 && (
+              <div 
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-neutral-950/90 border-t border-neutral-800 flex-shrink-0 z-30 overflow-x-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {lightboxImages.map((thumbUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setIsZoomed(false);
+                      setLightboxIndex(idx);
+                    }}
+                    className={`relative w-14 h-9 md:w-16 md:h-10 border transition-all cursor-pointer overflow-hidden flex-shrink-0 ${
+                      idx === lightboxIndex 
+                        ? "border-[#D5001C] ring-2 ring-[#D5001C]/40 opacity-100" 
+                        : "border-neutral-700 opacity-50 hover:opacity-100"
+                    }`}
+                  >
+                    <img 
+                      src={thumbUrl} 
+                      alt={`Thumbnail ${idx + 1}`} 
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer" 
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
